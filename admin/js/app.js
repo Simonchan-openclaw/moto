@@ -141,6 +141,7 @@ var Admin = {
     // ==================== 控制台 ====================
 
     renderDashboard: function(container) {
+        var self = this;
         container.innerHTML = '<div class="stats-grid">' +
             '<div class="stat-card">' +
             '<div class="stat-icon blue">📝</div>' +
@@ -167,31 +168,104 @@ var Admin = {
             '<div class="stat-value" id="statActivations">-</div>' +
             '</div></div></div>' +
 
+            '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:20px;">' +
             '<div class="card">' +
             '<div class="card-header">' +
-            '<h3 class="card-title">📊 快捷操作</h3>' +
+            '<h3 class="card-title">📈 今日激活趋势</h3>' +
             '</div>' +
-            '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
-            '<button class="btn btn-primary" onclick="Admin.loadPage(\'questions\')">添加题目</button>' +
-            '<button class="btn btn-success" onclick="Admin.loadPage(\'chapters\')">管理章节</button>' +
-            '<button class="btn btn-warning" onclick="Admin.loadPage(\'activations\')">查看激活</button>' +
-            '<button class="btn btn-primary" onclick="Admin.showImportModal()">批量导入</button>' +
-            '</div></div>' +
+            '<div id="dashboardActivationsChart" style="width:100%;height:260px;"></div></div>' +
 
             '<div class="card">' +
+            '<div class="card-header">' +
+            '<h3 class="card-title">📊 激活状态分布</h3>' +
+            '</div>' +
+            '<div id="dashboardStatusChart" style="width:100%;height:260px;"></div></div></div>' +
+
+            '<div class="card" style="margin-top:20px;">' +
+            '<div class="card-header">' +
+            '<h3 class="card-title">⚡ 快捷操作</h3>' +
+            '</div>' +
+            '<div style="display:flex;gap:12px;flex-wrap:wrap;">' +
+            '<button class="btn btn-primary" onclick="Admin.loadPage(\'questions\');">📝 添加题目</button>' +
+            '<button class="btn btn-success" onclick="Admin.loadPage(\'chapters\');">📚 管理章节</button>' +
+            '<button class="btn btn-warning" onclick="Admin.loadPage(\'activations\');">🎫 查看激活</button>' +
+            '<button class="btn btn-primary" onclick="Admin.showImportModal();">📤 批量导入</button>' +
+            '<button class="btn btn-success" onclick="Admin.loadPage(\'statistics\');">📈 数据统计</button>' +
+            '</div></div>' +
+
+            '<div class="card" style="margin-top:20px;">' +
             '<div class="card-header">' +
             '<h3 class="card-title">📋 最新激活记录</h3>' +
             '</div>' +
             '<div class="table-container" id="recentActivations"></div></div>';
 
         // 加载统计数据（模拟）
-        document.getElementById('statQuestions').textContent = '500+';
+        document.getElementById('statQuestions').textContent = '523';
         document.getElementById('statUsers').textContent = '1,234';
         document.getElementById('statCoaches').textContent = '56';
         document.getElementById('statActivations').textContent = '2,890';
 
         // 加载最新激活记录
         this.loadRecentActivations();
+
+        // 渲染控制台图表
+        setTimeout(function() {
+            self.renderDashboardCharts();
+        }, 100);
+    },
+
+    renderDashboardCharts: function() {
+        // 激活趋势图
+        var actChart = echarts.init(document.getElementById('dashboardActivationsChart'));
+        actChart.setOption({
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00']
+            },
+            yAxis: { type: 'value' },
+            series: [{
+                name: '激活次数',
+                type: 'line',
+                smooth: true,
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
+                    { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+                ]) },
+                lineStyle: { color: '#667eea', width: 3 },
+                itemStyle: { color: '#667eea' },
+                data: [5, 12, 18, 25, 32, 28, 22, 15, 8]
+            }]
+        });
+
+        // 激活状态分布饼图
+        var statusChart = echarts.init(document.getElementById('dashboardStatusChart'));
+        statusChart.setOption({
+            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+            legend: { orient: 'vertical', right: '5%', top: 'center', textStyle: { fontSize: 12 } },
+            color: ['#52c41a', '#667eea', '#ff4d4f', '#faad14'],
+            series: [{
+                type: 'pie',
+                radius: ['45%', '70%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: false,
+                itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                label: { show: false },
+                emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold' } },
+                data: [
+                    { value: 2150, name: '已激活' },
+                    { value: 420, name: '待激活' },
+                    { value: 280, name: '已失效' },
+                    { value: 40, name: '已退款' }
+                ]
+            }]
+        });
+
+        window.addEventListener('resize', function() {
+            actChart.resize();
+            statusChart.resize();
+        });
     },
 
     loadRecentActivations: function() {
@@ -546,53 +620,230 @@ var Admin = {
     // ==================== 数据统计 ====================
 
     renderStatistics: function(container) {
+        var self = this;
         container.innerHTML = '<div class="stats-grid">' +
             '<div class="stat-card">' +
             '<div class="stat-icon blue">📝</div>' +
             '<div class="stat-info">' +
             '<div class="stat-label">总题目数</div>' +
-            '<div class="stat-value">523</div>' +
+            '<div class="stat-value" id="statQuestions">-</div>' +
             '</div></div>' +
             '<div class="stat-card">' +
             '<div class="stat-icon green">👥</div>' +
             '<div class="stat-info">' +
             '<div class="stat-label">注册用户</div>' +
-            '<div class="stat-value">1,234</div>' +
+            '<div class="stat-value" id="statUsers">-</div>' +
             '</div></div>' +
             '<div class="stat-card">' +
             '<div class="stat-icon orange">📊</div>' +
             '<div class="stat-info">' +
             '<div class="stat-label">考试次数</div>' +
-            '<div class="stat-value">5,678</div>' +
+            '<div class="stat-value" id="statExams">-</div>' +
             '</div></div>' +
             '<div class="stat-card">' +
             '<div class="stat-icon red">💰</div>' +
             '<div class="stat-info">' +
             '<div class="stat-label">总收入</div>' +
-            '<div class="stat-value">¥52,014</div>' +
+            '<div class="stat-value" id="statRevenue">-</div>' +
             '</div></div></div>' +
 
             '<div class="card">' +
             '<div class="card-header">' +
-            '<h3 class="card-title">📈 数据趋势</h3>' +
+            '<h3 class="card-title">📈 激活趋势（近7天）</h3>' +
             '</div>' +
-            '<p style="text-align:center;color:#999;padding:60px;">图表区域（需接入 ECharts 或其他图表库）</p></div>' +
+            '<div id="chartActivations" style="width:100%;height:320px;"></div></div>' +
+
+            '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:20px;">' +
+            '<div class="card">' +
+            '<div class="card-header">' +
+            '<h3 class="card-title">📊 题目类型分布</h3>' +
+            '</div>' +
+            '<div id="chartQuestionType" style="width:100%;height:280px;"></div></div>' +
 
             '<div class="card">' +
             '<div class="card-header">' +
-            '<h3 class="card-title">📋 热门题目类型</h3>' +
+            '<h3 class="card-title">💰 收入统计（近7天）</h3>' +
             '</div>' +
-            '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
-            '<div style="flex:1;padding:15px;background:#fafafa;border-radius:8px;">' +
-            '<div style="font-size:24px;font-weight:bold;color:#667eea;">120</div>' +
-            '<div style="color:#666;">选择题</div></div>' +
-            '<div style="flex:1;padding:15px;background:#fafafa;border-radius:8px;">' +
-            '<div style="font-size:24px;font-weight:bold;color:#52c41a;">85</div>' +
-            '<div style="color:#666;">判断题</div></div>' +
-            '<div style="flex:1;padding:15px;background:#fafafa;border-radius:8px;">' +
-            '<div style="font-size:24px;font-weight:bold;color:#faad14;">30</div>' +
-            '<div style="color:#666;">多选题</div></div>' +
-            '</div></div>';
+            '<div id="chartRevenue" style="width:100%;height:280px;"></div></div>' +
+
+            '<div class="card">' +
+            '<div class="card-header">' +
+            '<h3 class="card-title">👥 用户增长趋势</h3>' +
+            '</div>' +
+            '<div id="chartUsers" style="width:100%;height:280px;"></div></div>' +
+
+            '<div class="card">' +
+            '<div class="card-header">' +
+            '<h3 class="card-title">📋 考试通过率</h3>' +
+            '</div>' +
+            '<div id="chartPassRate" style="width:100%;height:280px;"></div></div>' +
+            '</div>';
+
+        // 模拟数据
+        document.getElementById('statQuestions').textContent = '523';
+        document.getElementById('statUsers').textContent = '1,234';
+        document.getElementById('statExams').textContent = '5,678';
+        document.getElementById('statRevenue').textContent = '¥52,014';
+
+        // 渲染图表
+        setTimeout(function() {
+            self.renderActivationChart();
+            self.renderQuestionTypeChart();
+            self.renderRevenueChart();
+            self.renderUserChart();
+            self.renderPassRateChart();
+        }, 100);
+    },
+
+    // 激活趋势图表
+    renderActivationChart: function() {
+        var chart = echarts.init(document.getElementById('chartActivations'));
+        var option = {
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['激活次数', '新增用户'], bottom: 0 },
+            grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['04-21', '04-22', '04-23', '04-24', '04-25', '04-26', '04-27']
+            },
+            yAxis: { type: 'value' },
+            series: [
+                {
+                    name: '激活次数',
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: { color: 'rgba(102, 126, 234, 0.2)' },
+                    lineStyle: { color: '#667eea', width: 3 },
+                    itemStyle: { color: '#667eea' },
+                    data: [45, 52, 38, 61, 55, 72, 89]
+                },
+                {
+                    name: '新增用户',
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: { color: 'rgba(82, 196, 26, 0.2)' },
+                    lineStyle: { color: '#52c41a', width: 3 },
+                    itemStyle: { color: '#52c41a' },
+                    data: [28, 34, 25, 42, 38, 48, 56]
+                }
+            ]
+        };
+        chart.setOption(option);
+        window.addEventListener('resize', function() { chart.resize(); });
+    },
+
+    // 题目类型分布
+    renderQuestionTypeChart: function() {
+        var chart = echarts.init(document.getElementById('chartQuestionType'));
+        var option = {
+            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+            legend: { orient: 'vertical', right: '5%', top: 'center' },
+            color: ['#667eea', '#52c41a', '#faad14'],
+            series: [{
+                type: 'pie',
+                radius: ['45%', '70%'],
+                center: ['35%', '50%'],
+                avoidLabelOverlap: false,
+                itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+                label: { show: false },
+                emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+                data: [
+                    { value: 350, name: '选择题' },
+                    { value: 150, name: '判断题' },
+                    { value: 23, name: '多选题' }
+                ]
+            }]
+        };
+        chart.setOption(option);
+        window.addEventListener('resize', function() { chart.resize(); });
+    },
+
+    // 收入统计图表
+    renderRevenueChart: function() {
+        var chart = echarts.init(document.getElementById('chartRevenue'));
+        var option = {
+            tooltip: { trigger: 'axis', formatter: '{b}<br/>收入: ¥{c}' },
+            grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['04-21', '04-22', '04-23', '04-24', '04-25', '04-26', '04-27']
+            },
+            yAxis: { type: 'value', axisLabel: { formatter: '¥{c}' } },
+            series: [{
+                type: 'bar',
+                barWidth: '50%',
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#52c41a' },
+                        { offset: 1, color: '#389e0d' }
+                    ]),
+                    borderRadius: [8, 8, 0, 0]
+                },
+                data: [360, 450, 288, 540, 468, 648, 792]
+            }]
+        };
+        chart.setOption(option);
+        window.addEventListener('resize', function() { chart.resize(); });
+    },
+
+    // 用户增长图表
+    renderUserChart: function() {
+        var chart = echarts.init(document.getElementById('chartUsers'));
+        var option = {
+            tooltip: { trigger: 'axis' },
+            grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['04-21', '04-22', '04-23', '04-24', '04-25', '04-26', '04-27']
+            },
+            yAxis: { type: 'value' },
+            series: [{
+                type: 'line',
+                smooth: true,
+                lineStyle: { color: '#faad14', width: 3 },
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(250, 173, 20, 0.4)' },
+                    { offset: 1, color: 'rgba(250, 173, 20, 0.05)' }
+                ]) },
+                itemStyle: { color: '#faad14' },
+                data: [980, 1020, 1050, 1090, 1125, 1168, 1234]
+            }]
+        };
+        chart.setOption(option);
+        window.addEventListener('resize', function() { chart.resize(); });
+    },
+
+    // 考试通过率图表
+    renderPassRateChart: function() {
+        var chart = echarts.init(document.getElementById('chartPassRate'));
+        var option = {
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: ['04-21', '04-22', '04-23', '04-24', '04-25', '04-26', '04-27']
+            },
+            yAxis: { type: 'value', axisLabel: { formatter: '{value}%' }, max: 100 },
+            series: [{
+                type: 'line',
+                smooth: true,
+                lineStyle: { color: '#667eea', width: 3 },
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
+                    { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+                ]) },
+                itemStyle: { color: '#667eea' },
+                markLine: {
+                    silent: true,
+                    lineStyle: { color: '#ff4d4f', type: 'dashed' },
+                    data: [{ yAxis: 90, name: '及格线' }]
+                },
+                data: [85, 88, 82, 90, 87, 92, 89]
+            }]
+        };
+        chart.setOption(option);
+        window.addEventListener('resize', function() { chart.resize(); });
     },
 
     // ==================== 系统设置 ====================
