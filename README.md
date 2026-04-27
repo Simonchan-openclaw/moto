@@ -158,3 +158,184 @@ MIT License
 ## 👤 作者
 
 Simonchan-openclaw
+
+## 🚀 部署指南
+
+### 环境要求
+- PHP 8.1+
+- MySQL 5.7+ / MySQL 8.0
+- Nginx / Apache
+- Composer 2.x
+
+### 1. 服务器环境配置
+
+#### PHP 环境
+```bash
+# 安装 PHP 8.1+
+sudo apt update
+sudo apt install php8.1 php8.1-fpm php8.1-mysql php8.1-cli php8.1-curl php8.1-json php8.1-mbstring php8.1-xml php8.1-zip
+```
+
+#### MySQL 数据库
+```bash
+# 安装 MySQL
+sudo apt install mysql-server
+
+# 登录 MySQL 创建数据库
+mysql -u root -p
+CREATE DATABASE moto_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 2. 项目部署
+
+#### 方式一：Git 拉取（推荐）
+```bash
+# 克隆仓库
+git clone https://github.com/Simonchan-openclaw/moto.git
+
+# 进入项目目录
+cd moto
+
+# 切换到 main 分支
+git checkout main
+```
+
+#### 方式二：直接部署后端
+```bash
+# 进入后端目录
+cd backend
+
+# 安装 Composer 依赖
+composer install
+
+# 复制环境配置
+cp .env.example .env
+
+# 编辑 .env 配置数据库连接
+# DB_HOST=localhost
+# DB_DATABASE=moto_db
+# DB_USERNAME=your_db_user
+# DB_PASSWORD=your_db_password
+```
+
+### 3. 数据库初始化
+
+```bash
+# 导入数据库 SQL
+mysql -u root -p moto_db < ../sql/moto_db.sql
+
+# 或在后端目录执行
+php think migrate:run
+```
+
+### 4. Nginx 配置
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/moto/backend/public;
+
+    location / {
+        index index.php;
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # H5 静态文件（可选，反向代理）
+    location /h5 {
+        alias /path/to/moto/h5;
+        index index.html;
+    }
+}
+```
+
+### 5. H5 前端部署
+
+H5 前端为纯静态文件，可直接部署到任意 Web 服务器或 CDN：
+
+```bash
+# 方式一：Nginx 部署
+location /exam {
+    alias /path/to/moto/h5;
+    index index.html;
+    try_files $uri $uri/ /exam/index.html;
+}
+
+# 方式二：直接复制到 Web 服务器
+cp -r h5/* /var/www/html/
+```
+
+### 6. 权限配置
+
+```bash
+# 设置目录权限
+chmod -R 755 backend/
+chmod -R 755 h5/
+
+# 设置存储目录权限
+chmod -R 777 backend/runtime/
+chmod -R 777 backend/storage/
+```
+
+### 7. 管理后台访问
+
+- 管理员登录地址：`https://your-domain.com/admin`
+- 默认账号：`admin`
+- 默认密码：`admin123`
+
+### 8. API 接口地址
+
+- 开发环境：`http://localhost:8080/api/`
+- 生产环境：`https://your-domain.com/api/`
+
+### 9. 验证部署
+
+```bash
+# 测试数据库连接
+php think db:show
+
+# 访问 API 健康检查
+curl https://your-domain.com/api/index/health
+```
+
+---
+
+### 目录结构参考
+
+```
+moto/
+├── backend/          # ThinkPHP8 后端（管理后台）
+│   ├── app/          # 应用目录
+│   ├── public/       # Web 入口
+│   ├── runtime/      # 运行时目录
+│   └── .env          # 环境配置
+├── h5/               # H5 移动端（纯静态）
+│   ├── css/
+│   ├── js/
+│   └── index.html
+├── docs/             # 文档
+│   └── api.md        # API 接口文档
+├── sql/              # 数据库 SQL
+│   └── moto_db.sql
+└── README.md
+```
+
+### 常见问题
+
+**Q: 提示权限不足？**
+```bash
+chmod -R 777 backend/runtime/
+```
+
+**Q: 数据库连接失败？**
+检查 `.env` 文件中的数据库配置是否正确。
+
+**Q: H5 无法访问后端 API？**
+检查 Nginx 反向代理配置，确保 `/api/` 指向后端。
+
