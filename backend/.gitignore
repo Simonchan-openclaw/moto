@@ -1,0 +1,11 @@
+/runtime/
+/storage/
+/vendor/
+/.env
+/.idea/
+/.vscode/
+/.git/
+*.log
+*.cache
+.DS_Store
+Thumbs.db
