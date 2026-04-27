@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>教练端 - 摩托车题库</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #f0f2f5; }
+        .coach-header { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 首页 -->
+        <div id="page-home" class="page">
+            <div class="header coach-header">
+                <h1>👨‍🏫 教练端</h1>
+                <p>激活码管理</p>
+            </div>
+            <div class="user-info" id="userInfo">
+                <div class="avatar">
+                    <img src="images/avatar.png" alt="头像">
+                </div>
+                <div class="info">
+                    <span class="nickname">未登录</span>
+                    <span class="status">点击登录</span>
+                </div>
+            </div>
+
+            <!-- 余额卡片 -->
+            <div class="balance-card" id="balanceCard" style="display:none;">
+                <div class="balance-main">
+                    <span class="label">账户余额</span>
+                    <span class="amount" id="balanceAmount">¥0.00</span>
+                </div>
+                <div class="balance-actions">
+                    <button class="btn-recharge" onclick="CoachApp.showRecharge()">💰 充值</button>
+                </div>
+            </div>
+
+            <div class="menu-grid">
+                <div class="menu-item" onclick="CoachApp.showPage('activation-list')">
+                    <div class="icon">🎫</div>
+                    <span>激活记录</span>
+                    <small>查看/管理</small>
+                </div>
+                <div class="menu-item" onclick="CoachApp.showPage('recharge-list')">
+                    <div class="icon">💳</div>
+                    <span>充值记录</span>
+                    <small>查看历史</small>
+                </div>
+                <div class="menu-item" onclick="CoachApp.showPage('activate')">
+                    <div class="icon">✨</div>
+                    <span>激活学员</span>
+                    <small>生成激活码</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 登录页 -->
+        <div id="page-login" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>教练登录</h2>
+            </div>
+            <div class="form-container">
+                <div class="form-group">
+                    <label>手机号</label>
+                    <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码">
+                </div>
+                <button class="btn-primary" style="background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);" onclick="CoachApp.doLogin()">登录</button>
+                <p class="tip">测试账号: 13800138000 / 123456</p>
+            </div>
+        </div>
+
+        <!-- 充值页 -->
+        <div id="page-recharge" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>账户充值</h2>
+            </div>
+            <div class="form-container">
+                <div class="form-group">
+                    <label>选择充值金额</label>
+                    <div class="amount-options">
+                        <div class="amount-item" onclick="CoachApp.selectAmount(50)">¥50</div>
+                        <div class="amount-item" onclick="CoachApp.selectAmount(100)">¥100</div>
+                        <div class="amount-item" onclick="CoachApp.selectAmount(200)">¥200</div>
+                        <div class="amount-item" onclick="CoachApp.selectAmount(500)">¥500</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>自定义金额</label>
+                    <input type="number" id="customAmount" placeholder="最低18元" min="18" step="1">
+                </div>
+                <div class="form-group">
+                    <label>支付方式</label>
+                    <div class="pay-methods">
+                        <div class="pay-item selected" onclick="CoachApp.selectPayMethod(1)">
+                            <span class="pay-icon">💚</span>
+                            <span>微信支付</span>
+                        </div>
+                        <div class="pay-item" onclick="CoachApp.selectPayMethod(2)">
+                            <span class="pay-icon">💙</span>
+                            <span>支付宝</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-primary" style="background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);" onclick="CoachApp.doRecharge()">立即充值</button>
+            </div>
+        </div>
+
+        <!-- 激活学员页 -->
+        <div id="page-activate" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>激活学员</h2>
+            </div>
+            <div class="form-container">
+                <div class="form-group">
+                    <label>学员手机号</label>
+                    <input type="tel" id="studentPhone" placeholder="请输入学员手机号" maxlength="11">
+                </div>
+                <div class="activation-info">
+                    <div class="info-row">
+                        <span>激活价格</span>
+                        <span>¥18.00</span>
+                    </div>
+                    <div class="info-row">
+                        <span>有效期</span>
+                        <span>30天</span>
+                    </div>
+                    <div class="info-row">
+                        <span>当前余额</span>
+                        <span id="currentBalance">¥0.00</span>
+                    </div>
+                </div>
+                <button class="btn-primary" style="background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);" onclick="CoachApp.doActivate()">立即激活</button>
+            </div>
+        </div>
+
+        <!-- 激活结果页 -->
+        <div id="page-activate-result" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>激活成功</h2>
+            </div>
+            <div class="result-container" id="activateResult">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 激活记录页 -->
+        <div id="page-activation-list" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>激活记录</h2>
+            </div>
+            <div class="filter-tabs">
+                <div class="tab-item active" onclick="CoachApp.filterActivation(0)">全部</div>
+                <div class="tab-item" onclick="CoachApp.filterActivation(0)">待激活</div>
+                <div class="tab-item" onclick="CoachApp.filterActivation(1)">已激活</div>
+                <div class="tab-item" onclick="CoachApp.filterActivation(2)">已失效</div>
+            </div>
+            <div class="list-container" id="activationListContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 充值记录页 -->
+        <div id="page-recharge-list" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>充值记录</h2>
+            </div>
+            <div class="list-container" id="rechargeListContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- Toast提示 -->
+        <div id="toast" class="toast" style="display:none;">
+            <span id="toastText"></span>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <span>加载中...</span>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api_coach.js"></script>
+    <script src="js/app_coach.js"></script>
+</body>
+</html>
