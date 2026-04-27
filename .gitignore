@@ -57,6 +57,7 @@ build/
 # sql/*.sql 目录下的非 init.sql 文件应忽略
 sql/*.sql
 !sql/init.sql
+!sql/moto_db.sql
 
 # =============================================
 # 文档相关
