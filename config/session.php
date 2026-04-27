@@ -1,19 +1,14 @@
 <?php
-// +----------------------------------------------------------------------
-// | 会话设置
-// +----------------------------------------------------------------------
-
 return [
-    // session name
-    'name'           => 'PHPSESSID',
-    // SESSION_ID的提交变量,解决flash上传跨域
-    'var_session_id' => '',
-    // 驱动方式 支持file cache
-    'type'           => 'file',
-    // 存储连接标识 当type使用cache的时候有效
-    'store'          => null,
-    // 过期时间
-    'expire'         => 1440,
-    // 前缀
+    'type'           => 'File',
+    'path'           => '../runtime/session/',
     'prefix'         => '',
+    'auto_start'     => true,
+    'httponly'       => true,
+    'secure'         => false,
+    'same_site'      => 'Lax',
+    'expire'         => 86400,
+    'cookie_name'    => 'MOTO_SESSION',
+    'session_name'   => 'PHPSESSID',
+    'serialize'      => [],
 ];

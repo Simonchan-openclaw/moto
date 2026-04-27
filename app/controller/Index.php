@@ -1,18 +1,17 @@
 <?php
-
 namespace app\controller;
 
-use app\BaseController;
+use think\facade\View;
 
-class Index extends BaseController
+class Index
 {
     public function index()
     {
-        return '<style>*{ padding: 0; margin: 0; }</style><iframe src="https://www.thinkphp.cn/welcome?version=' . \think\facade\App::version() . '" width="100%" height="100%" frameborder="0" scrolling="auto"></iframe>';
+        return json(['msg' => 'moto exam api running', 'version' => '1.0.0']);
     }
-
-    public function hello($name = 'ThinkPHP8')
+    
+    public function health()
     {
-        return 'hello,' . $name;
+        return json(['status' => 'ok', 'time' => date('Y-m-d H:i:s')]);
     }
 }
