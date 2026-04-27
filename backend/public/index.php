@@ -13,10 +13,10 @@ define('ROOT_PATH', __DIR__ . '/../');
 define('RUNTIME_PATH', __DIR__ . '/../runtime/');
 
 // 加载配置
-require_once __DIR__ . '/../backend/config.php';
+require_once __DIR__ . '/../config.php';
 
 // 加载 Db 类
-require_once __DIR__ . '/../backend/library/Db.php';
+require_once __DIR__ . '/../library/Db.php';
 
 // 设置时区
 date_default_timezone_set('Asia/Shanghai');
@@ -37,4 +37,4 @@ function log_message($level, $message) {
 }
 
 // 加载路由
-require_once __DIR__ . '/../backend/router.php';
+require_once __DIR__ . '/../router.php';
