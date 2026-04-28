@@ -36,11 +36,9 @@ var App = {
         this.token = localStorage.getItem('token');
         this.user = JSON.parse(localStorage.getItem('user') || 'null');
 
-        // 检查激活状态
-        this.checkActivation();
-
         // 初始化页面
         this.updateUserInfo();
+        this.updateMenuVisibility();
 
         // 清理过期缓存
         this.cleanupCache();
@@ -59,71 +57,59 @@ var App = {
     },
 
     /**
-     * 检查激活状态
+     * 检查是否已激活
      */
-    checkActivation: function() {
-        if (!Config.ACTIVATION.REQUIRED) {
-            return;
-        }
-
-        var deviceId = this.getDeviceId();
+    isActivated: function() {
         var cachedStatus = localStorage.getItem('activation_status');
-
         if (cachedStatus) {
             var status = JSON.parse(cachedStatus);
             if (status.activated && status.expire_at > Date.now()) {
-                return; // 已激活且未过期
+                return true; // 已激活且未过期
             }
         }
-
-        // 显示激活弹窗
-        this.showActivationModal();
+        return false;
     },
 
     /**
-     * 显示激活弹窗
+     * 设置激活状态
      */
-    showActivationModal: function() {
-        var html = '<div class="activation-modal" id="activationModal">' +
-            '<div class="activation-content">' +
-            '<h3>🔒 请先激活</h3>' +
-            '<p style="text-align:center;color:#666;margin-bottom:15px;">请输入教练提供的激活码</p>' +
-            '<div class="form-group">' +
-            '<input type="text" id="activationCode" placeholder="请输入激活码" maxlength="32">' +
-            '</div>' +
-            '<button class="btn-primary" onclick="App.doActivation()">激活</button>' +
-            '<p style="text-align:center;color:#999;font-size:12px;margin-top:10px;">激活后即可使用全部功能</p>' +
-            '</div></div>';
-
-        document.body.insertAdjacentHTML('beforeend', html);
+    setActivation: function(expire_at) {
+        var status = {
+            activated: true,
+            expire_at: new Date(expire_at).getTime()
+        };
+        localStorage.setItem('activation_status', JSON.stringify(status));
+        this.updateUserInfo();
+        this.updateMenuVisibility();
     },
 
     /**
-     * 执行激活
+     * 更新菜单显示状态
      */
-    doActivation: function() {
-        var code = document.getElementById('activationCode').value.trim();
-        if (!code) {
-            this.showToast('请输入激活码');
-            return;
+    updateMenuVisibility: function() {
+        var menuItems = document.querySelectorAll('.menu-item');
+        var isLoggedIn = this.user !== null;
+        var isAct = this.isActivated();
+
+        if (!isLoggedIn) {
+            // 未登录：所有菜单不可点击
+            menuItems.forEach(function(item) {
+                item.style.opacity = '0.5';
+                item.style.pointerEvents = 'none';
+            });
+        } else if (!isAct) {
+            // 登录未激活：所有菜单不可点击
+            menuItems.forEach(function(item) {
+                item.style.opacity = '0.5';
+                item.style.pointerEvents = 'none';
+            });
+        } else {
+            // 已登录已激活：菜单正常可用
+            menuItems.forEach(function(item) {
+                item.style.opacity = '1';
+                item.style.pointerEvents = 'auto';
+            });
         }
-
-        var deviceId = this.getDeviceId();
-
-        API.activate(code, deviceId).then(function(res) {
-            // 保存激活状态
-            var status = {
-                activated: true,
-                expire_at: new Date(res.data.expire_at).getTime()
-            };
-            localStorage.setItem('activation_status', JSON.stringify(status));
-
-            // 关闭弹窗
-            document.getElementById('activationModal').remove();
-            App.showToast('激活成功！');
-        }).catch(function(err) {
-            App.showToast(err.message || '激活失败');
-        });
     },
 
     /**
@@ -187,16 +173,28 @@ var App = {
         var nickname = userInfo.querySelector('.nickname');
         var status = userInfo.querySelector('.status');
 
-        if (this.user) {
-            nickname.textContent = this.user.nickname || '摩托学员';
-            status.textContent = '已登录';
-            userInfo.onclick = null;
-        } else {
+        if (!this.user) {
+            // 未登录
             nickname.textContent = '未登录';
-            status.textContent = '点击登录';
+            status.textContent = '请先登录';
             userInfo.onclick = function() {
                 App.showPage('login');
             };
+            userInfo.style.cursor = 'pointer';
+        } else if (!this.isActivated()) {
+            // 登录未激活
+            nickname.textContent = this.user.nickname || '摩托学员';
+            status.textContent = '请先联系教练激活';
+            userInfo.onclick = function() {
+                App.showToast('请联系教练获取激活码');
+            };
+            userInfo.style.cursor = 'pointer';
+        } else {
+            // 已登录已激活
+            nickname.textContent = this.user.nickname || '摩托学员';
+            status.textContent = '已登录';
+            userInfo.onclick = null;
+            userInfo.style.cursor = 'default';
         }
     },
 
@@ -264,6 +262,7 @@ var App = {
             localStorage.setItem('user', JSON.stringify(App.user));
 
             App.updateUserInfo();
+            App.updateMenuVisibility();
             App.showPage('home');
             App.showToast('登录成功');
         }).catch(function(err) {
@@ -280,6 +279,7 @@ var App = {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         this.updateUserInfo();
+        this.updateMenuVisibility();
         this.showPage('home');
     },
 

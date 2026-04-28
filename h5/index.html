@@ -68,13 +68,21 @@
             <div class="form-container">
                 <div class="form-group">
                     <label>手机号</label>
-                    <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                    <div class="phone-input">
+                        <select id="countryCode" class="country-code">
+                            <option value="86" selected>+86 中国大陆</option>
+                            <option value="852">+852 香港</option>
+                            <option value="853">+853 澳门</option>
+                            <option value="886">+886 台湾</option>
+                        </select>
+                        <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>验证码</label>
                     <div class="code-input">
                         <input type="text" id="loginCode" placeholder="请输入验证码" maxlength="6">
-                        <button class="btn-code" onclick="sendCode()">获取验证码</button>
+                        <button class="btn-code" id="sendCodeBtn" onclick="sendCode()">发送验证码</button>
                     </div>
                 </div>
                 <button class="btn-primary" onclick="doLogin()">登录</button>
