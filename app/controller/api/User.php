@@ -78,9 +78,18 @@ class User
         $user = $this->model->findByPhone($phone);
 
         if (!$user) {
-            // 自动注册
-            $userId = $this->model->register($phone, '', '摩托学员');
+            // 自动注册，保存设备码
+            $userId = $this->model->register($phone, '', '摩托学员', $deviceId);
             $user = $this->model->findById($userId);
+        } else {
+            // 已存在用户，检查设备码是否匹配
+            if (!empty($user['device_id']) && $user['device_id'] !== $deviceId) {
+                return jsonError('该账号已绑定其他设备，请使用原设备登录');
+            }
+            // 如果用户没有设备码，记录当前设备码
+            if (empty($user['device_id'])) {
+                $this->model->updateDeviceId($user['id'], $deviceId);
+            }
         }
 
         // 生成JWT Token

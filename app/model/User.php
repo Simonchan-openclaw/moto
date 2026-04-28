@@ -26,26 +26,58 @@ class User extends Model
 
     /**
      * 用户注册
+     * @param string $phone 手机号
+     * @param string $password 密码（设备码）
+     * @param string $nickname 昵称
+     * @param string $deviceId 设备ID
      */
-    public function register($phone, $password, $nickname = '')
+    public function register($phone, $password = '', $nickname = '', $deviceId = '')
     {
         // 检查手机号是否已注册
         $exists = $this->findByPhone($phone);
         if ($exists) {
-            throw new \Exception('该手机号已注册');
+            return $exists['id'];
         }
 
         $data = [
             'phone'    => $phone,
             'nickname' => $nickname ?: '摩托学员',
             'status'   => 1,
+            'password' => password_hash($password ?: $deviceId, PASSWORD_DEFAULT),
+            'device_id' => $deviceId,
+            'create_time' => date('Y-m-d H:i:s'),
         ];
 
-        if (!empty($password)) {
-            $data['password'] = password_hash($password, PASSWORD_DEFAULT);
-        }
-
         return $this->insertGetId($data);
+    }
+
+    /**
+     * 更新用户设备码
+     */
+    public function updateDeviceId($userId, $deviceId)
+    {
+        return $this->where('id', $userId)->update([
+            'device_id' => $deviceId,
+            'update_time' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    /**
+     * 验证设备ID
+     */
+    public function verifyDeviceId($userId, $deviceId)
+    {
+        $user = $this->findById($userId);
+        if (!$user) {
+            return false;
+        }
+        
+        // 如果用户已绑定设备ID，必须匹配
+        if (!empty($user['device_id'])) {
+            return $user['device_id'] === $deviceId;
+        }
+        
+        return true;
     }
 
     /**

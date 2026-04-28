@@ -17,6 +17,7 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL COMMENT '密码(加密存储)',
   `nickname` varchar(50) DEFAULT '' COMMENT '昵称',
   `avatar` varchar(255) DEFAULT '' COMMENT '头像URL',
+  `device_id` varchar(100) DEFAULT '' COMMENT '设备码(绑定设备)',
   `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '账号状态: 1=正常, 0=禁用',
   `last_login_time` datetime DEFAULT NULL COMMENT '最后登录时间',
   `last_login_ip` varchar(50) DEFAULT NULL COMMENT '最后登录IP',
@@ -25,6 +26,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_phone` (`phone`),
   KEY `idx_status` (`status`),
+  KEY `idx_device_id` (`device_id`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
@@ -312,6 +314,13 @@ INSERT INTO `chapter` (`subject`, `parent_id`, `name`, `sort`, `status`) VALUES
 (4, 0, '机动车保险常识', 5, 1);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================================
+-- 更新已有数据库：添加设备码字段
+-- 如已存在数据库，执行此语句
+-- ============================================================
+-- ALTER TABLE `user` ADD COLUMN `device_id` varchar(100) DEFAULT '' COMMENT '设备码(绑定设备)' AFTER `avatar`;
+-- ALTER TABLE `user` ADD INDEX `idx_device_id` (`device_id`);
 
 -- ============================================================
 -- 脚本执行完成
