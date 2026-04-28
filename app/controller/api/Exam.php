@@ -159,8 +159,3 @@ class Exam
         return jsonSuccess($result);
     }
 }
-
-// 辅助函数
-function runtime_path() {
-    return dirname(__DIR__, 3) . '/runtime/';
-}

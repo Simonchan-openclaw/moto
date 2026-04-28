@@ -173,8 +173,3 @@ class User
         return jsonSuccess(['success' => true], '设备绑定成功');
     }
 }
-
-// 辅助函数
-function runtime_path() {
-    return dirname(__DIR__, 2) . '/runtime/';
-}

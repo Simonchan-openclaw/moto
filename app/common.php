@@ -22,8 +22,11 @@ function getCurrentUserId()
 
 /**
  * 生成 JWT Token
+ * @param int $user_id 用户ID
+ * @param array $options 可选参数 ['type' => 'admin|coach|user']
+ * @param int $expire 过期时间（秒）
  */
-function generateToken($user_id, $expire = 604800)
+function generateToken($user_id, $options = [], $expire = 604800)
 {
     $key = env('JWT_SECRET', 'moto_exam_jwt_secret_key_2024');
     $time = time();
@@ -37,7 +40,20 @@ function generateToken($user_id, $expire = 604800)
         'user_id' => $user_id,
     ];
     
+    // 添加额外参数
+    if (isset($options['type'])) {
+        $payload['type'] = $options['type'];
+    }
+    
     return JWT::encode($payload, $key, 'HS256');
+}
+
+/**
+ * 生成 Token（generateToken 的别名）
+ */
+function createToken($user_id, $options = [], $expire = 604800)
+{
+    return generateToken($user_id, $options, $expire);
 }
 
 /**
