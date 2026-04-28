@@ -1,40 +1,25 @@
 <?php
 /**
- * 入口文件
+ * 入口文件 - ThinkPHP8
  */
 
 // 定义应用目录
 define('APP_PATH', __DIR__ . '/../app/');
 
-// 定义根目录
-define('ROOT_PATH', __DIR__ . '/../');
+// 加载 Composer 自动加载
+require __DIR__ . '/../vendor/autoload.php';
 
-// 定义运行时目录
-define('RUNTIME_PATH', __DIR__ . '/../runtime/');
+// 创建应用实例
+$app = new \think\App();
 
-// 加载配置
-require_once __DIR__ . '/../config.php';
+// 绑定默认类
+$app->bind('index');
 
-// 加载 Db 类
-require_once __DIR__ . '/../library/Db.php';
+// 执行应用
+$http = $app->http;
 
-// 设置时区
-date_default_timezone_set('Asia/Shanghai');
+$response = $http->run();
 
-// 设置错误报告
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+$response->send();
 
-// 记录日志
-function log_message($level, $message) {
-    $logFile = RUNTIME_PATH . 'logs/' . date('Y-m-d') . '.log';
-    $dir = dirname($logFile);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-    $timestamp = date('Y-m-d H:i:s');
-    file_put_contents($logFile, "[{$timestamp}] {$level}: {$message}\n", FILE_APPEND);
-}
-
-// 加载路由
-require_once __DIR__ . '/../router.php';
+$http->end($response);
