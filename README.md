@@ -191,14 +191,30 @@ EXIT;
 
 ### 3. 项目部署
 
+> ⚠️ **重要**：ThinkPHP8 的配置文件（`.env`）和安全文件（`runtime/`）不会提交到 GitHub，部署后必须手动创建！
+
 #### 方式一：Git 拉取（推荐）
 
 ```bash
 # 进入网站目录
 cd /www/wwwroot/moto.zd16688.com
 
-# 克隆仓库
+# 克隆仓库（如果是全新部署）
 git clone https://github.com/Simonchan-openclaw/moto.git .
+
+# 如果是更新部署
+# git pull origin main
+
+# ⚠️ 【重要】创建运行时目录（ThinkPHP8 必须！）
+mkdir -p runtime storage
+chmod -R 777 runtime/ storage/
+
+# ⚠️ 【重要】复制环境变量配置
+cp .env.example .env
+
+# ⚠️ 【重要】编辑 .env，修改数据库密码
+vi .env
+# 修改：DB_PASSWORD = your_db_password 为实际密码
 
 # 安装 Composer 依赖
 composer install --no-dev
@@ -259,6 +275,9 @@ REDIS_PASSWORD =
 ```bash
 cd /www/wwwroot/moto.zd16688.com
 
+# 确保运行时目录存在
+mkdir -p runtime storage
+
 # 设置运行时目录权限
 chmod -R 777 runtime/
 
@@ -268,6 +287,8 @@ chmod -R 777 storage/
 # 设置配置目录权限
 chmod -R 755 config/
 ```
+
+> ⚠️ **首次部署必须执行 `mkdir -p runtime storage`，否则网站无法打开！**
 
 ### 7. Nginx 配置
 
