@@ -52,29 +52,26 @@ class User
     /**
      * 用户登录/注册
      * POST /api/user/login
+     * @param string $phone 手机号
+     * @param string $deviceId 设备码（替代验证码）
      */
     public function login()
     {
         $phone = input('post.phone', '');
-        $code = input('post.code', '');
+        $deviceId = input('post.code', ''); // 前端传入的是设备码
 
-        if (empty($phone) || empty($code)) {
-            return jsonError('手机号和验证码不能为空');
+        if (empty($phone) || empty($deviceId)) {
+            return jsonError('手机号和设备码不能为空');
         }
 
         if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
             return jsonError('手机号格式不正确');
         }
 
-        // 验证验证码（简化版）
-        $cacheFile = runtime_path() . 'codes/' . md5($phone) . '.txt';
-        if (file_exists($cacheFile)) {
-            $cachedCode = file_get_contents($cacheFile);
-            if ($cachedCode !== $code && $code !== '123456') { // 123456为万能测试码
-                return jsonError('验证码错误');
-            }
-        } elseif ($code !== '123456') {
-            return jsonError('验证码错误或已过期');
+        // 简化验证：只要设备码非空即可
+        // 实际生产环境可在此添加设备绑定验证逻辑
+        if (strlen($deviceId) < 8) {
+            return jsonError('设备码无效');
         }
 
         // 查找或创建用户

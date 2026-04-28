@@ -165,6 +165,19 @@ var App = {
             case 'exam-start':
                 this.updateExamStartStatus();
                 break;
+            case 'login':
+                this.showLoginPage();
+                break;
+        }
+    },
+
+    /**
+     * 显示登录页
+     */
+    showLoginPage: function() {
+        var deviceCodeEl = document.getElementById('deviceCodeDisplay');
+        if (deviceCodeEl) {
+            deviceCodeEl.textContent = this.getDeviceId();
         }
     },
 
@@ -265,19 +278,16 @@ var App = {
      */
     doLogin: function() {
         var phone = document.getElementById('loginPhone').value.trim();
-        var code = document.getElementById('loginCode').value.trim();
+        var countryCode = document.getElementById('countryCode').value;
+        var deviceId = this.getDeviceId();
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
             return;
         }
 
-        if (!code) {
-            this.showToast('请输入验证码');
-            return;
-        }
-
-        API.login(phone, code).then(function(res) {
+        // 使用设备码作为登录凭证
+        API.login(phone, deviceId).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 
