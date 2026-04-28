@@ -4,6 +4,34 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
+// 加载 .env 环境变量
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            $_ENV[$key] = $value;
+            putenv("$key=$value");
+        }
+    }
+}
+
+/**
+ * 获取环境变量
+ */
+function env($key, $default = '')
+{
+    $value = getenv($key);
+    if ($value === false) {
+        $value = $_ENV[$key] ?? $default;
+    }
+    return $value;
+}
+
 /**
  * 获取运行时目录
  */
@@ -28,7 +56,7 @@ function getCurrentUserId()
  */
 function generateToken($user_id, $options = [], $expire = 604800)
 {
-    $key = env('JWT_SECRET', 'moto_exam_jwt_secret_key_2024');
+    $key = env('JWT_SECRET', 'moto_exam_jwt_secret_key_2024_very_long_and_secure_key');
     $time = time();
     
     $payload = [
@@ -61,7 +89,7 @@ function createToken($user_id, $options = [], $expire = 604800)
  */
 function verifyToken($token)
 {
-    $key = env('JWT_SECRET', 'moto_exam_jwt_secret_key_2024');
+    $key = env('JWT_SECRET', 'moto_exam_jwt_secret_key_2024_very_long_and_secure_key');
     
     try {
         $decoded = JWT::decode($token, new Key($key, 'HS256'));
