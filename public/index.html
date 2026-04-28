@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>摩托车笔试题库</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 首页 -->
+        <div id="page-home" class="page">
+            <div class="header">
+                <h1>🏍️ 摩托车笔试题库</h1>
+                <p>科目一 / 科目四 练习系统</p>
+            </div>
+            <div class="user-info" id="userInfo">
+                <div class="avatar">
+                    <img src="images/avatar.png" alt="头像">
+                </div>
+                <div class="info">
+                    <span class="nickname">未登录</span>
+                    <span class="status">点击登录</span>
+                </div>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="showPage('chapters', {subject: 1})">
+                    <div class="icon">📚</div>
+                    <span>科目一</span>
+                    <small>道路交通安全法律</small>
+                </div>
+                <div class="menu-item" onclick="showPage('chapters', {subject: 4})">
+                    <div class="icon">🎓</div>
+                    <span>科目四</span>
+                    <small>安全文明驾驶</small>
+                </div>
+                <div class="menu-item" onclick="showPage('error-list')">
+                    <div class="icon">❌</div>
+                    <span>错题本</span>
+                    <small>专项练习</small>
+                </div>
+                <div class="menu-item" onclick="showPage('collection-list')">
+                    <div class="icon">⭐</div>
+                    <span>收藏</span>
+                    <small>我的收藏</small>
+                </div>
+                <div class="menu-item" onclick="showPage('exam-start')">
+                    <div class="icon">📝</div>
+                    <span>模拟考试</span>
+                    <small>限时作答</small>
+                </div>
+                <div class="menu-item" onclick="showPage('exam-records')">
+                    <div class="icon">📊</div>
+                    <span>成绩记录</span>
+                    <small>历史成绩</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 登录页 -->
+        <div id="page-login" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>登录</h2>
+            </div>
+            <div class="form-container">
+                <div class="form-group">
+                    <label>手机号</label>
+                    <div class="phone-input">
+                        <select id="countryCode" class="country-code">
+                            <option value="86" selected>+86 中国大陆</option>
+                            <option value="852">+852 香港</option>
+                            <option value="853">+853 澳门</option>
+                            <option value="886">+886 台湾</option>
+                        </select>
+                        <input type="tel" id="loginPhone" placeholder="请输入手机号" maxlength="11">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>设备码</label>
+                    <div class="device-code-box">
+                        <span id="deviceCodeDisplay">加载中...</span>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="doLogin()">登录</button>
+            </div>
+        </div>
+
+        <!-- 章节列表页 -->
+        <div id="page-chapters" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2 id="chapterTitle">章节练习</h2>
+            </div>
+            <div class="chapter-list" id="chapterList">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 题目练习页 -->
+        <div id="page-practice" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('chapters')">← 返回</div>
+                <h2>练习</h2>
+            </div>
+            <div class="question-container" id="questionContainer">
+                <div class="question-info">
+                    <span class="chapter-name"></span>
+                    <span class="question-type"></span>
+                </div>
+                <div class="question-content"></div>
+                <div class="options-list"></div>
+                <div class="answer-result" style="display:none;">
+                    <div class="result-icon"></div>
+                    <div class="result-text"></div>
+                    <div class="analysis"></div>
+                </div>
+                <div class="question-actions">
+                    <button class="btn-favorite" onclick="toggleFavorite()">⭐ 收藏</button>
+                    <button class="btn-next" onclick="nextQuestion()">下一题</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模拟考试开始页 -->
+        <div id="page-exam-start" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>模拟考试</h2>
+            </div>
+            <div class="exam-intro">
+                <div class="exam-icon">📝</div>
+                <h3>科目一模拟考试</h3>
+                <ul>
+                    <li>📌 题目数量: 50道</li>
+                    <li>⏱️ 考试时长: 45分钟</li>
+                    <li>✅ 及格分数: 90分</li>
+                    <li id="examActivationStatus">📱 设备绑定: 检测中...</li>
+                </ul>
+                <button class="btn-primary" onclick="startExam(1)">开始科目一考试</button>
+                <button class="btn-secondary" onclick="startExam(4)">开始科目四考试</button>
+            </div>
+        </div>
+
+        <!-- 考试进行中页 -->
+        <div id="page-exam" class="page" style="display:none;">
+            <div class="exam-header">
+                <div class="exam-timer">⏱️ <span id="examTimer">45:00</span></div>
+                <div class="exam-progress"><span id="currentQ">1</span>/<span id="totalQ">50</span></div>
+            </div>
+            <div class="question-container" id="examQuestionContainer">
+                <div class="question-info">
+                    <span class="question-type"></span>
+                </div>
+                <div class="question-content"></div>
+                <div class="options-list"></div>
+            </div>
+            <div class="exam-footer">
+                <button class="btn-prev" onclick="prevExamQuestion()">上一题</button>
+                <button class="btn-next" onclick="nextExamQuestion()">下一题</button>
+                <button class="btn-submit" onclick="showSubmitConfirm()">交卷</button>
+            </div>
+        </div>
+
+        <!-- 考试结果页 -->
+        <div id="page-exam-result" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>考试成绩</h2>
+            </div>
+            <div class="result-container" id="resultContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 错题本页 -->
+        <div id="page-error-list" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>错题本</h2>
+            </div>
+            <div class="list-container" id="errorListContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 收藏页 -->
+        <div id="page-collection-list" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>我的收藏</h2>
+            </div>
+            <div class="list-container" id="collectionListContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 成绩记录页 -->
+        <div id="page-exam-records" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="showPage('home')">← 返回</div>
+                <h2>成绩记录</h2>
+            </div>
+            <div class="list-container" id="examRecordsContainer">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- Toast提示 -->
+        <div id="toast" class="toast" style="display:none;">
+            <span id="toastText"></span>
+        </div>
+
+        <!-- 加载中 -->
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <span>加载中...</span>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
