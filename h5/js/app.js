@@ -162,6 +162,29 @@ var App = {
             case 'exam-records':
                 this.loadExamRecords();
                 break;
+            case 'exam-start':
+                this.updateExamStartStatus();
+                break;
+        }
+    },
+
+    /**
+     * 更新考试开始页状态
+     */
+    updateExamStartStatus: function() {
+        var statusEl = document.getElementById('examActivationStatus');
+        if (!statusEl) return;
+
+        var isAct = this.isActivated();
+        if (!this.user) {
+            statusEl.textContent = '📱 状态: 请先登录';
+            statusEl.style.color = '#999';
+        } else if (!isAct) {
+            statusEl.textContent = '📱 状态: 请先联系教练激活';
+            statusEl.style.color = '#ff4d4f';
+        } else {
+            statusEl.textContent = '📱 状态: 已激活';
+            statusEl.style.color = '#52c41a';
         }
     },
 
