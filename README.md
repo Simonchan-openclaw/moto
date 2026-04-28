@@ -24,41 +24,44 @@
 
 ```
 moto/
-├── backend/                    # ThinkPHP8 后端源码
-│   ├── app/                   # 应用目录
-│   │   ├── controller/        # 控制器
-│   │   │   ├── api/           # API接口控制器
-│   │   │   ├── admin/         # 管理后台控制器
-│   │   │   ├── coach/         # 教练端控制器
-│   │   │   └── student/       # 学员端控制器
-│   │   ├── model/             # 数据模型
-│   │   ├── middleware/         # 中间件
-│   │   ├── exception/          # 异常处理
-│   │   └── common.php         # 公共函数
-│   ├── config/                # 配置文件
-│   │   ├── app.php            # 应用配置
-│   │   ├── database.php       # 数据库配置
-│   │   ├── jwt.php            # JWT配置
-│   │   └── middleware.php     # 中间件配置
-│   ├── route/                 # 路由定义
-│   │   └── app.php            # 路由规则
-│   ├── public/                # Web入口目录（必须！）
-│   │   └── index.php          # 入口文件
-│   ├── runtime/               # 运行时目录（需777权限）
-│   ├── storage/               # 存储目录（需777权限）
-│   ├── composer.json          # Composer依赖定义
-│   ├── .env.example           # 环境变量示例
-│   └── .htaccess              # Apache伪静态配置
-├── h5/                        # H5 移动端（纯静态）
-│   ├── index.html              # 学员端入口
+├── app/                      # ThinkPHP8 应用目录
+│   ├── controller/           # 控制器
+│   │   ├── api/              # API接口控制器
+│   │   ├── admin/            # 管理后台控制器
+│   │   ├── coach/            # 教练端控制器
+│   │   └── student/          # 学员端控制器
+│   ├── model/                # 数据模型
+│   ├── middleware/            # 中间件
+│   └── exception/            # 异常处理
+├── config/                   # 配置文件
+│   ├── app.php               # 应用配置
+│   ├── database.php          # 数据库配置
+│   ├── jwt.php                # JWT配置
+│   └── middleware.php        # 中间件配置
+├── route/                    # 路由定义
+│   └── app.php               # 路由规则
+├── public/                   # Web入口目录（必须！）
+│   ├── index.php              # 入口文件
+│   └── static/               # 静态资源
+├── view/                     # 视图模板
+├── admin/                    # 管理后台前端（HTML纯静态）
+│   ├── index.html             # 管理后台入口
 │   ├── css/                   # 样式文件
-│   ├── js/                    # JavaScript 文件
-│   └── images/                # 图片资源
-├── docs/                      # 项目文档
-│   └── api.md                 # API 接口文档
-├── sql/                       # 数据库 SQL 文件
+│   └── js/                    # JavaScript文件
+├── h5/                       # H5移动端（HTML纯静态）
+│   ├── index.html             # 学员端入口
+│   ├── coach.html             # 教练端入口
+│   ├── css/                   # 样式文件
+│   ├── js/                    # JavaScript文件
+│   └── images/               # 图片资源
+├── sql/                      # 数据库SQL文件
 │   └── moto_db.sql            # 数据库建表脚本
-└── README.md                  # 项目说明文档
+├── docs/                     # 项目文档
+│   └── api.md                # API接口文档
+├── composer.json             # Composer依赖定义
+├── .env.example              # 环境变量示例
+├── LICENSE.txt               # 许可证
+└── README.md                 # 项目说明文档
 ```
 
 ## 🚀 功能模块
@@ -197,14 +200,8 @@ cd /www/wwwroot/moto.zd16688.com
 # 克隆仓库
 git clone https://github.com/Simonchan-openclaw/moto.git .
 
-# 切换到后端目录
-cd moto/backend
-
 # 安装 Composer 依赖
 composer install --no-dev
-
-# 返回上级目录
-cd ..
 ```
 
 #### 方式二：手动上传
@@ -215,17 +212,17 @@ cd ..
 
 ```bash
 # 导入 SQL 文件
-mysql -u root -p moto_db < /www/wwwroot/moto.zd16688.com/moto/sql/moto_db.sql
+mysql -u root -p moto_db < /www/wwwroot/moto.zd16688.com/sql/moto_db.sql
 
 # 如果指定了数据库用户
-mysql -u moto_user -p moto_db < /www/wwwroot/moto.zd16688.com/moto/sql/moto_db.sql
+mysql -u moto_user -p moto_db < /www/wwwroot/moto.zd16688.com/sql/moto_db.sql
 ```
 
 ### 5. 配置环境变量
 
 ```bash
-# 进入后端目录
-cd /www/wwwroot/moto.zd16688.com/moto/backend
+# 进入项目根目录
+cd /www/wwwroot/moto.zd16688.com
 
 # 复制环境变量示例文件
 cp .env.example .env
@@ -260,7 +257,7 @@ REDIS_PASSWORD =
 ### 6. 设置目录权限
 
 ```bash
-cd /www/wwwroot/moto.zd16688.com/moto/backend
+cd /www/wwwroot/moto.zd16688.com
 
 # 设置运行时目录权限
 chmod -R 777 runtime/
@@ -268,19 +265,19 @@ chmod -R 777 runtime/
 # 设置存储目录权限
 chmod -R 777 storage/
 
-# 设置配置目录权限（可选）
+# 设置配置目录权限
 chmod -R 755 config/
 ```
 
 ### 7. Nginx 配置
 
-> **重要**：ThinkPHP8 的 Web 根目录必须是 `backend/public/`，不是 `backend/`！
+> **重要**：ThinkPHP8 的 Web 根目录必须是 `public/`，不是项目根目录！
 
 ```nginx
 server {
     listen 80;
     server_name moto.zd16688.com;
-    root /www/wwwroot/moto.zd16688.com/moto/backend/public;
+    root /www/wwwroot/moto.zd16688.com/public;
     index index.php index.html;
 
     # 防止访问 .env 文件
@@ -306,9 +303,9 @@ server {
         fastcgi_read_timeout 300;
     }
 
-    # H5 静态文件（将 /h5 路径映射到 H5 目录）
+    # H5 移动端静态文件
     location /h5 {
-        alias /www/wwwroot/moto.zd16688.com/moto/h5;
+        alias /www/wwwroot/moto.zd16688.com/h5;
         index index.html;
         try_files $uri $uri/ /h5/index.html;
         
@@ -317,6 +314,13 @@ server {
             expires 30d;
             add_header Cache-Control "public, immutable";
         }
+    }
+
+    # 管理后台静态文件
+    location /admin {
+        alias /www/wwwroot/moto.zd16688.com/admin;
+        index index.html;
+        try_files $uri $uri/ /admin/index.html;
     }
 
     # 禁止访问隐藏文件
@@ -336,7 +340,7 @@ server {
 server {
     listen 443 ssl http2;
     server_name moto.zd16688.com;
-    root /www/wwwroot/moto.zd16688.com/moto/backend/public;
+    root /www/wwwroot/moto.zd16688.com/public;
     index index.php index.html;
 
     # SSL 证书配置
@@ -393,8 +397,11 @@ curl http://moto.zd16688.com/api/index/health
 # 测试 H5 访问
 curl http://moto.zd16688.com/h5/
 
-# 测试数据库连接（在后端目录执行）
-cd /www/wwwroot/moto.zd16688.com/moto/backend
+# 测试管理后台访问
+curl http://moto.zd16688.com/admin/
+
+# 测试数据库连接（在项目根目录执行）
+cd /www/wwwroot/moto.zd16688.com
 php think
 ```
 
@@ -404,6 +411,7 @@ php think
 |------|------|
 | API 基础地址 | `https://moto.zd16688.com/api/` |
 | H5 学员端 | `https://moto.zd16688.com/h5/` |
+| 管理后台 | `https://moto.zd16688.com/admin/` |
 | 默认管理员账号 | `admin` |
 | 默认管理员密码 | `admin123` |
 
@@ -424,7 +432,7 @@ ls -la /var/run/php/
 #### Q2: 提示权限不足
 
 ```bash
-cd /www/wwwroot/moto.zd16688.com/moto/backend
+cd /www/wwwroot/moto.zd16688.com
 chmod -R 777 runtime/
 chmod -R 777 storage/
 chmod -R 755 .env
@@ -455,22 +463,31 @@ tail -f runtime/log/$(date +Y-m-d).log
 
 ```bash
 # 检查 Nginx 反向代理配置
-# 确保 /api/ 请求指向 backend/public/index.php
+# 确保 /api/ 请求指向 public/index.php
 
 # 检查 H5 的 API 地址配置
-vi /www/wwwroot/moto.zd16688.com/moto/h5/js/config.js
+vi /www/wwwroot/moto.zd16688.com/h5/js/config.js
+```
+
+#### Q6: 管理后台无法访问
+
+```bash
+# 检查 Nginx 配置
+# 确保 /admin 路径指向 admin/ 目录
+
+# 检查管理后台文件是否存在
+ls -la /www/wwwroot/moto.zd16688.com/admin/
 ```
 
 ### 13. 更新部署
 
 ```bash
-cd /www/wwwroot/moto.zd16688.com/moto
+cd /www/wwwroot/moto.zd16688.com
 
 # 拉取最新代码
 git pull origin main
 
 # 更新 Composer 依赖（如有更新）
-cd backend
 composer update --no-dev
 
 # 清除缓存
