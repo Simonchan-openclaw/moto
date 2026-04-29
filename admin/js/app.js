@@ -37,7 +37,6 @@ var Admin = {
             '<input type="password" class="form-input" id="loginPassword" placeholder="请输入密码">' +
             '</div>' +
             '<button class="btn btn-primary" style="width:100%;padding:12px;" onclick="Admin.doLogin()">登录</button>' +
-            '<p style="text-align:center;margin-top:15px;color:#999;font-size:12px;">测试账号: admin / admin123</p>' +
             '</div></div>';
 
         document.body.innerHTML = html;
@@ -52,21 +51,32 @@ var Admin = {
             return;
         }
 
-        // 模拟登录（测试用）
-        if (username === 'admin' && password === 'admin123') {
-            localStorage.setItem('admin_token', Config.ADMIN_TOKEN);
-            location.reload();
-            return;
-        }
-
         var self = this;
+        this.showLoading();
+
         API.login(username, password).then(function(res) {
+            self.hideLoading();
             // 保存返回的Token
             localStorage.setItem('admin_token', res.data.token);
+            localStorage.setItem('admin_info', JSON.stringify(res.data.adminInfo || {}));
             location.reload();
         }).catch(function(err) {
+            self.hideLoading();
             self.showToast(err.message || '登录失败');
         });
+    },
+
+    // 模拟登录用于测试（不调用真实API）
+    mockLogin: function() {
+        // 生成一个测试用token
+        var mockToken = 'mock_admin_token_' + Date.now();
+        localStorage.setItem('admin_token', mockToken);
+        localStorage.setItem('admin_info', JSON.stringify({
+            id: 1,
+            username: 'admin',
+            nickname: '系统管理员'
+        }));
+        location.reload();
     },
 
     logout: function() {
@@ -81,8 +91,19 @@ var Admin = {
                 e.preventDefault();
                 var page = this.dataset.page;
                 self.loadPage(page);
+                // 移动端点击后关闭菜单
+                if (window.innerWidth <= 768) {
+                    document.getElementById('navMenu').classList.remove('show');
+                }
             });
         });
+    },
+
+    toggleMenu: function() {
+        var navMenu = document.getElementById('navMenu');
+        if (navMenu) {
+            navMenu.classList.toggle('show');
+        }
     },
 
     loadPage: function(page) {

@@ -11,10 +11,15 @@
         <!-- 左侧菜单 -->
         <aside class="sidebar">
             <div class="logo">
+                <div class="menu-toggle" onclick="Admin.toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
                 <span class="logo-icon">🏍️</span>
                 <span class="logo-text">题库管理</span>
             </div>
-            <nav class="nav-menu">
+            <nav class="nav-menu" id="navMenu">
                 <a href="#" class="nav-item active" data-page="dashboard">
                     <span class="nav-icon">📊</span>
                     <span>控制台</span>
@@ -58,7 +63,7 @@
                     <span id="pageTitle">控制台</span>
                 </div>
                 <div class="user-info">
-                    <span class="user-name">管理员</span>
+                    <span class="user-name" id="userName">管理员</span>
                     <button class="btn-logout" onclick="Admin.logout()">退出</button>
                 </div>
             </header>
