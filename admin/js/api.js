@@ -25,7 +25,9 @@ var API = {
 
             xhr.open(method, apiUrl, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', 'Bearer ' + Config.ADMIN_TOKEN);
+            // 从 localStorage 获取 token
+            var token = localStorage.getItem('admin_token') || '';
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
 
             xhr.onload = function() {
                 if (showLoading !== false) {
