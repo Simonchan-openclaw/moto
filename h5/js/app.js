@@ -211,7 +211,6 @@ var App = {
     doRegister: function() {
         var phone = document.getElementById('regPhone').value.trim();
         var deviceId = this.getDeviceId();
-        var nickname = document.getElementById('regNickname').value.trim() || '';
         var inviteCode = localStorage.getItem('invite_code') || '';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
@@ -221,7 +220,7 @@ var App = {
 
         // 调用登录API（带邀请码，会创建新用户并绑定教练）
         var self = this;
-        API.login(phone, deviceId, nickname, inviteCode).then(function(res) {
+        API.register(phone, deviceId, inviteCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

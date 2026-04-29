@@ -50,19 +50,15 @@ class User
     }
 
     /**
-     * 用户登录/注册
+     * 用户登录
      * POST /api/user/login
      * @param string $phone 手机号
-     * @param string $deviceId 设备码（替代验证码）
-     * @param string $nickname 昵称（首次注册时传入）
-     * @param string $inviteCode 邀请码（可选）
+     * @param string $deviceId 设备码
      */
     public function login()
     {
         $phone = input('post.phone', '');
-        $deviceId = input('post.code', ''); // 前端传入的是设备码
-        $nickname = input('post.nickname', ''); // 昵称（首次注册时传入）
-        $inviteCode = input('post.invite_code', ''); // 邀请码
+        $deviceId = input('post.code', '');
 
         if (empty($phone) || empty($deviceId)) {
             return jsonError('手机号和设备码不能为空');
@@ -72,45 +68,26 @@ class User
             return jsonError('手机号格式不正确');
         }
 
-        // 简化验证：只要设备码非空即可
         if (strlen($deviceId) < 8) {
             return jsonError('设备码无效');
         }
 
-        // 如果没有传入昵称，使用默认值
-        if (empty($nickname)) {
-            $nickname = '摩托学员';
-        }
-
-        // 解析邀请码
-        $invCoachId = 0;
-        if (!empty($inviteCode)) {
-            try {
-                $decoded = json_decode(base64_decode($inviteCode), true);
-                if (isset($decoded['coach_id']) && intval($decoded['coach_id']) > 0) {
-                    $invCoachId = intval($decoded['coach_id']);
-                }
-            } catch (\Exception $e) {
-                // 无效的邀请码，忽略
-            }
-        }
-
-        // 查找或创建用户
+        // 查找用户
         $user = $this->model->findByPhone($phone);
 
+        // 用户不存在，返回未注册错误
         if (!$user) {
-            // 自动注册，保存设备码和昵称和邀请教练ID
-            $userId = $this->model->register($phone, '', $nickname, $deviceId, $invCoachId);
-            $user = $this->model->findById($userId);
-        } else {
-            // 已存在用户，检查设备码是否匹配
-            if (!empty($user['device_id']) && $user['device_id'] !== $deviceId) {
-                return jsonError('该账号已绑定其他设备，请使用原设备登录');
-            }
-            // 如果用户没有设备码，记录当前设备码
-            if (empty($user['device_id'])) {
-                $this->model->updateDeviceId($user['id'], $deviceId);
-            }
+            return jsonError('该手机号未注册，请先注册');
+        }
+
+        // 已存在用户，检查设备码是否匹配
+        if (!empty($user['device_id']) && $user['device_id'] !== $deviceId) {
+            return jsonError('该账号已绑定其他设备，请使用原设备登录');
+        }
+
+        // 如果用户没有设备码，记录当前设备码
+        if (empty($user['device_id'])) {
+            $this->model->updateDeviceId($user['id'], $deviceId);
         }
 
         // 生成JWT Token
@@ -127,6 +104,70 @@ class User
                 'create_time' => $user['create_time']
             ]
         ], '登录成功');
+    }
+
+    /**
+     * 用户注册
+     * POST /api/user/register
+     * @param string $phone 手机号
+     * @param string $deviceId 设备码
+     * @param string $inviteCode 邀请码（可选）
+     */
+    public function register()
+    {
+        $phone = input('post.phone', '');
+        $deviceId = input('post.code', '');
+        $inviteCode = input('post.invite_code', '');
+
+        if (empty($phone) || empty($deviceId)) {
+            return jsonError('手机号和设备码不能为空');
+        }
+
+        if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
+            return jsonError('手机号格式不正确');
+        }
+
+        if (strlen($deviceId) < 8) {
+            return jsonError('设备码无效');
+        }
+
+        // 检查是否已注册
+        $exists = $this->model->findByPhone($phone);
+        if ($exists) {
+            return jsonError('该手机号已注册，请直接登录');
+        }
+
+        // 解析邀请码
+        $invCoachId = 0;
+        if (!empty($inviteCode)) {
+            try {
+                $decoded = json_decode(base64_decode($inviteCode), true);
+                if (isset($decoded['coach_id']) && intval($decoded['coach_id']) > 0) {
+                    $invCoachId = intval($decoded['coach_id']);
+                }
+            } catch (\Exception $e) {
+                // 无效的邀请码，忽略
+            }
+        }
+
+        // 创建用户
+        $userId = $this->model->register($phone, '', '摩托学员', $deviceId, $invCoachId);
+        $user = $this->model->findById($userId);
+
+        // 生成JWT Token
+        $token = createToken($user['id']);
+
+        return jsonSuccess([
+            'token'    => $token,
+            'userInfo' => [
+                'id'          => $user['id'],
+                'phone'       => $user['phone'],
+                'nickname'    => $user['nickname'],
+                'avatar'      => $user['avatar'] ?? '',
+                'inv_coach_id'=> $user['inv_coach_id'] ?? 0,
+                'create_time' => $user['create_time']
+            ]
+        ], $invCoachId > 0 ? '注册成功，已绑定邀请教练' : '注册成功');
     }
 
     /**

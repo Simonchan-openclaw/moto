@@ -6,6 +6,7 @@ Route::group('api', function () {
     // 无需认证
     Route::post('user/send_code', 'api.User/sendCode');
     Route::post('user/login', 'api.User/login');
+    Route::post('user/register', 'api.User/register');
     Route::get('vip/status', 'api.Vip/status');
     
     // 管理后台登录（无需认证）

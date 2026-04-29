@@ -401,9 +401,6 @@ var CoachApp = {
 
             // 生成二维码
             self.generateQRCode(qrcodeBox, inviteUrl);
-
-            // 加载邀请列表
-            self.loadInviteList();
         }).catch(function(err) {
             qrcodeBox.innerHTML = '<div class="qrcode-loading">加载失败，请重试</div>';
             self.showToast('获取邀请信息失败');
