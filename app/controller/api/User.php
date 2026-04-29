@@ -59,6 +59,7 @@ class User
     {
         $phone = input('post.phone', '');
         $deviceId = input('post.code', '');
+        $countryCode = input('post.country_code', '86');
 
         if (empty($phone) || empty($deviceId)) {
             return jsonError('手机号和设备码不能为空');
@@ -72,8 +73,8 @@ class User
             return jsonError('设备码无效');
         }
 
-        // 查找用户
-        $user = $this->model->findByPhone($phone);
+        // 查找用户（按区域码+手机号）
+        $user = $this->model->findByPhone($phone, $countryCode);
 
         // 用户不存在，返回未注册错误
         if (!$user) {
@@ -120,6 +121,7 @@ class User
         $password = input('post.password', '');
         $deviceId = input('post.device_id', '');
         $inviteCode = input('post.invite_code', '');
+        $countryCode = input('post.country_code', '86');
 
         if (empty($phone)) {
             return jsonError('手机号不能为空');
@@ -141,8 +143,8 @@ class User
             return jsonError('设备码无效');
         }
 
-        // 检查是否已注册
-        $exists = $this->model->findByPhone($phone);
+        // 检查是否已注册（同一区域码下唯一）
+        $exists = $this->model->findByPhone($phone, $countryCode);
         if ($exists) {
             return jsonError('该手机号已注册，请直接登录');
         }
@@ -168,7 +170,7 @@ class User
 
         // 创建用户（密码需要加密）
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $userId = $this->model->register($phone, $passwordHash, $name, $deviceId, $invCoachId);
+        $userId = $this->model->register($phone, $passwordHash, $name, $deviceId, $invCoachId, $countryCode);
         $user = $this->model->findById($userId);
 
         // 生成JWT Token

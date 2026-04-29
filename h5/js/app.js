@@ -208,6 +208,7 @@ var App = {
         var inviteCodeEl = document.getElementById('inviteCoachName');
         var inviteCoachGroup = document.getElementById('inviteCoachGroup');
         var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
+        var countryCode = document.getElementById('regCountryCode') ? document.getElementById('regCountryCode').value : '86';
         var phoneInput = document.getElementById('regPhone');
         var phoneCodeSelect = document.getElementById('regCountryCode');
         
@@ -279,6 +280,7 @@ var App = {
         var password = document.getElementById('regPassword').value;
         var deviceId = this.getDeviceId();
         var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
+        var countryCode = document.getElementById('regCountryCode') ? document.getElementById('regCountryCode').value : '86';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
@@ -297,7 +299,7 @@ var App = {
 
         // 调用注册API
         var self = this;
-        API.register(phone, name, password, deviceId, inviteCode).then(function(res) {
+        API.register(phone, name, password, deviceId, inviteCode, countryCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 
@@ -430,7 +432,7 @@ var App = {
 
         // 使用设备码作为登录凭证
         var self = this;
-        API.login(phone, deviceId).then(function(res) {
+        API.login(phone, deviceId, countryCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

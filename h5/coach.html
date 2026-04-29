@@ -170,7 +170,15 @@
             <div class="form-container">
                 <div class="form-group">
                     <label>学员手机号</label>
-                    <input type="tel" id="studentPhone" placeholder="请输入学员手机号" maxlength="11">
+                    <div class="phone-input">
+                        <select id="studentCountryCode" class="country-code">
+                            <option value="86" selected>+86 中国大陆</option>
+                            <option value="852">+852 香港</option>
+                            <option value="853">+853 澳门</option>
+                            <option value="886">+886 台湾</option>
+                        </select>
+                        <input type="tel" id="studentPhone" placeholder="请输入学员手机号" maxlength="11">
+                    </div>
                 </div>
                 <div class="activation-info">
                     <div class="info-row">

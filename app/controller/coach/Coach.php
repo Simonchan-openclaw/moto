@@ -292,6 +292,7 @@ class Coach
     {
         $coachId = $this->getCurrentCoachId();
         $studentPhone = input('post.student_phone', '');
+        $countryCode = input('post.country_code', '86');
 
         if (empty($studentPhone)) {
             return jsonError('学员手机号不能为空');
@@ -315,7 +316,7 @@ class Coach
 
         // 查找学员信息（检查是否有邀请教练）
         $userModel = new \app\model\User();
-        $student = $userModel->findByPhone($studentPhone);
+        $student = $userModel->findByPhone($studentPhone, $countryCode);
         $invCoachId = 0;
         $hasInvited = false;
 

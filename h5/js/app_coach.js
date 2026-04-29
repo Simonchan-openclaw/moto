@@ -215,6 +215,7 @@ var CoachApp = {
     },
 
     doActivate: function() {
+        var countryCode = document.getElementById('studentCountryCode').value;
         var studentPhone = document.getElementById('studentPhone').value.trim();
 
         if (!studentPhone || !/^1[3-9]\d{9}$/.test(studentPhone)) {
@@ -228,8 +229,9 @@ var CoachApp = {
         }
 
         var self = this;
+        var displayPhone = countryCode !== '86' ? '+' + countryCode + ' ' + studentPhone : studentPhone;
 
-        CoachAPI.activate(studentPhone).then(function(res) {
+        CoachAPI.activate(studentPhone, countryCode).then(function(res) {
             self.balance = parseFloat(res.data.balance);
             document.getElementById('balanceAmount').textContent = '¥' + self.balance.toFixed(2);
 
@@ -243,7 +245,7 @@ var CoachApp = {
                 '<div class="code-value">' + res.data.activate_code + '</div>' +
                 '</div>' +
                 '<div class="activation-detail">' +
-                '<div class="detail-row"><span>学员手机</span><span>' + studentPhone + '</span></div>' +
+                '<div class="detail-row"><span>学员手机</span><span>' + displayPhone + '</span></div>' +
                 '<div class="detail-row"><span>扣款金额</span><span>¥' + res.data.amount + '</span></div>' +
                 '<div class="detail-row"><span>剩余余额</span><span>¥' + res.data.balance + '</span></div>' +
                 '<div class="detail-row"><span>有效期至</span><span>' + res.data.expire_at + '</span></div>' +

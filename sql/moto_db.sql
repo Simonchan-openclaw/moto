@@ -346,3 +346,15 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 脚本执行完成
 -- 数据库创建成功，包含13张数据表及初始化数据
 -- ============================================================
+
+-- ----------------------------
+-- 更新: 添加区域码字段支持港澳台
+-- ----------------------------
+ALTER TABLE `user` ADD COLUMN `country_code` varchar(10) NOT NULL DEFAULT '86' COMMENT '区域码: 86=中国大陆, 852=香港, 853=澳门, 886=台湾' AFTER `phone`;
+
+-- 重新设置唯一索引(电话+区域码组合唯一)
+ALTER TABLE `user` DROP INDEX `uk_phone`;
+ALTER TABLE `user` ADD UNIQUE KEY `uk_phone_country` (`country_code`, `phone`);
+
+ALTER TABLE `coach` ADD COLUMN `country_code` varchar(10) NOT NULL DEFAULT '86' COMMENT '区域码' AFTER `phone`;
+

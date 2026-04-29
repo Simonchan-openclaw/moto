@@ -79,8 +79,11 @@ var CoachAPI = {
     },
 
     // 激活学员
-    activate: function(studentPhone) {
-        return this.request('coach/activate', 'POST', { student_phone: studentPhone }, true);
+    activate: function(studentPhone, countryCode) {
+        return this.request('coach/activate', 'POST', { 
+            student_phone: studentPhone,
+            country_code: countryCode || '86'
+        }, true);
     },
 
     // 激活记录

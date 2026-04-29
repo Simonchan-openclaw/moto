@@ -76,23 +76,25 @@ var API = {
     /**
      * 用户登录
      */
-    login: function(phone, code) {
+    login: function(phone, code, countryCode) {
         return this.request('user/login', 'POST', {
             phone: phone,
-            code: code
+            code: code,
+            country_code: countryCode || '86'
         }, true);
     },
 
     /**
      * 用户注册
      */
-    register: function(phone, name, password, deviceId, inviteCode) {
+    register: function(phone, name, password, deviceId, inviteCode, countryCode) {
         return this.request('user/register', 'POST', {
             phone: phone,
             name: name,
             password: password,
             device_id: deviceId || '',
-            invite_code: inviteCode || ''
+            invite_code: inviteCode || '',
+            country_code: countryCode || '86'
         }, true);
     },
 

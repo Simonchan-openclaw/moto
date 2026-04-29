@@ -11,9 +11,12 @@ class User extends Model
     /**
      * 根据手机号查找用户
      */
-    public function findByPhone($phone)
+    public function findByPhone($phone, $countryCode = '86')
     {
-        return $this->where('phone', $phone)->where('status', 1)->find();
+        return $this->where('phone', $phone)
+            ->where('country_code', $countryCode)
+            ->where('status', 1)
+            ->find();
     }
 
     /**
@@ -27,21 +30,23 @@ class User extends Model
     /**
      * 用户注册
      * @param string $phone 手机号
-     * @param string $password 密码（设备码）
+     * @param string $password 密码
      * @param string $nickname 昵称
      * @param string $deviceId 设备ID
      * @param int $invCoachId 邀请教练ID
+     * @param string $countryCode 区域码
      */
-    public function register($phone, $password = '', $nickname = '', $deviceId = '', $invCoachId = 0)
+    public function register($phone, $password = '', $nickname = '', $deviceId = '', $invCoachId = 0, $countryCode = '86')
     {
-        // 检查手机号是否已注册
-        $exists = $this->findByPhone($phone);
+        // 检查手机号是否已注册（同一区域码下唯一）
+        $exists = $this->findByPhone($phone, $countryCode);
         if ($exists) {
             return $exists['id'];
         }
 
         $data = [
             'phone'        => $phone,
+            'country_code' => $countryCode,
             'nickname'     => $nickname ?: '摩托学员',
             'status'       => 1,
             'password'     => password_hash($password ?: $deviceId, PASSWORD_DEFAULT),
