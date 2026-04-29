@@ -236,12 +236,26 @@ var Admin = {
             document.getElementById('statUsers').textContent = self.formatNumber(data.user_count || 0);
             document.getElementById('statCoaches').textContent = self.formatNumber(data.coach_count || 0);
             document.getElementById('statActivations').textContent = self.formatNumber(data.activation_count || 0);
+            document.getElementById('statTodayActivation').textContent = self.formatNumber(data.today_activation || 0);
+            document.getElementById('statWeekActivation').textContent = self.formatNumber(data.week_activation || 0);
+            document.getElementById('statTotalAmount').textContent = '¥' + self.formatNumber(data.total_activation_amount || 0);
+            document.getElementById('statExams').textContent = self.formatNumber(data.total_exams || 0);
+            
+            // 保存趋势数据供图表使用
+            self.activationTrend = data.activation_trend || [];
+            
+            // 渲染图表
+            self.renderDashboardCharts();
         }).catch(function() {
             // 接口失败时保持默认
             document.getElementById('statQuestions').textContent = '-';
             document.getElementById('statUsers').textContent = '-';
             document.getElementById('statCoaches').textContent = '-';
             document.getElementById('statActivations').textContent = '-';
+            document.getElementById('statTodayActivation').textContent = '-';
+            document.getElementById('statWeekActivation').textContent = '-';
+            document.getElementById('statTotalAmount').textContent = '-';
+            document.getElementById('statExams').textContent = '-';
         });
     },
 
@@ -253,57 +267,51 @@ var Admin = {
     },
 
     renderDashboardCharts: function() {
+        // 使用真实趋势数据
+        var trendData = this.activationTrend || [];
+        var dates = trendData.map(function(item) { return item.date ? item.date.substr(5) : ''; });
+        var counts = trendData.map(function(item) { return item.count || 0; });
+        
+        // 如果没有数据，使用默认值
+        if (dates.length === 0) {
+            var today = new Date();
+            for (var i = 6; i >= 0; i--) {
+                var d = new Date(today);
+                d.setDate(d.getDate() - i);
+                dates.push(d.toISOString().substr(5, 5));
+            }
+            counts = [0, 0, 0, 0, 0, 0, 0];
+        }
+        
         // 激活趋势图
-        var actChart = echarts.init(document.getElementById('dashboardActivationsChart'));
-        actChart.setOption({
-            tooltip: { trigger: 'axis' },
-            grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
-            xAxis: {
-                type: 'category',
-                data: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00']
-            },
-            yAxis: { type: 'value' },
-            series: [{
-                name: '激活次数',
-                type: 'line',
-                smooth: true,
-                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                    { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
-                    { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
-                ]) },
-                lineStyle: { color: '#667eea', width: 3 },
-                itemStyle: { color: '#667eea' },
-                data: [5, 12, 18, 25, 32, 28, 22, 15, 8]
-            }]
-        });
+        var actChartEl = document.getElementById('dashboardActivationsChart');
+        if (actChartEl) {
+            var actChart = echarts.init(actChartEl);
+            actChart.setOption({
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: dates
+                },
+                yAxis: { type: 'value', minInterval: 1 },
+                series: [{
+                    name: '激活次数',
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(102, 126, 234, 0.4)' },
+                        { offset: 1, color: 'rgba(102, 126, 234, 0.05)' }
+                    ]) },
+                    lineStyle: { color: '#667eea', width: 3 },
+                    itemStyle: { color: '#667eea' },
+                    data: counts
+                }]
+            });
+        }
+    },
 
-        // 激活状态分布饼图
-        var statusChart = echarts.init(document.getElementById('dashboardStatusChart'));
-        statusChart.setOption({
-            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-            legend: { orient: 'vertical', right: '5%', top: 'center', textStyle: { fontSize: 12 } },
-            color: ['#52c41a', '#667eea', '#ff4d4f', '#faad14'],
-            series: [{
-                type: 'pie',
-                radius: ['45%', '70%'],
-                center: ['35%', '50%'],
-                avoidLabelOverlap: false,
-                itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-                label: { show: false },
-                emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold' } },
-                data: [
-                    { value: 2150, name: '已激活' },
-                    { value: 420, name: '待激活' },
-                    { value: 280, name: '已失效' },
-                    { value: 40, name: '已退款' }
-                ]
-            }]
-        });
-
-        window.addEventListener('resize', function() {
-            actChart.resize();
-            statusChart.resize();
-        });
+    window.addEventListener('resize', function() {
     },
 
     loadRecentActivations: function() {
@@ -690,7 +698,7 @@ var Admin = {
 
         this.showLoading();
 
-        API.getUserList(params.page, params.page_size).then(function(res) {
+        API.getUserList(params).then(function(res) {
             self.hideLoading();
             var data = res.data || {};
             var list = data.list || [];

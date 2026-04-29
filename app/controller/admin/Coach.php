@@ -42,13 +42,20 @@ class Coach
             $params
         )[0]['cnt'] ?? 0;
 
-        // 获取每个教练的激活次数
+        // 获取每个教练的激活次数（从activation_log表）
         foreach ($list as &$item) {
             $activationCount = Db::query(
-                "SELECT COUNT(*) as cnt FROM student_activation WHERE coach_id = ? AND activate_status = 1",
+                "SELECT COUNT(*) as cnt FROM activation_log WHERE coach_id = ?",
                 [$item['id']]
             )[0]['cnt'] ?? 0;
             $item['activation_count'] = $activationCount;
+            
+            // 获取累计佣金
+            $commission = Db::query(
+                "SELECT COALESCE(SUM(commission), 0) as total FROM activation_log WHERE coach_id = ?",
+                [$item['id']]
+            )[0]['total'] ?? 0;
+            $item['total_commission'] = $commission;
             
             // 脱敏手机号
             $item['phone_mask'] = substr($item['phone'], 0, 3) . '****' . substr($item['phone'], -4);

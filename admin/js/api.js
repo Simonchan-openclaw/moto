@@ -87,8 +87,14 @@ var API = {
 
     // ==================== 用户管理 ====================
 
-    getUserList: function(page, pageSize) {
-        return this.request('admin/user/list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
+    getUserList: function(params) {
+        var query = [];
+        for (var key in params) {
+            if (params[key] !== null && params[key] !== undefined) {
+                query.push(key + '=' + encodeURIComponent(params[key]));
+            }
+        }
+        return this.request('admin/user/list?' + query.join('&'), 'GET', {}, true);
     },
 
     // ==================== 教练管理 ====================
