@@ -90,7 +90,7 @@ class Coach
     }
 
     /**
-     * 获取教练信息（包含邀请码）
+     * 获取教练信息（包含二维码URL）
      * GET /api/coach/info
      */
     public function getInfo()
@@ -102,152 +102,62 @@ class Coach
             return jsonError('教练不存在');
         }
 
-        // 生成邀请链接和二维码
+        // 生成邀请链接
         $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
+        
+        // 使用QR Server API生成二维码图片URL
+        $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=" . urlencode($inviteUrl);
 
         return jsonSuccess([
             'coach_id'    => $coach['id'],
-            'phone'      => $coach['phone'],
-            'real_name'  => $coach['real_name'],
-            'balance'    => $coach['balance'],
-            'invite_url' => $inviteUrl,
-            'invite_code'=> $inviteCode,
+            'phone'       => $coach['phone'],
+            'real_name'   => $coach['real_name'],
+            'balance'     => $coach['balance'],
+            'invite_url'  => $inviteUrl,
+            'invite_code' => $inviteCode,
+            'qrcode_url' => $qrCodeUrl,
         ]);
     }
 
     /**
-     * 生成邀请二维码图片
+     * 生成邀请二维码图片（直接输出PNG）
      * GET /api/coach/qrcode
      */
     public function qrCode()
     {
         $coachId = getCurrentUserId();
         if (!$coachId) {
-            return jsonError('请先登录');
+            header('HTTP/1.1 401 Unauthorized');
+            exit('Unauthorized');
         }
 
         // 生成邀请链接
         $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
 
-        // 生成二维码（使用原生PHP，不依赖外部库）
-        $size = 300;
-        $margin = 10;
+        // 使用QR Server API获取二维码图片
+        $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&format=png&data=" . urlencode($inviteUrl);
 
-        // 生成二维码矩阵
-        $matrix = $this->generateQRMatrix($inviteUrl);
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 10,
+                'user_agent' => 'Mozilla/5.0'
+            ]
+        ]);
 
-        // 输出图片
-        header('Content-Type: image/png');
-        header('Cache-Control: max-age=0');
+        $imageData = @file_get_contents($qrUrl, false, $context);
 
-        $image = imagecreatetruecolor($size, $size);
-        $white = imagecolorallocate($image, 255, 255, 255);
-        $black = imagecolorallocate($image, 0, 0, 0);
-        imagefill($image, 0, 0, $white);
-
-        $moduleSize = floor(($size - $margin * 2) / count($matrix));
-        $offsetX = floor(($size - $moduleSize * count($matrix)) / 2);
-        $offsetY = $offsetX;
-
-        for ($row = 0; $row < count($matrix); $row++) {
-            for ($col = 0; $col < count($matrix[$row]); $col++) {
-                if ($matrix[$row][$col]) {
-                    imagefilledrectangle(
-                        $image,
-                        $offsetX + $col * $moduleSize,
-                        $offsetY + $row * $moduleSize,
-                        $offsetX + ($col + 1) * $moduleSize - 1,
-                        $offsetY + ($row + 1) * $moduleSize - 1,
-                        $black
-                    );
-                }
-            }
+        if ($imageData !== false && strlen($imageData) > 100) {
+            header('Content-Type: image/png');
+            header('Cache-Control: max-age=3600, public');
+            echo $imageData;
+        } else {
+            // 返回空白图片
+            header('Content-Type: image/png');
+            echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
         }
-
-        imagepng($image);
-        imagedestroy($image);
         exit;
-    }
-
-    /**
-     * 生成简化二维码矩阵（版本1）
-     */
-    private function generateQRMatrix($data)
-    {
-        // 简化的二维码生成（基本结构）
-        $size = 21;
-        $matrix = array_fill(0, $size, array_fill(0, $size, false));
-
-        // 定位图案（左上角）
-        $this->drawFinderPattern($matrix, 0, 0);
-        // 定位图案（右上角）
-        $this->drawFinderPattern($matrix, $size - 7, 0);
-        // 定位图案（左下角）
-        $this->drawFinderPattern($matrix, 0, $size - 7);
-
-        // 时序图案
-        for ($i = 8; $i < $size - 8; $i++) {
-            $matrix[6][$i] = ($i % 2 === 0);
-            $matrix[$i][6] = ($i % 2 === 0);
-        }
-
-        // 对齐图案（简化）
-        $this->drawAlignmentPattern($matrix, $size - 9, $size - 9);
-
-        // 数据填充（基于数据的简单哈希）
-        $hash = crc32($data);
-        $dataLen = strlen($data);
-        $idx = 0;
-        for ($row = 0; $row < $size; $row++) {
-            for ($col = 0; $col < $size; $col++) {
-                if (!$this->isReserved($row, $col, $size)) {
-                    $char = ord($data[$idx % $dataLen]);
-                    $matrix[$row][$col] = (($hash + $char + $row + $col) % 3 === 0);
-                    $idx++;
-                }
-            }
-        }
-
-        return $matrix;
-    }
-
-    private function drawFinderPattern(&$matrix, $row, $col)
-    {
-        for ($r = 0; $r < 7; $r++) {
-            for ($c = 0; $c < 7; $c++) {
-                if ($r === 0 || $r === 6 || $c === 0 || $c === 6 || ($r >= 2 && $r <= 4 && $c >= 2 && $c <= 4)) {
-                    $matrix[$row + $r][$col + $c] = true;
-                }
-            }
-        }
-    }
-
-    private function drawAlignmentPattern(&$matrix, $row, $col)
-    {
-        for ($r = -2; $r <= 2; $r++) {
-            for ($c = -2; $c <= 2; $c++) {
-                $nr = $row + $r;
-                $nc = $col + $c;
-                if ($nr >= 0 && $nr < count($matrix) && $nc >= 0 && $nc < count($matrix)) {
-                    if (abs($r) === 2 || abs($c) === 2 || ($r === 0 && $c === 0)) {
-                        $matrix[$nr][$nc] = true;
-                    }
-                }
-            }
-        }
-    }
-
-    private function isReserved($row, $col, $size)
-    {
-        // 定位符区域
-        if ($row < 9 && $col < 9) return true;
-        if ($row < 9 && $col >= $size - 8) return true;
-        if ($row >= $size - 8 && $col < 9) return true;
-        // 时序区域
-        if ($row === 6 || $col === 6) return true;
-        return false;
     }
 
     /**
