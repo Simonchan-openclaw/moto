@@ -228,16 +228,8 @@ var App = {
             }
             
             if (coachId > 0 && inviteCoachGroup) {
-                // 有邀请码，显示教练信息，锁定手机号
+                // 有邀请码，显示教练信息
                 inviteCoachGroup.style.display = 'block';
-                if (phoneInput) {
-                    phoneInput.setAttribute('readonly', 'readonly');
-                    phoneInput.style.backgroundColor = '#f5f5f5';
-                }
-                if (phoneCodeSelect) {
-                    phoneCodeSelect.disabled = true;
-                    phoneCodeSelect.style.backgroundColor = '#f5f5f5';
-                }
                 if (inviteCodeEl) {
                     inviteCodeEl.value = '加载中...';
                 }
@@ -272,19 +264,9 @@ var App = {
      */
     hideInviteInfo: function() {
         var inviteCoachGroup = document.getElementById('inviteCoachGroup');
-        var phoneInput = document.getElementById('regPhone');
-        var phoneCodeSelect = document.getElementById('regCountryCode');
         
         if (inviteCoachGroup) {
             inviteCoachGroup.style.display = 'none';
-        }
-        if (phoneInput) {
-            phoneInput.removeAttribute('readonly');
-            phoneInput.style.backgroundColor = '';
-        }
-        if (phoneCodeSelect) {
-            phoneCodeSelect.disabled = false;
-            phoneCodeSelect.style.backgroundColor = '';
         }
     },
 
