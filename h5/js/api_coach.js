@@ -33,12 +33,13 @@ var CoachAPI = {
                         if (response.code === 401) {
                             CoachApp.logout();
                             CoachApp.showToast('请先登录');
+                            reject(response);  // 添加这行
                         } else {
                             reject(response);
                         }
                     }
                 } else {
-                    reject({ message: '网络请求失败' });
+                    reject({ message: '网络请求失败', status: xhr.status });
                 }
             };
 

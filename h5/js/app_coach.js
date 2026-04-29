@@ -394,11 +394,17 @@ var CoachApp = {
         
         // 显示加载中
         qrcodeLoading.style.display = 'block';
+        qrcodeLoading.innerHTML = '加载中...';
         if (qrcodeImg) qrcodeImg.style.display = 'none';
 
+        // 调试：检查token
+        var token = localStorage.getItem('coach_token');
+        console.log('coach_token:', token);
+
         CoachAPI.getInfo().then(function(res) {
+            console.log('getInfo response:', res);
             if (res.code !== 200) {
-                qrcodeLoading.innerHTML = '获取信息失败，请刷新重试';
+                qrcodeLoading.innerHTML = '获取信息失败[' + res.code + ']:' + res.message + '<br><button onclick="CoachApp.loadInvitePage()">重试</button>';
                 return;
             }
 
@@ -431,7 +437,7 @@ var CoachApp = {
             }
         }).catch(function(err) {
             console.error('获取邀请信息失败:', err);
-            qrcodeLoading.innerHTML = '获取信息失败，请刷新重试';
+            qrcodeLoading.innerHTML = '网络请求失败<br><button onclick="CoachApp.loadInvitePage()">重试</button>';
         });
     },
 
