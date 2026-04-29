@@ -19,6 +19,23 @@ class Coach
     }
 
     /**
+     * 获取当前教练ID（从Token解析）
+     */
+    protected function getCurrentCoachId()
+    {
+        $token = request()->header('Authorization', '');
+        $token = str_replace('Bearer ', '', $token);
+        if (empty($token)) {
+            return 0;
+        }
+        $decoded = verifyToken($token);
+        if (!$decoded || !isset($decoded->user_id)) {
+            return 0;
+        }
+        return intval($decoded->user_id);
+    }
+
+    /**
      * 教练登录
      * POST /api/coach/login
      */
@@ -95,7 +112,10 @@ class Coach
      */
     public function getInfo()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
+        if (!$coachId) {
+            return jsonError('请先登录', 401);
+        }
         $coach = $this->coachModel->findById($coachId);
 
         if (!$coach) {
@@ -231,7 +251,7 @@ class Coach
      */
     public function qrCode()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         if (!$coachId) {
             header('HTTP/1.1 401 Unauthorized');
             exit('Unauthorized');
@@ -271,7 +291,7 @@ class Coach
      */
     public function getInviteList()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $page = input('get.page/d', 1);
         $pageSize = input('get.page_size/d', 20);
 
@@ -311,7 +331,7 @@ class Coach
      */
     public function getBalance()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $coach = $this->coachModel->findById($coachId);
 
         if (!$coach) {
@@ -330,7 +350,7 @@ class Coach
      */
     public function recharge()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $amount = floatval(input('post.amount', 0));
         $payMethod = intval(input('post.pay_method', 1));
 
@@ -367,7 +387,7 @@ class Coach
      */
     public function rechargeList()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $page = input('get.page/d', 1);
         $pageSize = input('get.page_size/d', 20);
 
@@ -382,7 +402,7 @@ class Coach
      */
     public function activate()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $studentPhone = input('post.student_phone', '');
 
         if (empty($studentPhone)) {
@@ -480,7 +500,7 @@ class Coach
      */
     public function activationList()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $page = input('get.page/d', 1);
         $pageSize = input('get.page_size/d', 20);
         $status = input('get.status/d', null);
@@ -496,7 +516,7 @@ class Coach
      */
     public function refund()
     {
-        $coachId = getCurrentUserId();
+        $coachId = $this->getCurrentCoachId();
         $activationId = input('post.activation_id/d', 0);
 
         if ($activationId <= 0) {
