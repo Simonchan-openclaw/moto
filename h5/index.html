@@ -115,6 +115,7 @@
                     <span class="question-type"></span>
                 </div>
                 <div class="question-content"></div>
+                <div class="question-image" id="questionImage" style="display:none;"></div>
                 <div class="options-list"></div>
                 <div class="answer-result" style="display:none;">
                     <div class="result-icon"></div>
@@ -123,7 +124,7 @@
                 </div>
                 <div class="question-actions">
                     <button class="btn-favorite" onclick="toggleFavorite()">⭐ 收藏</button>
-                    <button class="btn-next" onclick="nextQuestion()">下一题</button>
+                    <button class="btn-next" id="btnNext" onclick="nextQuestion()">下一题</button>
                 </div>
             </div>
         </div>
@@ -159,11 +160,12 @@
                     <span class="question-type"></span>
                 </div>
                 <div class="question-content"></div>
+                <div class="question-image" id="examQuestionImage" style="display:none;"></div>
                 <div class="options-list"></div>
             </div>
             <div class="exam-footer">
                 <button class="btn-prev" onclick="prevExamQuestion()">上一题</button>
-                <button class="btn-next" onclick="nextExamQuestion()">下一题</button>
+                <button class="btn-next" id="examBtnNext" onclick="nextExamQuestion()">下一题</button>
                 <button class="btn-submit" onclick="showSubmitConfirm()">交卷</button>
             </div>
         </div>

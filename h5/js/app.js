@@ -384,13 +384,30 @@ var App = {
         var content = container.querySelector('.question-content');
         var options = container.querySelector('.options-list');
         var result = container.querySelector('.answer-result');
+        var questionImage = document.getElementById('questionImage');
 
         content.textContent = question.content;
         container.querySelector('.chapter-name').textContent = question.chapter_name || '';
-        container.querySelector('.question-type').textContent = question.question_type == 1 ? '选择题' : '判断题';
+        
+        // 显示题型
+        var typeText = '';
+        if (question.question_type == 1) typeText = '单选题';
+        else if (question.question_type == 2) typeText = '多选题';
+        else if (question.question_type == 3) typeText = '判断题';
+        container.querySelector('.question-type').textContent = typeText;
+
+        // 显示图片（如有）
+        if (question.image) {
+            questionImage.innerHTML = '<img src="' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
+            questionImage.style.display = 'block';
+        } else {
+            questionImage.innerHTML = '';
+            questionImage.style.display = 'none';
+        }
 
         // 生成选项
         var html = '';
+        var self = this;
         question.options.forEach(function(opt) {
             html += '<div class="option-item" onclick="App.selectOption(\'' + opt.option_key + '\')">' +
                 '<span class="option-key">' + opt.option_key + '</span>' +
@@ -404,9 +421,14 @@ var App = {
             item.classList.remove('selected', 'correct', 'wrong');
         });
 
+        // 下一题按钮文字
+        var btnNext = document.getElementById('btnNext');
+        btnNext.textContent = '下一题';
+
         // 开始计时
         this.practice.startTime = Date.now();
         this.practice.answerTime = 0;
+        this.practice.selectedAnswer = null; // 清空已选答案
     },
 
     /**
@@ -417,7 +439,29 @@ var App = {
         var container = document.getElementById('questionContainer');
         var options = container.querySelectorAll('.option-item');
         var result = container.querySelector('.answer-result');
+        var btnNext = document.getElementById('btnNext');
 
+        // 多选题：切换选择状态，暂不提交
+        if (question.question_type == 2) {
+            // 切换选中状态
+            options.forEach(function(item) {
+                if (item.querySelector('.option-key').textContent === optionKey) {
+                    item.classList.toggle('selected');
+                }
+            });
+            // 收集已选答案（多选题可能选多个）
+            var selected = [];
+            options.forEach(function(item) {
+                if (item.classList.contains('selected')) {
+                    selected.push(item.querySelector('.option-key').textContent);
+                }
+            });
+            this.practice.selectedAnswer = selected.join(',');
+            btnNext.textContent = '确认答案';
+            return;
+        }
+
+        // 单选题/判断题：立即提交
         // 计算答题用时
         this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
 
@@ -436,32 +480,75 @@ var App = {
         // 提交答案
         var self = this;
         API.submitAnswer(question.id, optionKey, this.practice.answerTime).then(function(res) {
-            var isCorrect = res.data.is_correct;
-
-            // 显示结果
-            options.forEach(function(item) {
-                var key = item.querySelector('.option-key').textContent;
-                if (key === res.data.correct_answer) {
-                    item.classList.add('correct');
-                } else if (key === optionKey && !isCorrect) {
-                    item.classList.add('wrong');
-                }
-            });
-
-            result.style.display = 'block';
-            result.querySelector('.result-icon').textContent = isCorrect ? '✅' : '❌';
-            result.querySelector('.result-text').textContent = isCorrect ? '回答正确' : '回答错误';
-            result.querySelector('.analysis').textContent = res.data.analysis || '暂无解析';
-
+            self.showAnswerResult(res.data, optionKey);
         }).catch(function(err) {
             self.showToast('提交失败');
         });
     },
 
     /**
+     * 显示答题结果
+     */
+    showAnswerResult: function(data, userAnswer) {
+        var question = this.practice.questions[this.practice.currentIndex];
+        var container = document.getElementById('questionContainer');
+        var options = container.querySelectorAll('.option-item');
+        var result = container.querySelector('.answer-result');
+        var isCorrect = data.is_correct;
+
+        // 显示结果
+        options.forEach(function(item) {
+            var key = item.querySelector('.option-key').textContent;
+            if (key === data.correct_answer) {
+                item.classList.add('correct');
+            } else if (key === userAnswer && !isCorrect) {
+                item.classList.add('wrong');
+            }
+        });
+
+        result.style.display = 'block';
+        result.querySelector('.result-icon').textContent = isCorrect ? '✅' : '❌';
+        result.querySelector('.result-text').textContent = isCorrect ? '回答正确' : '回答错误';
+        result.querySelector('.analysis').textContent = data.analysis || '暂无解析';
+    },
+
+    /**
      * 下一题
      */
     nextQuestion: function() {
+        var question = this.practice.questions[this.practice.currentIndex];
+        var container = document.getElementById('questionContainer');
+        var btnNext = document.getElementById('btnNext');
+
+        // 多选题且未确认答案
+        if (question.question_type == 2 && btnNext.textContent === '确认答案') {
+            var selected = this.practice.selectedAnswer;
+            if (!selected) {
+                this.showToast('请选择答案');
+                return;
+            }
+
+            // 计算答题用时
+            this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
+
+            // 禁用选项点击
+            var options = container.querySelectorAll('.option-item');
+            options.forEach(function(item) {
+                item.onclick = null;
+            });
+
+            // 提交多选题答案
+            var self = this;
+            API.submitAnswer(question.id, selected, this.practice.answerTime).then(function(res) {
+                self.showAnswerResult(res.data, selected);
+                btnNext.textContent = '下一题';
+            }).catch(function(err) {
+                self.showToast('提交失败');
+            });
+            return;
+        }
+
+        // 进入下一题
         this.practice.currentIndex++;
 
         if (this.practice.currentIndex >= this.practice.questions.length) {
@@ -536,19 +623,42 @@ var App = {
         API.getQuestionDetail(questionId).then(function(res) {
             var question = res.data;
             var container = document.getElementById('examQuestionContainer');
+            var examImage = document.getElementById('examQuestionImage');
 
             container.querySelector('.question-content').textContent = question.content;
-            container.querySelector('.question-type').textContent = question.question_type == 1 ? '选择题' : '判断题';
+            
+            // 显示题型
+            var typeText = '';
+            if (question.question_type == 1) typeText = '单选题';
+            else if (question.question_type == 2) typeText = '多选题';
+            else if (question.question_type == 3) typeText = '判断题';
+            container.querySelector('.question-type').textContent = typeText;
+
+            // 显示图片（如有）
+            if (question.image) {
+                examImage.innerHTML = '<img src="' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
+                examImage.style.display = 'block';
+            } else {
+                examImage.innerHTML = '';
+                examImage.style.display = 'none';
+            }
+
+            // 保存当前题目信息
+            this.exam.currentQuestion = question;
 
             // 生成选项
             var html = '';
             question.options.forEach(function(opt) {
-                var selected = self.exam.answers[questionId] === opt.option_key ? 'selected' : '';
+                var selected = self.exam.answers[questionId] && self.exam.answers[questionId].includes(opt.option_key) ? 'selected' : '';
                 html += '<div class="option-item ' + selected + '" onclick="App.selectExamOption(\'' + opt.option_key + '\')">' +
                     '<span class="option-key">' + opt.option_key + '</span>' +
                     '<span class="option-text">' + opt.option_content + '</span></div>';
             });
             container.querySelector('.options-list').innerHTML = html;
+
+            // 更新下一题按钮
+            var btnNext = document.getElementById('examBtnNext');
+            btnNext.textContent = '下一题';
 
         }).catch(function(err) {
             self.showToast('加载失败');
@@ -560,13 +670,38 @@ var App = {
      */
     selectExamOption: function(optionKey) {
         var questionId = this.exam.questions[this.exam.currentIndex];
-        this.exam.answers[questionId] = optionKey;
-
         var container = document.getElementById('examQuestionContainer');
-        container.querySelectorAll('.option-item').forEach(function(item) {
-            var key = item.querySelector('.option-key').textContent;
-            item.classList.toggle('selected', key === optionKey);
+        var options = container.querySelectorAll('.option-item');
+        var btnNext = document.getElementById('examBtnNext');
+        var questionType = this.exam.currentQuestion ? this.exam.currentQuestion.question_type : 1;
+
+        // 多选题：切换选择状态
+        if (questionType == 2) {
+            options.forEach(function(item) {
+                if (item.querySelector('.option-key').textContent === optionKey) {
+                    item.classList.toggle('selected');
+                }
+            });
+            // 收集已选答案
+            var selected = [];
+            options.forEach(function(item) {
+                if (item.classList.contains('selected')) {
+                    selected.push(item.querySelector('.option-key').textContent);
+                }
+            });
+            this.exam.answers[questionId] = selected;
+            btnNext.textContent = '确认并下一题';
+            return;
+        }
+
+        // 单选题/判断题：直接选中并保存
+        options.forEach(function(item) {
+            item.classList.remove('selected');
+            if (item.querySelector('.option-key').textContent === optionKey) {
+                item.classList.add('selected');
+            }
         });
+        this.exam.answers[questionId] = optionKey;
     },
 
     /**
