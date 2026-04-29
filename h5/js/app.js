@@ -73,12 +73,38 @@ var App = {
     isActivated: function() {
         var cachedStatus = localStorage.getItem('activation_status');
         if (cachedStatus) {
-            var status = JSON.parse(cachedStatus);
-            if (status.activated && status.expire_at > Date.now()) {
-                return true; // 已激活且未过期
-            }
+            try {
+                var status = JSON.parse(cachedStatus);
+                if (status.activated && status.expire_at > Date.now()) {
+                    return true; // 已激活且未过期
+                }
+            } catch (e) {}
         }
         return false;
+    },
+
+    /**
+     * 从服务器检查VIP激活状态
+     */
+    checkActivationFromServer: function() {
+        var deviceId = this.getDeviceId();
+        var self = this;
+        
+        API.getVipStatus(deviceId).then(function(res) {
+            if (res.code === 200 && res.data) {
+                if (res.data.is_activated && res.data.expire_at) {
+                    // 服务器返回已激活，更新本地状态
+                    self.setActivation(res.data.expire_at);
+                } else {
+                    // 未激活，清除本地状态
+                    localStorage.removeItem('activation_status');
+                    self.updateUserInfo();
+                    self.updateMenuVisibility();
+                }
+            }
+        }).catch(function() {
+            // 忽略错误，使用本地缓存
+        });
     },
 
     /**
@@ -438,6 +464,11 @@ var App = {
 
             localStorage.setItem('token', App.token);
             localStorage.setItem('user', JSON.stringify(App.user));
+            
+            // 更新VIP激活状态
+            if (res.data.userInfo.vip_expire) {
+                App.setActivation(res.data.userInfo.vip_expire);
+            }
 
             App.updateUserInfo();
             App.updateMenuVisibility();

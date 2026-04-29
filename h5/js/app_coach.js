@@ -260,7 +260,7 @@ var CoachApp = {
             return;
         }
 
-        if (this.balance < 18) {
+        if (this.balance < 36) {
             this.showToast('余额不足，请先充值');
             return;
         }

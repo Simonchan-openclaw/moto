@@ -102,6 +102,7 @@ class User
                 'nickname'    => $user['nickname'],
                 'avatar'      => $user['avatar'] ?? '',
                 'inv_coach_id'=> $user['inv_coach_id'] ?? 0,
+                'vip_expire' => $user['vip_expire'] ?? null,
                 'create_time' => $user['create_time']
             ]
         ], '登录成功');
