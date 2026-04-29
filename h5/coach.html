@@ -7,6 +7,12 @@
     <title>教练端 - 摩托车题库</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        // 确保QRCode库加载后再执行
+        if (typeof QRCode === 'undefined') {
+            document.write('<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
+        }
+    </script>
     <style>
         body { background: #f0f2f5; }
         .coach-header { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }

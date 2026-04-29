@@ -415,10 +415,25 @@ var CoachApp = {
             localStorage.setItem('invite_code', inviteCode);
 
             // 生成二维码
-            self.generateQRCode(qrcodeBox, inviteUrl);
+            try {
+                if (typeof QRCode !== 'undefined') {
+                    self.generateQRCode(qrcodeBox, inviteUrl);
+                } else {
+                    // QRCode库未加载，显示链接
+                    qrcodeBox.innerHTML = '<div style="padding:20px;">' +
+                        '<p style="color:#666;margin-bottom:10px;">二维码加载失败</p>' +
+                        '<a href="' + inviteUrl + '" style="word-break:break-all;color:#1890ff;font-size:12px;">' + inviteUrl + '</a>' +
+                        '</div>';
+                }
+            } catch (e) {
+                qrcodeBox.innerHTML = '<div style="padding:20px;">' +
+                    '<p style="color:#666;margin-bottom:10px;">二维码加载失败</p>' +
+                    '<a href="' + inviteUrl + '" target="_blank" style="word-break:break-all;color:#1890ff;font-size:12px;">' + inviteUrl + '</a>' +
+                    '</div>';
+            }
         }).catch(function(err) {
-            qrcodeBox.innerHTML = '<div class="qrcode-loading">加载失败，请重试</div>';
-            self.showToast('获取邀请信息失败');
+            qrcodeBox.innerHTML = '<div class="qrcode-loading">加载失败，请刷新重试</div>';
+            console.error('获取邀请信息失败:', err);
         });
     },
 
@@ -438,7 +453,11 @@ var CoachApp = {
                 correctLevel: QRCode.CorrectLevel.M
             });
         } catch (e) {
-            container.innerHTML = '<div style="color:#ff4d4f;padding:20px;">二维码生成失败</div>';
+            // 显示为链接作为备选
+            container.innerHTML = '<div style="padding:10px;text-align:center;">' +
+                '<p style="color:#666;margin-bottom:10px;">长按复制链接：</p>' +
+                '<a href="' + text + '" style="word-break:break-all;color:#1890ff;font-size:11px;">' + text + '</a>' +
+                '</div>';
         }
     },
 
