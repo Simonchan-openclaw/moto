@@ -25,7 +25,9 @@ var App = {
         questions: [],
         currentIndex: 0,
         answerTime: 0,
-        startTime: null
+        startTime: null,
+        selectedAnswer: null,
+        answerSubmitted: false // 是否已提交答案
     },
 
     /**
@@ -424,6 +426,7 @@ var App = {
         // 下一题按钮文字
         var btnNext = document.getElementById('btnNext');
         btnNext.textContent = '下一题';
+        this.practice.answerSubmitted = false; // 标记是否已提交
 
         // 开始计时
         this.practice.startTime = Date.now();
@@ -432,18 +435,16 @@ var App = {
     },
 
     /**
-     * 选择答案
+     * 选择答案（仅标记，不提交）
      */
     selectOption: function(optionKey) {
         var question = this.practice.questions[this.practice.currentIndex];
         var container = document.getElementById('questionContainer');
         var options = container.querySelectorAll('.option-item');
-        var result = container.querySelector('.answer-result');
         var btnNext = document.getElementById('btnNext');
 
-        // 多选题：切换选择状态，暂不提交
+        // 多选题：切换选择状态
         if (question.question_type == 2) {
-            // 切换选中状态
             options.forEach(function(item) {
                 if (item.querySelector('.option-key').textContent === optionKey) {
                     item.classList.toggle('selected');
@@ -461,29 +462,14 @@ var App = {
             return;
         }
 
-        // 单选题/判断题：立即提交
-        // 计算答题用时
-        this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
-
-        // 禁用选项点击
+        // 单选题/判断题：标记已选
         options.forEach(function(item) {
-            item.onclick = null;
-        });
-
-        // 显示选择
-        options.forEach(function(item) {
+            item.classList.remove('selected');
             if (item.querySelector('.option-key').textContent === optionKey) {
                 item.classList.add('selected');
             }
         });
-
-        // 提交答案
-        var self = this;
-        API.submitAnswer(question.id, optionKey, this.practice.answerTime).then(function(res) {
-            self.showAnswerResult(res.data, optionKey);
-        }).catch(function(err) {
-            self.showToast('提交失败');
-        });
+        this.practice.selectedAnswer = optionKey;
     },
 
     /**
@@ -520,14 +506,14 @@ var App = {
         var container = document.getElementById('questionContainer');
         var btnNext = document.getElementById('btnNext');
 
+        // 检查是否已选择答案
+        if (!this.practice.selectedAnswer) {
+            this.showToast('请选择答案');
+            return;
+        }
+
         // 多选题且未确认答案
         if (question.question_type == 2 && btnNext.textContent === '确认答案') {
-            var selected = this.practice.selectedAnswer;
-            if (!selected) {
-                this.showToast('请选择答案');
-                return;
-            }
-
             // 计算答题用时
             this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
 
@@ -539,8 +525,8 @@ var App = {
 
             // 提交多选题答案
             var self = this;
-            API.submitAnswer(question.id, selected, this.practice.answerTime).then(function(res) {
-                self.showAnswerResult(res.data, selected);
+            API.submitAnswer(question.id, this.practice.selectedAnswer, this.practice.answerTime).then(function(res) {
+                self.showAnswerResult(res.data, self.practice.selectedAnswer);
                 btnNext.textContent = '下一题';
             }).catch(function(err) {
                 self.showToast('提交失败');
@@ -548,7 +534,28 @@ var App = {
             return;
         }
 
-        // 进入下一题
+        // 检查是否已显示结果
+        var result = container.querySelector('.answer-result');
+        if (result.style.display === 'none') {
+            // 首次点击：提交答案并显示结果
+            this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
+
+            // 禁用选项点击
+            var options = container.querySelectorAll('.option-item');
+            options.forEach(function(item) {
+                item.onclick = null;
+            });
+
+            var self = this;
+            API.submitAnswer(question.id, this.practice.selectedAnswer, this.practice.answerTime).then(function(res) {
+                self.showAnswerResult(res.data, self.practice.selectedAnswer);
+            }).catch(function(err) {
+                self.showToast('提交失败');
+            });
+            return;
+        }
+
+        // 已显示结果，进入下一题
         this.practice.currentIndex++;
 
         if (this.practice.currentIndex >= this.practice.questions.length) {
