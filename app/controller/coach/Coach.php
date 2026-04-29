@@ -244,10 +244,11 @@ class Coach
         );
 
         // 获取总数
-        $total = \think\facade\Db::query(
+        $totalResult = \think\facade\Db::query(
             "SELECT COUNT(*) as cnt FROM user WHERE inv_coach_id = ?",
             [$coachId]
-        )[0]['cnt'] ?? 0;
+        );
+        $total = isset($totalResult[0]['cnt']) ? $totalResult[0]['cnt'] : 0;
 
         // 脱敏手机号
         foreach ($list as &$item) {
@@ -376,7 +377,7 @@ class Coach
         }
 
         // 学员已注册，判断邀请教练
-        $invCoachId = intval($student['inv_coach_id'] ?? 0);
+        $invCoachId = intval(isset($student['inv_coach_id']) ? $student['inv_coach_id'] : 0);
         
         if ($invCoachId == 0) {
             // 没有邀请教练
@@ -447,7 +448,7 @@ class Coach
         }
 
         // 检查学员的邀请教练
-        $invCoachId = $student['inv_coach_id'] ?? 0;
+        $invCoachId = isset($student['inv_coach_id']) ? $student['inv_coach_id'] : 0;
         $isSelfInvited = ($invCoachId == $coachId);
 
         // 计算扣款金额
