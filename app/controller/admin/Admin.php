@@ -36,8 +36,8 @@ class Admin
             return jsonError('账号已被禁用');
         }
 
-        // bcrypt密码验证
-        if (!password_verify($password, $admin['password'])) {
+        // MD5密码验证（兼容SQL文件中的密码存储格式）
+        if (md5($password) !== $admin['password']) {
             return jsonError('密码错误');
         }
 
