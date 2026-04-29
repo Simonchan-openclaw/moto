@@ -37,9 +37,15 @@ class User
 
         // 获取列表
         $list = Db::query(
-            "SELECT * FROM user WHERE {$whereSql} ORDER BY id DESC LIMIT ? OFFSET ?",
+            "SELECT id, phone, nickname, vip_expire, last_login_time, create_time FROM user WHERE {$whereSql} ORDER BY id DESC LIMIT ? OFFSET ?",
             array_merge($params, [$pageSize, $offset])
         );
+        
+        // 处理激活状态
+        foreach ($list as &$user) {
+            $user['is_activated'] = !empty($user['vip_expire']) && strtotime($user['vip_expire']) > time() ? 1 : 0;
+        }
+        unset($user);
 
         return jsonSuccess([
             'list'        => $list,

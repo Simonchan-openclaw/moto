@@ -125,7 +125,6 @@ var Admin = {
             users: '用户管理',
             coaches: '教练管理',
             activations: '激活记录',
-            statistics: '数据统计',
             settings: '系统设置'
         };
         document.getElementById('pageTitle').textContent = titles[page] || '控制台';
@@ -150,9 +149,6 @@ var Admin = {
                 break;
             case 'activations':
                 this.renderActivations(content);
-                break;
-            case 'statistics':
-                this.renderStatistics(content);
                 break;
             case 'settings':
                 this.renderSettings(content);
@@ -212,7 +208,6 @@ var Admin = {
             '<button class="btn btn-success" onclick="Admin.loadPage(\'chapters\');">📚 管理章节</button>' +
             '<button class="btn btn-warning" onclick="Admin.loadPage(\'activations\');">🎫 查看激活</button>' +
             '<button class="btn btn-primary" onclick="Admin.showImportModal();">📤 批量导入</button>' +
-            '<button class="btn btn-success" onclick="Admin.loadPage(\'statistics\');">📈 数据统计</button>' +
             '</div></div>' +
 
             '<div class="card" style="margin-top:20px;">' +
@@ -708,8 +703,8 @@ var Admin = {
 
             var html = '';
             list.forEach(function(user) {
-                // 判断激活状态 - 根据是否有激活记录判断
-                var isActivated = user.activated == 1 || user.activation_status == 1;
+                // 判断激活状态
+                var isActivated = user.is_activated == 1;
                 var activatedHtml = isActivated 
                     ? '<span class="tag tag-success">已激活</span>' 
                     : '<span class="tag tag-warning">未激活</span>';
