@@ -397,7 +397,21 @@ var App = {
         } else {
             // 已登录已激活
             nickname.textContent = this.user.nickname || '摩托学员';
-            status.textContent = '已登录';
+            var expireAt = localStorage.getItem('activation_status');
+            if (expireAt) {
+                var exp = JSON.parse(expireAt);
+                if (exp.expire_at) {
+                    var date = new Date(exp.expire_at);
+                    var validDate = (date.getFullYear()) + '-' + 
+                        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(date.getDate()).padStart(2, '0');
+                    status.textContent = 'VIP有效期至 ' + validDate;
+                } else {
+                    status.textContent = '已登录';
+                }
+            } else {
+                status.textContent = '已登录';
+            }
             userInfo.onclick = null;
             userInfo.style.cursor = 'default';
             if (btnLogout) btnLogout.style.display = 'block';
