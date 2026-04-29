@@ -44,6 +44,7 @@ Route::group('api', function () {
         Route::post('coach/add', 'admin.Coach/add');
         Route::post('coach/recharge', 'admin.Coach/recharge');
         Route::post('coach/delete', 'admin.Coach/delete');
+        Route::post('coach/setStatus', 'admin.Coach/setStatus');
         Route::get('exam/records', 'admin.Exam/records');
         Route::get('stat/summary', 'admin.Stat/summary');
         Route::get('activation/list', 'admin.Activation/list');

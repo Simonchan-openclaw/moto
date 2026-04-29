@@ -770,7 +770,7 @@ var Admin = {
             '</div>' +
             '<div class="table-container">' +
             '<table>' +
-            '<thead><tr><th>ID</th><th>手机号</th><th>姓名</th><th>余额</th><th>累计充值</th><th>激活次数</th><th>注册时间</th><th>操作</th></tr></thead>' +
+            '<thead><tr><th>ID</th><th>手机号</th><th>姓名</th><th>状态</th><th>余额</th><th>累计充值</th><th>激活次数</th><th>注册时间</th><th>操作</th></tr></thead>' +
             '<tbody id="coachesBody"></tbody>' +
             '</table></div>' +
             '<div class="pagination">' +
@@ -802,16 +802,27 @@ var Admin = {
                 var balance = parseFloat(coach.balance) || 0;
                 var totalRecharged = parseFloat(coach.total_recharged) || 0;
                 var activationCount = parseInt(coach.activation_count) || 0;
+                var status = coach.status;
+                var statusMap = { '-2': ['已撤销', 'red'], '-1': ['未通过', 'orange'], '0': ['审核中', 'blue'], '1': ['已通过', 'green'] };
+                var statusInfo = statusMap[String(status)] || ['未知', 'gray'];
                 
                 html += '<tr>' +
                     '<td>' + coach.id + '</td>' +
                     '<td>' + self.maskPhone(coach.phone || '-') + '</td>' +
                     '<td>' + (coach.real_name || coach.name || '教练' + coach.id) + '</td>' +
+                    '<td><span class="tag tag-' + statusInfo[1] + '">' + statusInfo[0] + '</span></td>' +
                     '<td style="color:#52c41a;font-weight:bold;">¥' + balance.toFixed(2) + '</td>' +
                     '<td>¥' + totalRecharged.toFixed(2) + '</td>' +
                     '<td>' + activationCount + '</td>' +
                     '<td>' + (coach.create_time || coach.created_at || '-').substr(0, 10) + '</td>' +
-                    '<td><button class="btn btn-sm btn-success" onclick="Admin.showRechargeModal(' + coach.id + ', \'' + (coach.real_name || '教练' + coach.id) + '\'' + ')">充值余额</button></td></tr>';
+                    '<td>' +
+                    '<select onchange="Admin.setCoachStatus(' + coach.id + ', this.value)" style="padding:4px 8px;border-radius:4px;border:1px solid #d9d9d9;margin-right:5px;">' +
+                    '<option value="-2" ' + (status == -2 ? 'selected' : '') + '>已撤销资格</option>' +
+                    '<option value="-1" ' + (status == -1 ? 'selected' : '') + '>审核未通过</option>' +
+                    '<option value="0" ' + (status == 0 ? 'selected' : '') + '>审核中</option>' +
+                    '<option value="1" ' + (status == 1 ? 'selected' : '') + '>审核通过</option>' +
+                    '</select>' +
+                    '<button class="btn btn-sm btn-success" onclick="Admin.showRechargeModal(' + coach.id + ', \'' + (coach.real_name || '教练' + coach.id) + '\'' + ')">充值</button></td></tr>';
             });
 
             document.getElementById('coachesBody').innerHTML = html;
@@ -927,6 +938,27 @@ var Admin = {
         }).catch(function(err) {
             self.hideLoading();
             self.showToast(err.message || '充值失败');
+        });
+    },
+
+    /**
+     * 设置教练状态
+     */
+    setCoachStatus: function(coachId, status) {
+        var statusText = { '-2': '已撤销资格', '-1': '审核未通过', '0': '审核中', '1': '审核通过' }[String(status)] || '未知';
+        
+        if (!confirm('确定要将教练状态设置为"' + statusText + '"吗？')) {
+            this.loadCoaches(); // 恢复原状态
+            return;
+        }
+
+        var self = this;
+        API.setCoachStatus(coachId, status).then(function(res) {
+            self.showToast('状态已更新为：' + statusText);
+            self.loadCoaches();
+        }).catch(function(err) {
+            self.showToast(err.message || '设置失败');
+            self.loadCoaches(); // 恢复原状态
         });
     },
 

@@ -173,4 +173,29 @@ class Coach
 
         return jsonSuccess(['coach_id' => $coachId], '删除成功');
     }
+
+    /**
+     * 设置教练状态
+     * POST /api/admin/coach/setStatus
+     */
+    public function setStatus()
+    {
+        $coachId = input('post.coach_id/d', 0);
+        $status = input('post.status/d', 0);
+
+        if ($coachId <= 0) {
+            return jsonError('教练ID不能为空');
+        }
+
+        // 状态值: -2=撤销资格, -1=未通过, 0=审核中, 1=通过
+        if (!in_array($status, [-2, -1, 0, 1])) {
+            return jsonError('无效的状态值');
+        }
+
+        Db::execute("UPDATE coach SET status = ? WHERE id = ?", [$status, $coachId]);
+
+        $statusText = [-2 => '已撤销资格', -1 => '审核未通过', 0 => '审核中', 1 => '审核通过'][$status];
+
+        return jsonSuccess(['coach_id' => $coachId, 'status' => $status], '状态已更新为：' . $statusText);
+    }
 }

@@ -72,7 +72,7 @@ class Coach
 
         Db::execute(
             "INSERT INTO {$this->table} (phone, password, real_name, balance, total_recharged, status, create_time) 
-             VALUES (?, ?, ?, 0, 0, 1, NOW())",
+             VALUES (?, ?, ?, 0, 0, 0, NOW())",
             [$phone, $passwordHash, $realName]
         );
 

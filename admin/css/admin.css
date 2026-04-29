@@ -470,6 +470,11 @@ select.form-input {
 .tag-success { background: #f6ffed; color: #52c41a; }
 .tag-warning { background: #fffbe6; color: #faad14; }
 .tag-danger { background: #fff2f0; color: #ff4d4f; }
+.tag-green { background: #f6ffed; color: #52c41a; }
+.tag-red { background: #fff2f0; color: #ff4d4f; }
+.tag-orange { background: #fff7e6; color: #fa8c16; }
+.tag-blue { background: #e6f7ff; color: #1890ff; }
+.tag-gray { background: #f5f5f5; color: #999; }
 
 /* 空状态 */
 .empty-state {

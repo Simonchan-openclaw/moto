@@ -111,6 +111,10 @@ var API = {
         return this.request('admin/coach/recharge', 'POST', { coach_id: coachId, amount: amount }, true);
     },
 
+    setCoachStatus: function(coachId, status) {
+        return this.request('admin/coach/setStatus', 'POST', { coach_id: coachId, status: status }, true);
+    },
+
     getCoachBalance: function(coachId) {
         return this.request('admin/coach/balance?coach_id=' + coachId, 'GET', {}, true);
     },

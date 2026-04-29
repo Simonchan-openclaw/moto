@@ -113,6 +113,20 @@ class Coach
             return jsonError('手机号或密码错误');
         }
 
+        // 检查账号状态
+        $status = $coach['status'] ?? 0;
+        $statusMessages = [
+            '-2' => '账号已被撤销资格',
+            '-1' => '审核未通过',
+            '0' => '账号审核中，请等待审核',
+            '1' => '登录成功'
+        ];
+        
+        if ($status != 1) {
+            $message = $statusMessages[strval($status)] ?? '账号状态异常';
+            return jsonError($message);
+        }
+
         // 生成Token
         $token = createToken($coach['id'], ['type' => 'coach']);
 
@@ -125,10 +139,6 @@ class Coach
         ], '登录成功');
     }
 
-    /**
-     * 教练注册
-     * POST /api/coach/register
-     */
     /**
      * 教练注册
      * POST /api/coach/register
