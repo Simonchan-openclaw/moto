@@ -29,6 +29,24 @@
                 </div>
             </div>
 
+            <div class="menu-grid">
+                <div class="menu-item" onclick="CoachApp.checkLogin('activation-list')">
+                    <div class="icon">🎫</div>
+                    <span>激活记录</span>
+                    <small>查看/管理</small>
+                </div>
+                <div class="menu-item" onclick="CoachApp.checkLogin('recharge-list')">
+                    <div class="icon">💳</div>
+                    <span>充值记录</span>
+                    <small>查看历史</small>
+                </div>
+                <div class="menu-item" onclick="CoachApp.checkLogin('activate')">
+                    <div class="icon">✨</div>
+                    <span>激活学员</span>
+                    <small>通过手机号码激活</small>
+                </div>
+            </div>
+            
             <!-- 余额卡片 -->
             <div class="balance-card" id="balanceCard" style="display:none;">
                 <div class="balance-main">
@@ -36,25 +54,7 @@
                     <span class="amount" id="balanceAmount">¥0.00</span>
                 </div>
                 <div class="balance-actions">
-                    <button class="btn-recharge" onclick="CoachApp.showRecharge()">💰 充值</button>
-                </div>
-            </div>
-
-            <div class="menu-grid">
-                <div class="menu-item" onclick="CoachApp.showPage('activation-list')">
-                    <div class="icon">🎫</div>
-                    <span>激活记录</span>
-                    <small>查看/管理</small>
-                </div>
-                <div class="menu-item" onclick="CoachApp.showPage('recharge-list')">
-                    <div class="icon">💳</div>
-                    <span>充值记录</span>
-                    <small>查看历史</small>
-                </div>
-                <div class="menu-item" onclick="CoachApp.showPage('activate')">
-                    <div class="icon">✨</div>
-                    <span>激活学员</span>
-                    <small>通过手机号码激活</small>
+                    <button class="btn-recharge" onclick="CoachApp.checkLogin('recharge')">💰 充值</button>
                 </div>
             </div>
         </div>

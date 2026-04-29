@@ -19,23 +19,60 @@ var CoachApp = {
         }
     },
 
+    checkLogin: function(pageId) {
+        if (!this.token) {
+            this.showToast('请先登录');
+            setTimeout(function() {
+                CoachApp.showPage('login');
+            }, 500);
+            return;
+        }
+        this.showPage(pageId);
+    },
+
     updateUserInfo: function() {
         var userInfo = document.getElementById('userInfo');
         var nickname = userInfo.querySelector('.nickname');
         var status = userInfo.querySelector('.status');
+        var menuItems = document.querySelectorAll('.menu-grid .menu-item');
+        var rechargeBtn = document.querySelector('.btn-recharge');
 
         if (this.coach) {
             nickname.textContent = this.coach.real_name || '教练';
             status.textContent = '已登录';
             userInfo.onclick = null;
+            userInfo.classList.remove('clickable');
             document.getElementById('balanceCard').style.display = 'flex';
+            
+            // 启用菜单按钮
+            menuItems.forEach(function(item) {
+                item.classList.remove('disabled');
+                item.style.pointerEvents = 'auto';
+                item.style.opacity = '1';
+            });
+            if (rechargeBtn) {
+                rechargeBtn.classList.remove('disabled');
+                rechargeBtn.style.pointerEvents = 'auto';
+            }
         } else {
             nickname.textContent = '未登录';
             status.textContent = '点击登录';
             userInfo.onclick = function() {
                 CoachApp.showPage('login');
             };
+            userInfo.classList.add('clickable');
             document.getElementById('balanceCard').style.display = 'none';
+            
+            // 禁用菜单按钮
+            menuItems.forEach(function(item) {
+                item.classList.add('disabled');
+                item.style.pointerEvents = 'none';
+                item.style.opacity = '0.5';
+            });
+            if (rechargeBtn) {
+                rechargeBtn.classList.add('disabled');
+                rechargeBtn.style.pointerEvents = 'none';
+            }
         }
     },
 
@@ -465,6 +502,14 @@ style.textContent = `
         color: #ff4d4f;
         border-radius: 5px;
         margin-top: 10px;
+        cursor: pointer;
+    }
+    .menu-item.disabled,
+    .btn-recharge.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .user-info.clickable {
         cursor: pointer;
     }
     .filter-tabs {
