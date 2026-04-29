@@ -153,4 +153,24 @@ class User extends Model
 
         return $this->where('id', $userId)->update($updateData);
     }
+
+    /**
+     * 激活VIP
+     */
+    public function activateVip($userId, $expireAt)
+    {
+        return $this->where('id', $userId)->update(['vip_expire' => $expireAt]);
+    }
+
+    /**
+     * 检查VIP是否有效
+     */
+    public function isVipActive($userId)
+    {
+        $user = $this->find($userId);
+        if (!$user || !$user['vip_expire']) {
+            return false;
+        }
+        return strtotime($user['vip_expire']) > time();
+    }
 }

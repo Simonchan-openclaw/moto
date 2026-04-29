@@ -358,3 +358,23 @@ ALTER TABLE `user` ADD UNIQUE KEY `uk_phone_country` (`country_code`, `phone`);
 
 ALTER TABLE `coach` ADD COLUMN `country_code` varchar(10) NOT NULL DEFAULT '86' COMMENT '区域码' AFTER `phone`;
 
+
+-- 添加VIP到期字段
+ALTER TABLE `user` ADD COLUMN `vip_expire` datetime DEFAULT NULL COMMENT 'VIP到期时间' AFTER `inv_coach_id`;
+
+-- 激活日志表
+CREATE TABLE IF NOT EXISTS `activation_log` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `coach_id` bigint unsigned NOT NULL COMMENT '操作教练ID',
+  `user_id` bigint unsigned NOT NULL COMMENT '学员ID',
+  `student_phone` varchar(20) NOT NULL COMMENT '学员手机',
+  `amount` decimal(10,2) NOT NULL COMMENT '扣款金额',
+  `is_self_invited` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否自己邀请',
+  `inv_coach_id` bigint unsigned DEFAULT 0 COMMENT '邀请教练ID',
+  `commission` decimal(10,2) DEFAULT 0 COMMENT '佣金金额',
+  `expire_at` datetime NOT NULL COMMENT 'VIP到期时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_coach_id` (`coach_id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='激活日志表';

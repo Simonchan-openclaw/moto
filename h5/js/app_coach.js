@@ -274,15 +274,13 @@ var CoachApp = {
 
             // 显示激活结果
             var result = document.getElementById('activateResult');
+            var inviteType = res.data.is_self_invited ? '邀请学员' : '其他学员';
             result.innerHTML = '<div class="result-container">' +
                 '<div style="font-size:60px;margin-bottom:15px;">🎉</div>' +
-                '<h3 style="margin-bottom:15px;">激活码生成成功</h3>' +
-                '<div class="code-box">' +
-                '<div class="code-label">请将此激活码发送给学员</div>' +
-                '<div class="code-value">' + res.data.activate_code + '</div>' +
-                '</div>' +
+                '<h3 style="margin-bottom:15px;">激活成功</h3>' +
                 '<div class="activation-detail">' +
                 '<div class="detail-row"><span>学员手机</span><span>' + displayPhone + '</span></div>' +
+                '<div class="detail-row"><span>学员类型</span><span>' + inviteType + '</span></div>' +
                 '<div class="detail-row"><span>扣款金额</span><span>¥' + res.data.amount + '</span></div>' +
                 '<div class="detail-row"><span>剩余余额</span><span>¥' + res.data.balance + '</span></div>' +
                 '<div class="detail-row"><span>有效期至</span><span>' + res.data.expire_at + '</span></div>' +

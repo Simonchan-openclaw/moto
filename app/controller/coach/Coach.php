@@ -415,6 +415,9 @@ class Coach
     /**
      * 激活学员
      * POST /api/coach/activate
+     * 逻辑：
+     * - 激活邀请学员（自己邀请的）：扣18余额
+     * - 激活其他学员（其他教练邀请的）：扣36，其中18转给邀请教练
      */
     public function activate()
     {
@@ -430,85 +433,74 @@ class Coach
             return jsonError('学员手机号格式不正确');
         }
 
-        // 获取激活配置
-        $activationPrice = 38.00; // 有邀请人的学员激活费用38元
-        $inviteReward = 20.00;    // 邀请教练奖励20元
-        $expireDays = 90;         // VIP有效期90天
+        // 激活配置
+        $activationFee = 36.00;    // 激活费36元
+        $commission = 18.00;        // 佣金18元
+        $expireDays = 90;          // VIP有效期90天
+
+        // 查找学员信息
+        $userModel = new \app\model\User();
+        $student = $userModel->findByPhone($studentPhone, $countryCode);
+
+        if (!$student) {
+            return jsonError('该学员未注册');
+        }
+
+        // 检查学员的邀请教练
+        $invCoachId = $student['inv_coach_id'] ?? 0;
+        $isSelfInvited = ($invCoachId == $coachId);
+
+        // 计算扣款金额
+        if ($isSelfInvited) {
+            // 自己邀请的学员：扣18（36-18佣金）
+            $deductAmount = $activationFee - $commission;
+        } else {
+            // 其他教练邀请的学员：扣36
+            $deductAmount = $activationFee;
+        }
 
         // 检查余额
         $balance = $this->coachModel->getBalance($coachId);
-
-        if ($balance < $activationPrice) {
-            return jsonError("余额不足，当前余额 {$balance} 元，需要 {$activationPrice} 元");
-        }
-
-        // 查找学员信息（检查是否有邀请教练）
-        $userModel = new \app\model\User();
-        $student = $userModel->findByPhone($studentPhone, $countryCode);
-        $invCoachId = 0;
-        $hasInvited = false;
-
-        if ($student && !empty($student['inv_coach_id']) && $student['inv_coach_id'] != $coachId) {
-            // 学员有邀请教练，且不是当前教练
-            $invCoachId = $student['inv_coach_id'];
-            $hasInvited = true;
+        if ($balance < $deductAmount) {
+            return jsonError("余额不足，当前余额 {$balance} 元，需要 {$deductAmount} 元");
         }
 
         // 扣除当前教练余额
-        $deducted = $this->coachModel->deductBalance($coachId, $activationPrice);
+        $this->coachModel->deductBalance($coachId, $deductAmount);
 
-        if (!$deducted) {
-            return jsonError('余额扣除失败');
+        // 如果是其他教练邀请的，转18元给邀请教练
+        if (!$isSelfInvited && $invCoachId > 0) {
+            $this->coachModel->addBalance($invCoachId, $commission);
         }
 
-        // 如果有邀请教练，给邀请教练20元奖励
-        if ($hasInvited && $invCoachId > 0) {
-            $this->coachModel->addBalance($invCoachId, $inviteReward);
-            
-            // 记录邀请奖励
-            \think\facade\Db::execute(
-                "INSERT INTO coach_invite_reward (coach_id, student_phone, inviter_coach_id, reward_amount, create_time)
-                 VALUES (?, ?, ?, ?, NOW())",
-                [$invCoachId, $studentPhone, $coachId, $inviteReward]
-            );
-        }
-
-        // 创建激活码
-        $activateCode = strtoupper(substr(md5($coachId . time() . rand(1000, 9999)), 0, 8));
+        // 直接激活学员账号（设置VIP到期时间）
         $expireAt = date('Y-m-d H:i:s', strtotime("+{$expireDays} days"));
+        $userModel->activateVip($student['id'], $expireAt);
 
-        // 写入数据库
-        \think\facade\Db::execute(
-            "INSERT INTO student_activation (coach_id, student_phone, activate_code, amount_deducted, expire_at, create_time)
-             VALUES (?, ?, ?, ?, ?, NOW())",
-            [$coachId, $studentPhone, $activateCode, $activationPrice, $expireAt]
-        );
+        // 记录激活日志
+        $logData = [
+            'coach_id'      => $coachId,
+            'user_id'       => $student['id'],
+            'student_phone' => $studentPhone,
+            'amount'        => $deductAmount,
+            'is_self_invited' => $isSelfInvited ? 1 : 0,
+            'inv_coach_id'  => $invCoachId,
+            'commission'    => (!$isSelfInvited && $invCoachId > 0) ? $commission : 0,
+            'expire_at'     => $expireAt,
+            'create_time'   => date('Y-m-d H:i:s')
+        ];
+        \\think\\facade\\Db::name('activation_log')->insert($logData);
 
         // 获取最新余额
         $newBalance = $this->coachModel->getBalance($coachId);
 
-        // 获取邀请教练信息
-        $inviterInfo = null;
-        if ($hasInvited && $invCoachId > 0) {
-            $inviter = $this->coachModel->findById($invCoachId);
-            if ($inviter) {
-                $inviterInfo = [
-                    'name' => $inviter['real_name'] ?: '教练' . $invCoachId,
-                    'reward' => $inviteReward
-                ];
-            }
-        }
-
         return jsonSuccess([
-            'activate_code'  => $activateCode,
-            'student_phone'  => $studentPhone,
-            'amount'        => $activationPrice,
-            'invite_reward' => $hasInvited ? $inviteReward : 0,
-            'inviter_info'  => $inviterInfo,
-            'expire_at'     => $expireAt,
-            'balance'       => $newBalance,
-            'message'      => $hasInvited ? '激活码生成成功，已给邀请教练奖励20元' : '激活码生成成功，请发送给学员'
-        ], '激活码生成成功');
+            'student_phone'   => $studentPhone,
+            'amount'         => $deductAmount,
+            'is_self_invited' => $isSelfInvited,
+            'expire_at'      => $expireAt,
+            'balance'        => $newBalance
+        ], '激活成功');
     }
 
     /**
