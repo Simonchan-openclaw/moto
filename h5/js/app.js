@@ -289,13 +289,19 @@ var App = {
             return;
         }
 
+        // 获取邀请码
+        var inviteCode = this.getInviteCodeFromUrl() || localStorage.getItem('invite_code') || '';
+
         // 使用设备码作为登录凭证
-        API.login(phone, deviceId, nickname).then(function(res) {
+        API.login(phone, deviceId, nickname, inviteCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 
             localStorage.setItem('token', App.token);
             localStorage.setItem('user', JSON.stringify(App.user));
+
+            // 清除URL中的邀请码参数
+            this.clearInviteCodeFromUrl();
 
             App.updateUserInfo();
             App.updateMenuVisibility();
@@ -304,6 +310,23 @@ var App = {
         }).catch(function(err) {
             App.showToast(err.message || '登录失败');
         });
+    },
+
+    /**
+     * 从URL获取邀请码
+     */
+    getInviteCodeFromUrl: function() {
+        var params = new URLSearchParams(window.location.search);
+        return params.get('invite_code') || '';
+    },
+
+    /**
+     * 清除URL中的邀请码
+     */
+    clearInviteCodeFromUrl: function() {
+        var url = new URL(window.location);
+        url.searchParams.delete('invite_code');
+        window.history.replaceState({}, '', url);
     },
 
     /**

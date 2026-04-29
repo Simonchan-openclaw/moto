@@ -55,12 +55,14 @@ class User
      * @param string $phone 手机号
      * @param string $deviceId 设备码（替代验证码）
      * @param string $nickname 昵称（首次注册时传入）
+     * @param string $inviteCode 邀请码（可选）
      */
     public function login()
     {
         $phone = input('post.phone', '');
         $deviceId = input('post.code', ''); // 前端传入的是设备码
         $nickname = input('post.nickname', ''); // 昵称（首次注册时传入）
+        $inviteCode = input('post.invite_code', ''); // 邀请码
 
         if (empty($phone) || empty($deviceId)) {
             return jsonError('手机号和设备码不能为空');
@@ -71,7 +73,6 @@ class User
         }
 
         // 简化验证：只要设备码非空即可
-        // 实际生产环境可在此添加设备绑定验证逻辑
         if (strlen($deviceId) < 8) {
             return jsonError('设备码无效');
         }
@@ -81,12 +82,25 @@ class User
             $nickname = '摩托学员';
         }
 
+        // 解析邀请码
+        $invCoachId = 0;
+        if (!empty($inviteCode)) {
+            try {
+                $decoded = json_decode(base64_decode($inviteCode), true);
+                if (isset($decoded['coach_id']) && intval($decoded['coach_id']) > 0) {
+                    $invCoachId = intval($decoded['coach_id']);
+                }
+            } catch (\Exception $e) {
+                // 无效的邀请码，忽略
+            }
+        }
+
         // 查找或创建用户
         $user = $this->model->findByPhone($phone);
 
         if (!$user) {
-            // 自动注册，保存设备码和昵称
-            $userId = $this->model->register($phone, '', $nickname, $deviceId);
+            // 自动注册，保存设备码和昵称和邀请教练ID
+            $userId = $this->model->register($phone, '', $nickname, $deviceId, $invCoachId);
             $user = $this->model->findById($userId);
         } else {
             // 已存在用户，检查设备码是否匹配
@@ -109,6 +123,7 @@ class User
                 'phone'       => $user['phone'],
                 'nickname'    => $user['nickname'],
                 'avatar'      => $user['avatar'] ?? '',
+                'inv_coach_id'=> $user['inv_coach_id'] ?? 0,
                 'create_time' => $user['create_time']
             ]
         ], '登录成功');

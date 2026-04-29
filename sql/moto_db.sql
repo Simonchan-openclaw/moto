@@ -18,6 +18,7 @@ CREATE TABLE `user` (
   `nickname` varchar(50) DEFAULT '' COMMENT '昵称',
   `avatar` varchar(255) DEFAULT '' COMMENT '头像URL',
   `device_id` varchar(100) DEFAULT '' COMMENT '设备码(绑定设备)',
+  `inv_coach_id` bigint unsigned DEFAULT 0 COMMENT '邀请教练ID(0为无邀请)',
   `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '账号状态: 1=正常, 0=禁用',
   `last_login_time` datetime DEFAULT NULL COMMENT '最后登录时间',
   `last_login_ip` varchar(50) DEFAULT NULL COMMENT '最后登录IP',
@@ -27,6 +28,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `uk_phone` (`phone`),
   KEY `idx_status` (`status`),
   KEY `idx_device_id` (`device_id`),
+  KEY `idx_inv_coach_id` (`inv_coach_id`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
@@ -273,6 +275,24 @@ CREATE TABLE `student_activation` (
   KEY `idx_expire_at` (`expire_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='学员激活记录表';
 
+-- ----------------------------
+-- 13. 教练邀请奖励记录表 (coach_invite_reward)
+-- ----------------------------
+DROP TABLE IF EXISTS `coach_invite_reward`;
+CREATE TABLE `coach_invite_reward` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+  `coach_id` bigint unsigned NOT NULL COMMENT '邀请教练ID(获得奖励的教练)',
+  `student_phone` varchar(20) NOT NULL COMMENT '学员手机号',
+  `inviter_coach_id` bigint unsigned NOT NULL COMMENT '激活教练ID(支付激活费用的教练)',
+  `reward_amount` decimal(10,2) NOT NULL DEFAULT 20.00 COMMENT '奖励金额(元)',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '奖励时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_coach_id` (`coach_id`),
+  KEY `idx_student_phone` (`student_phone`),
+  KEY `idx_inviter_coach_id` (`inviter_coach_id`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='教练邀请奖励记录表';
+
 -- ============================================================
 -- 初始化数据
 -- ============================================================
@@ -324,5 +344,5 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
 -- 脚本执行完成
--- 数据库创建成功，包含12张数据表及初始化数据
+-- 数据库创建成功，包含13张数据表及初始化数据
 -- ============================================================

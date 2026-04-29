@@ -94,5 +94,15 @@ var CoachAPI = {
     // 退款
     refund: function(activationId) {
         return this.request('coach/refund', 'POST', { activation_id: activationId }, true);
+    },
+
+    // 获取教练信息（包含邀请码）
+    getInfo: function() {
+        return this.request('coach/info', 'GET', {}, true);
+    },
+
+    // 获取邀请学员列表
+    getInviteList: function(page, pageSize) {
+        return this.request('coach/invite_list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
     }
 };

@@ -30,8 +30,9 @@ class User extends Model
      * @param string $password 密码（设备码）
      * @param string $nickname 昵称
      * @param string $deviceId 设备ID
+     * @param int $invCoachId 邀请教练ID
      */
-    public function register($phone, $password = '', $nickname = '', $deviceId = '')
+    public function register($phone, $password = '', $nickname = '', $deviceId = '', $invCoachId = 0)
     {
         // 检查手机号是否已注册
         $exists = $this->findByPhone($phone);
@@ -40,15 +41,38 @@ class User extends Model
         }
 
         $data = [
-            'phone'    => $phone,
-            'nickname' => $nickname ?: '摩托学员',
-            'status'   => 1,
-            'password' => password_hash($password ?: $deviceId, PASSWORD_DEFAULT),
-            'device_id' => $deviceId,
-            'create_time' => date('Y-m-d H:i:s'),
+            'phone'        => $phone,
+            'nickname'     => $nickname ?: '摩托学员',
+            'status'       => 1,
+            'password'     => password_hash($password ?: $deviceId, PASSWORD_DEFAULT),
+            'device_id'    => $deviceId,
+            'inv_coach_id' => intval($invCoachId),
+            'create_time'  => date('Y-m-d H:i:s'),
         ];
 
         return $this->insertGetId($data);
+    }
+
+    /**
+     * 根据ID获取用户信息（包含邀请教练ID）
+     */
+    public function findByIdWithInvite($id)
+    {
+        return $this->field('id, phone, nickname, avatar, device_id, inv_coach_id, status, create_time')->find($id);
+    }
+
+    /**
+     * 获取用户的邀请教练信息
+     */
+    public function getInviteCoach($userId)
+    {
+        $user = $this->findByIdWithInvite($userId);
+        if (!$user || empty($user['inv_coach_id'])) {
+            return null;
+        }
+
+        $coachModel = new \app\model\Coach();
+        return $coachModel->findById($user['inv_coach_id']);
     }
 
     /**

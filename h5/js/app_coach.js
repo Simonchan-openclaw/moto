@@ -108,6 +108,9 @@ var CoachApp = {
             case 'activate':
                 document.getElementById('currentBalance').textContent = '¥' + this.balance.toFixed(2);
                 break;
+            case 'invite':
+                this.loadInvitePage();
+                break;
         }
     },
 
@@ -376,6 +379,187 @@ var CoachApp = {
 
         }).catch(function() {
             document.getElementById('rechargeListContainer').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>加载失败</p></div>';
+        });
+    },
+
+    /**
+     * 加载邀请页面
+     */
+    loadInvitePage: function() {
+        var self = this;
+        var qrcodeBox = document.getElementById('qrcodeBox');
+        
+        // 显示加载中
+        qrcodeBox.innerHTML = '<div class="qrcode-loading">加载中...</div>';
+
+        CoachAPI.getInfo().then(function(res) {
+            var inviteUrl = res.data.invite_url;
+            var inviteCode = res.data.invite_code;
+
+            // 保存邀请码
+            localStorage.setItem('invite_code', inviteCode);
+
+            // 生成二维码
+            self.generateQRCode(qrcodeBox, inviteUrl);
+
+            // 加载邀请列表
+            self.loadInviteList();
+        }).catch(function(err) {
+            qrcodeBox.innerHTML = '<div class="qrcode-loading">加载失败，请重试</div>';
+            self.showToast('获取邀请信息失败');
+        });
+    },
+
+    /**
+     * 生成二维码
+     */
+    generateQRCode: function(container, text) {
+        // 使用 Canvas 生成二维码（简化版）
+        var canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 200;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = '#000000';
+        
+        // 简单二维码矩阵（实际使用时替换为完整实现）
+        // 这里使用一个占位符，实际生产环境应使用完整的QRCode库
+        var size = 200;
+        var margin = 20;
+        var gridSize = 21; // 版本1的模块数
+        var cellSize = (size - margin * 2) / gridSize;
+
+        // 生成简单的二维码数据
+        var qrData = this.generateSimpleQRMatrix(text);
+
+        for (var row = 0; row < gridSize; row++) {
+            for (var col = 0; col < gridSize; col++) {
+                if (qrData[row][col]) {
+                    ctx.fillRect(
+                        margin + col * cellSize,
+                        margin + row * cellSize,
+                        cellSize + 0.5,
+                        cellSize + 0.5
+                    );
+                }
+            }
+        }
+
+        container.innerHTML = '';
+        container.appendChild(canvas);
+    },
+
+    /**
+     * 生成简化的二维码矩阵
+     */
+    generateSimpleQRMatrix: function(text) {
+        // 简化的二维码生成（实际生产应使用完整库）
+        // 这里创建一个基本的二维码结构
+        var size = 21;
+        var matrix = [];
+        
+        // 初始化
+        for (var i = 0; i < size; i++) {
+            matrix[i] = [];
+            for (var j = 0; j < size; j++) {
+                matrix[i][j] = false;
+            }
+        }
+
+        // 三个角定位符
+        this.drawFinderPattern(matrix, 0, 0);
+        this.drawFinderPattern(matrix, size - 7, 0);
+        this.drawFinderPattern(matrix, 0, size - 7);
+
+        // 时序图案
+        for (var i = 8; i < size - 8; i++) {
+            matrix[6][i] = (i % 2 === 0);
+            matrix[i][6] = (i % 2 === 0);
+        }
+
+        // 对齐图案（版本2+需要）
+        // 这里简化处理
+        
+        // 基于文本生成一些随机但确定的点
+        var hash = this.simpleHash(text);
+        for (var i = 0; i < size * size; i++) {
+            var row = Math.floor(i / size);
+            var col = i % size;
+            // 跳过定位符区域
+            if (this.isReserved(row, col, size)) continue;
+            matrix[row][col] = ((hash + i) % 3) === 0;
+        }
+
+        return matrix;
+    },
+
+    /**
+     * 绘制定位符
+     */
+    drawFinderPattern: function(matrix, row, col) {
+        for (var r = 0; r < 7; r++) {
+            for (var c = 0; c < 7; c++) {
+                if (r === 0 || r === 6 || c === 0 || c === 6 || 
+                    (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
+                    matrix[row + r][col + c] = true;
+                }
+            }
+        }
+    },
+
+    /**
+     * 检查是否是保留区域
+     */
+    isReserved: function(row, col, size) {
+        // 定位符区域
+        if (row < 9 && col < 9) return true;
+        if (row < 9 && col >= size - 8) return true;
+        if (row >= size - 8 && col < 9) return true;
+        // 时序区域
+        if (row === 6 || col === 6) return true;
+        return false;
+    },
+
+    /**
+     * 简单哈希函数
+     */
+    simpleHash: function(str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash = hash & hash;
+        }
+        return Math.abs(hash);
+    },
+
+    /**
+     * 加载邀请学员列表
+     */
+    loadInviteList: function() {
+        var self = this;
+        var container = document.getElementById('inviteListContainer');
+        container.innerHTML = '<div class="invite-empty">加载中...</div>';
+
+        CoachAPI.getInviteList().then(function(res) {
+            var list = res.data.list || [];
+
+            if (list.length === 0) {
+                container.innerHTML = '<div class="invite-empty">暂无邀请记录<br><small>分享二维码给学员注册即可获得奖励</small></div>';
+                return;
+            }
+
+            var html = '';
+            list.forEach(function(item) {
+                html += '<div class="invite-item">' +
+                    '<div><div class="phone">' + (item.phone_mask || item.phone) + '</div>' +
+                    '<div class="time">' + item.create_time + '</div></div>' +
+                    '</div>';
+            });
+
+            container.innerHTML = html;
+        }).catch(function() {
+            container.innerHTML = '<div class="invite-empty">加载失败</div>';
         });
     },
 
