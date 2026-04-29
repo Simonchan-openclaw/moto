@@ -280,7 +280,7 @@ CREATE TABLE `student_activation` (
 -- 插入超级管理员账号 (密码: admin123)
 -- bcrypt加密后的哈希值
 INSERT INTO `admin` (`username`, `password`, `real_name`, `role_id`, `role_name`, `status`) VALUES
-('admin', '0192023a7bbd73250516f069df18b500', '系统管理员', 1, '超级管理员', 1);
+('admin', '$2b$12$pvUT3WdA10KAky4hlrzIVeJ3iaJ5cW4ZRVFk0E9Jf6dIa3kgyl.6S', '系统管理员', 1, '超级管理员', 1);
 
 -- 插入默认系统配置
 INSERT INTO `system_config` (`config_key`, `config_value`, `config_name`, `group_name`, `description`) VALUES

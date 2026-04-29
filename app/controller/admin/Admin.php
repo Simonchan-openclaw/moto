@@ -18,12 +18,10 @@ class Admin
             return jsonError('用户名和密码不能为空');
         }
 
-        // MD5加密密码
-        $passwordHash = md5($password);
-
+        // 查询管理员
         $admin = Db::query(
-            "SELECT * FROM admin WHERE username = ? AND password = ? AND status = 1",
-            [$username, $passwordHash]
+            "SELECT * FROM admin WHERE username = ? AND status = 1",
+            [$username]
         );
 
         if (empty($admin)) {
@@ -31,6 +29,11 @@ class Admin
         }
 
         $admin = $admin[0];
+
+        // bcrypt密码验证
+        if (!password_verify($password, $admin['password'])) {
+            return jsonError('用户名或密码错误');
+        }
 
         // 生成Token
         $token = createToken($admin['id'], ['type' => 'admin']);
