@@ -76,10 +76,11 @@ var API = {
     /**
      * 用户登录
      */
-    login: function(phone, code) {
+    login: function(phone, code, nickname) {
         return this.request('user/login', 'POST', {
             phone: phone,
-            code: code
+            code: code,
+            nickname: nickname || ''
         }, true);
     },
 

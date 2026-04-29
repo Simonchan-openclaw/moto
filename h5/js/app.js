@@ -280,6 +280,7 @@ var App = {
         var phone = document.getElementById('loginPhone').value.trim();
         var countryCode = document.getElementById('countryCode').value;
         var deviceId = this.getDeviceId();
+        var nickname = document.getElementById('loginNickname').value.trim() || '';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
@@ -287,7 +288,7 @@ var App = {
         }
 
         // 使用设备码作为登录凭证
-        API.login(phone, deviceId).then(function(res) {
+        API.login(phone, deviceId, nickname).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

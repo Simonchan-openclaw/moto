@@ -60,8 +60,9 @@ var Admin = {
         }
 
         var self = this;
-        API.login(username, password).then(function() {
-            localStorage.setItem('admin_token', Config.ADMIN_TOKEN);
+        API.login(username, password).then(function(res) {
+            // 保存返回的Token
+            localStorage.setItem('admin_token', res.data.token);
             location.reload();
         }).catch(function(err) {
             self.showToast(err.message || '登录失败');

@@ -54,11 +54,13 @@ class User
      * POST /api/user/login
      * @param string $phone 手机号
      * @param string $deviceId 设备码（替代验证码）
+     * @param string $nickname 昵称（首次注册时传入）
      */
     public function login()
     {
         $phone = input('post.phone', '');
         $deviceId = input('post.code', ''); // 前端传入的是设备码
+        $nickname = input('post.nickname', ''); // 昵称（首次注册时传入）
 
         if (empty($phone) || empty($deviceId)) {
             return jsonError('手机号和设备码不能为空');
@@ -74,12 +76,17 @@ class User
             return jsonError('设备码无效');
         }
 
+        // 如果没有传入昵称，使用默认值
+        if (empty($nickname)) {
+            $nickname = '摩托学员';
+        }
+
         // 查找或创建用户
         $user = $this->model->findByPhone($phone);
 
         if (!$user) {
-            // 自动注册，保存设备码
-            $userId = $this->model->register($phone, '', '摩托学员', $deviceId);
+            // 自动注册，保存设备码和昵称
+            $userId = $this->model->register($phone, '', $nickname, $deviceId);
             $user = $this->model->findById($userId);
         } else {
             // 已存在用户，检查设备码是否匹配
