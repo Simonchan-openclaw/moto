@@ -12,55 +12,70 @@ class Stat
     public function summary()
     {
         // 用户总数
-        $totalUsers = Db::query("SELECT COUNT(*) as cnt FROM user WHERE status = 1")[0]['cnt'] ?? 0;
+        $result = Db::query("SELECT COUNT(*) as cnt FROM user WHERE status = 1");
+        $totalUsers = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
         
         // 今日新增用户
-        $todayUsers = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM user WHERE status = 1 AND DATE(create_time) = CURDATE()"
-        )[0]['cnt'] ?? 0;
+        );
+        $todayUsers = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 题目总数
-        $totalQuestions = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM question WHERE status = 1"
-        )[0]['cnt'] ?? 0;
+        );
+        $totalQuestions = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 考试记录总数
-        $totalExams = Db::query("SELECT COUNT(*) as cnt FROM exam_record")[0]['cnt'] ?? 0;
+        $result = Db::query("SELECT COUNT(*) as cnt FROM exam_record");
+        $totalExams = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
         
         // 今日考试次数
-        $todayExams = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM exam_record WHERE DATE(create_time) = CURDATE()"
-        )[0]['cnt'] ?? 0;
+        );
+        $todayExams = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 科目1平均分
-        $avgScore1 = Db::query(
+        $result = Db::query(
             "SELECT AVG(score) as avg FROM exam_record WHERE subject = 1"
-        )[0]['avg'] ?? 0;
+        );
+        $avgScore1 = isset($result[0]['avg']) ? $result[0]['avg'] : 0;
 
         // 科目4平均分
-        $avgScore4 = Db::query(
+        $result = Db::query(
             "SELECT AVG(score) as avg FROM exam_record WHERE subject = 4"
-        )[0]['avg'] ?? 0;
+        );
+        $avgScore4 = isset($result[0]['avg']) ? $result[0]['avg'] : 0;
 
         // 激活记录总数（来自activation_log）
-        $activationCount = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM activation_log"
-        )[0]['cnt'] ?? 0;
+        );
+        $activationCount = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 今日激活次数
-        $todayActivation = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM activation_log WHERE DATE(create_time) = CURDATE()"
-        )[0]['cnt'] ?? 0;
+        );
+        $todayActivation = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 本周激活次数
-        $weekActivation = Db::query(
+        $result = Db::query(
             "SELECT COUNT(*) as cnt FROM activation_log WHERE YEARWEEK(create_time, 1) = YEARWEEK(CURDATE(), 1)"
-        )[0]['cnt'] ?? 0;
+        );
+        $weekActivation = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 激活总额（教练总扣款）
-        $totalActivationAmount = Db::query(
+        $result = Db::query(
             "SELECT COALESCE(SUM(amount), 0) as total FROM activation_log"
-        )[0]['total'] ?? 0;
+        );
+        $totalActivationAmount = isset($result[0]['total']) ? $result[0]['total'] : 0;
+
+        // 教练总数
+        $result = Db::query("SELECT COUNT(*) as cnt FROM coach WHERE status = 1");
+        $coachCount = isset($result[0]['cnt']) ? $result[0]['cnt'] : 0;
 
         // 近7天激活趋势
         $trendResult = Db::query(
@@ -72,20 +87,20 @@ class Stat
         );
         
         // 构建7天趋势数组
-        $trend = [];
+        $trend = array();
         for ($i = 6; $i >= 0; $i--) {
             $date = date('Y-m-d', strtotime("-{$i} days"));
             $count = 0;
             foreach ($trendResult as $row) {
                 if ($row['date'] == $date) {
-                    $count = $row['count'];
+                    $count = intval($row['count']);
                     break;
                 }
             }
-            $trend[] = ['date' => $date, 'count' => $count];
+            $trend[] = array('date' => $date, 'count' => $count);
         }
 
-        return jsonSuccess([
+        return jsonSuccess(array(
             'total_users'          => $totalUsers,
             'today_users'          => $todayUsers,
             'total_questions'      => $totalQuestions,
@@ -93,14 +108,14 @@ class Stat
             'today_exams'          => $todayExams,
             'avg_score_1'          => round($avgScore1, 2),
             'avg_score_4'          => round($avgScore4, 2),
-            'activation_count'    => $activationCount,
-            'today_activation'    => $todayActivation,
-            'week_activation'     => $weekActivation,
+            'activation_count'     => $activationCount,
+            'today_activation'     => $todayActivation,
+            'week_activation'      => $weekActivation,
             'total_activation_amount' => $totalActivationAmount,
-            'activation_trend'    => $trend,
-            'user_count'          => $totalUsers,
-            'coach_count'         => Db::query("SELECT COUNT(*) as cnt FROM coach WHERE status = 1")[0]['cnt'] ?? 0,
-            'question_count'      => $totalQuestions,
-        ]);
+            'activation_trend'     => $trend,
+            'user_count'           => $totalUsers,
+            'coach_count'          => $coachCount,
+            'question_count'       => $totalQuestions,
+        ));
     }
 }

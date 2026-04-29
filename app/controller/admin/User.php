@@ -43,7 +43,9 @@ class User
         
         // 处理激活状态
         foreach ($list as &$user) {
-            $user['is_activated'] = !empty($user['vip_expire']) && strtotime($user['vip_expire']) > time() ? 1 : 0;
+            $hasVipExpire = isset($user['vip_expire']) && !empty($user['vip_expire']);
+            $isActivated = $hasVipExpire && strtotime($user['vip_expire']) > time();
+            $user['is_activated'] = $isActivated ? 1 : 0;
         }
         unset($user);
 

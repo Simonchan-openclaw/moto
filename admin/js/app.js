@@ -184,20 +184,37 @@ var Admin = {
             '<div class="stat-info">' +
             '<div class="stat-label">激活次数</div>' +
             '<div class="stat-value" id="statActivations">-</div>' +
+            '</div></div>' +
+            '<div class="stat-card">' +
+            '<div class="stat-icon purple">💰</div>' +
+            '<div class="stat-info">' +
+            '<div class="stat-label">今日激活</div>' +
+            '<div class="stat-value" id="statTodayActivation">-</div>' +
+            '</div></div>' +
+            '<div class="stat-card">' +
+            '<div class="stat-icon teal">📅</div>' +
+            '<div class="stat-info">' +
+            '<div class="stat-label">本周激活</div>' +
+            '<div class="stat-value" id="statWeekActivation">-</div>' +
+            '</div></div>' +
+            '<div class="stat-card">' +
+            '<div class="stat-icon pink">💵</div>' +
+            '<div class="stat-info">' +
+            '<div class="stat-label">激活总额</div>' +
+            '<div class="stat-value" id="statTotalAmount">-</div>' +
+            '</div></div>' +
+            '<div class="stat-card">' +
+            '<div class="stat-icon yellow">📊</div>' +
+            '<div class="stat-info">' +
+            '<div class="stat-label">考试次数</div>' +
+            '<div class="stat-value" id="statExams">-</div>' +
             '</div></div></div>' +
 
-            '<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:20px;">' +
-            '<div class="card">' +
+            '<div class="card" style="margin-top:20px;">' +
             '<div class="card-header">' +
-            '<h3 class="card-title">📈 今日激活趋势</h3>' +
+            '<h3 class="card-title">📈 近7天激活趋势</h3>' +
             '</div>' +
             '<div id="dashboardActivationsChart" style="width:100%;height:260px;"></div></div>' +
-
-            '<div class="card">' +
-            '<div class="card-header">' +
-            '<h3 class="card-title">📊 激活状态分布</h3>' +
-            '</div>' +
-            '<div id="dashboardStatusChart" style="width:100%;height:260px;"></div></div></div>' +
 
             '<div class="card" style="margin-top:20px;">' +
             '<div class="card-header">' +
