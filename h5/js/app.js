@@ -90,7 +90,7 @@ var App = {
         var deviceId = this.getDeviceId();
         var self = this;
         
-        API.getVipStatus(deviceId).then(function(res) {
+        API.getVipStatus().then(function(res) {
             if (res.code === 200 && res.data) {
                 if (res.data.is_activated && res.data.expire_at) {
                     // 服务器返回已激活，更新本地状态
