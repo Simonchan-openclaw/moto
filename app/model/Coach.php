@@ -31,6 +31,18 @@ class Coach
     }
 
     /**
+     * 获取教练名称
+     */
+    public function getCoachName($coachId)
+    {
+        $coach = $this->findById($coachId);
+        if (!$coach) {
+            return '未知教练';
+        }
+        return $coach['real_name'] ?: ('教练' . $coach['id']);
+    }
+
+    /**
      * 根据ID查找
      */
     public function findById($id)

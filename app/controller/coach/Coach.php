@@ -339,9 +339,18 @@ class Coach
     /**
      * 核实学员是否被教练邀请
      * POST /api/coach/verify_student
+     * 返回状态：
+     * - not_registered: 学员未注册（红色边框）
+     * - self_invited: 本教练邀请的学员（绿色边框）
+     * - other_invited: 其他教练邀请的学员（橙色边框）
      */
     public function verifyStudent()
     {
+        $coachId = $this->getCurrentCoachId();
+        if (!$coachId) {
+            return jsonError('请先登录', 401);
+        }
+        
         $studentPhone = input('post.phone', '');
         $countryCode = input('post.country_code', '86');
 
@@ -356,15 +365,51 @@ class Coach
         $userModel = new \app\model\User();
         $student = $userModel->findByPhone($studentPhone, $countryCode);
 
+        // 学员未注册
         if (!$student) {
-            return jsonSuccess(['inv_coach_id' => 0]);
+            return jsonSuccess([
+                'status'        => 'not_registered',
+                'message'       => '该学员未在册',
+                'border_color'  => 'red',
+                'phone'         => $studentPhone
+            ]);
         }
 
-        return jsonSuccess([
-            'inv_coach_id' => $student['inv_coach_id'] ?: 0,
-            'coach_name' => '',
-            'phone' => $studentPhone
-        ]);
+        // 学员已注册，判断邀请教练
+        $invCoachId = intval($student['inv_coach_id'] ?? 0);
+        
+        if ($invCoachId == 0) {
+            // 没有邀请教练
+            return jsonSuccess([
+                'status'        => 'no_invitation',
+                'message'       => '可激活其他学员',
+                'border_color'  => 'orange',
+                'phone'         => $studentPhone,
+                'inv_coach_id'  => 0
+            ]);
+        } elseif ($invCoachId == $coachId) {
+            // 是本教练邀请的学员
+            $coachName = $this->coachModel->getCoachName($coachId);
+            return jsonSuccess([
+                'status'        => 'self_invited',
+                'message'       => '可激活邀请学员',
+                'border_color'  => 'green',
+                'phone'         => $studentPhone,
+                'inv_coach_id'  => $invCoachId,
+                'coach_name'    => $coachName
+            ]);
+        } else {
+            // 是其他教练邀请的学员
+            $coachName = $this->coachModel->getCoachName($invCoachId);
+            return jsonSuccess([
+                'status'        => 'other_invited',
+                'message'       => '可激活其他学员',
+                'border_color'  => 'orange',
+                'phone'         => $studentPhone,
+                'inv_coach_id'  => $invCoachId,
+                'coach_name'    => $coachName
+            ]);
+        }
     }
 
     /**
