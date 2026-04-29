@@ -129,13 +129,9 @@ class Coach
         $inviteCode = 'C' . $coachId;  // C开头避免与数字ID混淆
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
         
-        // 生成二维码图片（使用endroid/qr-code库）
-        $qrCode = new QrCode($inviteUrl);
-        $qrCode->setSize(300);
-        $qrCode->setMargin(10);
-        $writer = new PngWriter();
-        $result = $writer->write($qrCode);
-        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($result->getString());
+        // 使用QR Server API生成二维码
+        $qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=" . urlencode($inviteUrl);
+        $qrCodeBase64 = 'data:image/png;base64,' . base64_encode(@file_get_contents($qrApiUrl));
 
         return jsonSuccess([
             'coach_id'    => $coach['id'],
@@ -160,17 +156,22 @@ class Coach
         }
 
         // 生成邀请链接（直接使用教练ID作为邀请码）
-        $inviteCode = 'C' . $coachId;  // C开头避免与数字ID混淆
+        $inviteCode = 'C' . $coachId;
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
 
-        // 使用endroid/qr-code库生成二维码
-        $qrCode = new QrCode($inviteUrl);
-        $qrCode->setSize(300);
-        $qrCode->setMargin(10);
-        $writer = new PngWriter();
-        $result = $writer->write($qrCode);
+        // 使用QR Server API生成二维码
+        $qrApiUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&format=png&data=" . urlencode($inviteUrl);
+        $imageData = @file_get_contents($qrApiUrl);
 
-        return Response::create($result->getString(), 'image/png');
+        header('Content-Type: image/png');
+        header('Cache-Control: max-age=3600');
+        if ($imageData !== false && strlen($imageData) > 100) {
+            echo $imageData;
+        } else {
+            // 返回空白PNG
+            echo base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+        }
+        exit;
     }
 
     /**
