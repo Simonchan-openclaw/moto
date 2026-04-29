@@ -63,6 +63,11 @@ var CoachAPI = {
         return this.request('coach/login', 'POST', { phone: phone, password: password }, true);
     },
 
+    // 教练注册
+    register: function(name, phone, password) {
+        return this.request('coach/register', 'POST', { name: name, phone: phone, password: password }, false);
+    },
+
     // 获取余额
     getBalance: function() {
         return this.request('coach/balance', 'GET', {}, true);

@@ -160,6 +160,41 @@ var CoachApp = {
         });
     },
 
+    // 教练注册
+    doRegister: function() {
+        var name = document.getElementById('regName').value.trim();
+        var phone = document.getElementById('regPhone').value.trim();
+        var password = document.getElementById('regPassword').value;
+
+        if (!name) {
+            this.showToast('请输入姓名');
+            return;
+        }
+
+        if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+            this.showToast('请输入正确的手机号');
+            return;
+        }
+
+        if (!password || password.length < 6) {
+            this.showToast('密码至少6位');
+            return;
+        }
+
+        var self = this;
+        CoachAPI.register(name, phone, password).then(function(res) {
+            self.showToast('注册成功，请登录');
+            // 清空表单
+            document.getElementById('regName').value = '';
+            document.getElementById('regPhone').value = '';
+            document.getElementById('regPassword').value = '';
+            // 跳转到登录页
+            self.showPage('login');
+        }).catch(function(err) {
+            self.showToast(err.message || '注册失败');
+        });
+    },
+
     logout: function() {
         this.token = null;
         this.coach = null;

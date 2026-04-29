@@ -129,15 +129,22 @@ class Coach
      * 教练注册
      * POST /api/coach/register
      */
+    /**
+     * 教练注册
+     * POST /api/coach/register
+     */
     public function register()
     {
+        $name = input('post.name', '');
         $phone = input('post.phone', '');
         $password = input('post.password', '');
-        $code = input('post.code', '');
-        $realName = input('post.real_name', '');
 
-        if (empty($phone) || empty($password) || empty($code)) {
-            return jsonError('手机号、验证码和密码不能为空');
+        if (empty($name)) {
+            return jsonError('姓名不能为空');
+        }
+
+        if (empty($phone) || empty($password)) {
+            return jsonError('手机号和密码不能为空');
         }
 
         if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
@@ -148,13 +155,8 @@ class Coach
             return jsonError('密码至少6位');
         }
 
-        // TODO: 验证验证码
-        if ($code !== '123456') {
-            return jsonError('验证码错误');
-        }
-
         try {
-            $coachId = $this->coachModel->register($phone, $password, $realName);
+            $coachId = $this->coachModel->register($phone, $password, $name);
             return jsonSuccess(['coach_id' => $coachId], '注册成功');
         } catch (\Exception $e) {
             return jsonError($e->getMessage());
