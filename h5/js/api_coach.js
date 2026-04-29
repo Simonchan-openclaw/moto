@@ -78,6 +78,14 @@ var CoachAPI = {
         return this.request('coach/recharge_list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
     },
 
+    // 核实学员
+    verifyStudent: function(phone, countryCode) {
+        return this.request('coach/verify_student', 'POST', {
+            phone: phone,
+            country_code: countryCode || '86'
+        }, false);
+    },
+
     // 激活学员
     activate: function(studentPhone, countryCode) {
         return this.request('coach/activate', 'POST', { 

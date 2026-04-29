@@ -43,6 +43,12 @@
         .invite-item .phone { font-size: 14px; color: #333; }
         .invite-item .time { font-size: 12px; color: #999; }
         .invite-empty { text-align: center; color: #999; padding: 30px; }
+        .verify-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .verify-result { flex: 1; padding: 10px 15px; background: #f5f5f5; border-radius: 6px; font-size: 14px; color: #666; min-height: 20px; }
+        .verify-result.has-coach { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .verify-result.no-coach { background: #fff2e8; color: #fa8c16; border: 1px solid #ffbb6b; }
+        .btn-verify { padding: 10px 20px; background: #1890ff; color: #fff; border: none; border-radius: 6px; font-size: 14px; white-space: nowrap; }
+        .btn-verify:active { background: #096dd9; }
     </style>
 </head>
 <body>
@@ -180,14 +186,20 @@
                         <input type="tel" id="studentPhone" placeholder="请输入学员手机号" maxlength="11">
                     </div>
                 </div>
+                <div class="form-group">
+                    <div class="verify-row">
+                        <div class="verify-result" id="verifyResult">核实结果</div>
+                        <button class="btn-verify" onclick="CoachApp.verifyStudent()">核实学员</button>
+                    </div>
+                </div>
                 <div class="activation-info">
                     <div class="info-row">
-                        <span>普通学员激活</span>
-                        <span>¥38.00</span>
+                        <span>激活邀请学员</span>
+                        <span>¥18.00</span>
                     </div>
                     <div class="info-row">
-                        <span>邀请学员激活</span>
-                        <span>¥38.00（奖励邀请人¥20）</span>
+                        <span>激活其他学员</span>
+                        <span>¥38.00</span>
                     </div>
                     <div class="info-row">
                         <span>VIP有效期</span>

@@ -60,6 +60,7 @@ Route::group('api', function () {
         Route::post('recharge', 'coach.Coach/recharge');
         Route::get('recharge_list', 'coach.Coach/rechargeList');
         Route::post('activate', 'coach.Coach/activate');
+        Route::post('verify_student', 'coach.Coach/verifyStudent');
         Route::get('activation_list', 'coach.Coach/activationList');
         Route::post('refund', 'coach.Coach/refund');
     });

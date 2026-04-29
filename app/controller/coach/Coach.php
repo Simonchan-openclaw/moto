@@ -337,6 +337,37 @@ class Coach
     }
 
     /**
+     * 核实学员是否被教练邀请
+     * POST /api/coach/verify_student
+     */
+    public function verifyStudent()
+    {
+        $studentPhone = input('post.phone', '');
+        $countryCode = input('post.country_code', '86');
+
+        if (empty($studentPhone)) {
+            return jsonError('手机号不能为空');
+        }
+
+        if (!preg_match('/^1[3-9]\d{9}$/', $studentPhone)) {
+            return jsonError('手机号格式不正确');
+        }
+
+        $userModel = new \app\model\User();
+        $student = $userModel->findByPhone($studentPhone, $countryCode);
+
+        if (!$student) {
+            return jsonSuccess(['inv_coach_id' => 0]);
+        }
+
+        return jsonSuccess([
+            'inv_coach_id' => $student['inv_coach_id'] ?: 0,
+            'coach_name' => '',
+            'phone' => $studentPhone
+        ]);
+    }
+
+    /**
      * 激活学员
      * POST /api/coach/activate
      */

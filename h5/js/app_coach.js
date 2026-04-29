@@ -214,6 +214,43 @@ var CoachApp = {
         });
     },
 
+    /**
+     * 核实学员是否被教练邀请
+     */
+    verifyStudent: function() {
+        var countryCode = document.getElementById('studentCountryCode').value;
+        var studentPhone = document.getElementById('studentPhone').value.trim();
+        var verifyResult = document.getElementById('verifyResult');
+
+        if (!studentPhone || !/^1[3-9]\d{9}$/.test(studentPhone)) {
+            verifyResult.textContent = '请输入正确的手机号';
+            verifyResult.className = 'verify-result no-coach';
+            return;
+        }
+
+        verifyResult.textContent = '核实中...';
+        verifyResult.className = 'verify-result';
+
+        CoachAPI.verifyStudent(studentPhone, countryCode).then(function(res) {
+            if (res.code === 200 && res.data) {
+                var invCoachId = res.data.inv_coach_id;
+                if (invCoachId && invCoachId > 0) {
+                    verifyResult.textContent = '该学员由教练' + (res.data.coach_name || '邀请') + '邀请';
+                    verifyResult.className = 'verify-result has-coach';
+                } else {
+                    verifyResult.textContent = '该学员未被教练邀请';
+                    verifyResult.className = 'verify-result no-coach';
+                }
+            } else {
+                verifyResult.textContent = '该学员未注册';
+                verifyResult.className = 'verify-result no-coach';
+            }
+        }).catch(function(err) {
+            verifyResult.textContent = '核实失败';
+            verifyResult.className = 'verify-result no-coach';
+        });
+    },
+
     doActivate: function() {
         var countryCode = document.getElementById('studentCountryCode').value;
         var studentPhone = document.getElementById('studentPhone').value.trim();
