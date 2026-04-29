@@ -981,8 +981,9 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin: 20px 15px;
-    padding: 12px 20px;
+    width: 140px;
+    height: 45px;
+    margin: 30px auto 20px;
     background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
     border-radius: 25px;
     color: #fff;
@@ -1008,8 +1009,9 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin: 20px 15px;
-    padding: 12px 20px;
+    width: 140px;
+    height: 45px;
+    margin: 30px auto 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 25px;
     color: #fff;
