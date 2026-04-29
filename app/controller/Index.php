@@ -7,7 +7,7 @@ class Index
 {
     public function index()
     {
-        return json(['msg' => 'moto exam api running', 'version' => '1.0.0']);
+        return redirect('/h5/');
     }
     
     public function health()
