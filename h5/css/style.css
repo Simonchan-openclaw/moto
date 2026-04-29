@@ -974,3 +974,57 @@ body {
     animation: spin 1s linear infinite;
     margin-bottom: 15px;
 }
+
+/* ============ 教练端入口 ============ */
+.coach-entrance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 15px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    border-radius: 25px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(82, 196, 26, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.coach-entrance:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(82, 196, 26, 0.4);
+}
+
+.coach-entrance .coach-icon {
+    font-size: 18px;
+}
+
+/* ============ 学员端入口 ============ */
+.student-entrance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 15px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 25px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.student-entrance:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.student-entrance .student-icon {
+    font-size: 18px;
+}
