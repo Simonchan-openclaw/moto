@@ -114,9 +114,15 @@ var API = {
     getActivationList: function(params) {
         var query = [];
         for (var key in params) {
-            query.push(key + '=' + params[key]);
+            if (params[key] !== null && params[key] !== undefined) {
+                query.push(key + '=' + params[key]);
+            }
         }
-        return this.request('coach/activation_list?' + query.join('&'), 'GET', {}, true);
+        return this.request('admin/activation/list?' + query.join('&'), 'GET', {}, true);
+    },
+
+    getActivationStatistics: function() {
+        return this.request('admin/activation/statistics', 'GET', {}, true);
     },
 
     // ==================== 统计数据 ====================

@@ -46,6 +46,8 @@ Route::group('api', function () {
         Route::post('coach/delete', 'admin.Coach/delete');
         Route::get('exam/records', 'admin.Exam/records');
         Route::get('stat/summary', 'admin.Stat/summary');
+        Route::get('activation/list', 'admin.Activation/list');
+        Route::get('activation/statistics', 'admin.Activation/statistics');
     })->middleware(\app\middleware\Auth::class);
     
     // 教练端API（无需中间件，使用独立认证）

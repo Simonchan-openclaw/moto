@@ -42,6 +42,11 @@ class Stat
             "SELECT AVG(score) as avg FROM exam_record WHERE subject = 4"
         )[0]['avg'] ?? 0;
 
+        // 激活记录总数（来自activation_log）
+        $activationCount = Db::query(
+            "SELECT COUNT(*) as cnt FROM activation_log"
+        )[0]['cnt'] ?? 0;
+
         return jsonSuccess([
             'total_users'      => $totalUsers,
             'today_users'      => $todayUsers,
@@ -50,6 +55,10 @@ class Stat
             'today_exams'      => $todayExams,
             'avg_score_1'      => round($avgScore1, 2),
             'avg_score_4'      => round($avgScore4, 2),
+            'activation_count' => $activationCount,
+            'user_count'       => $totalUsers,
+            'coach_count'      => Db::query("SELECT COUNT(*) as cnt FROM coach WHERE status = 1")[0]['cnt'] ?? 0,
+            'question_count'   => $totalQuestions,
         ]);
     }
 }

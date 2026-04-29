@@ -321,19 +321,19 @@ var Admin = {
             }
             
             var html = '<table>' +
-                '<thead><tr><th>学员手机</th><th>教练</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>' +
+                '<thead><tr><th>学员手机</th><th>教练</th><th>金额</th><th>学员类型</th><th>时间</th></tr></thead>' +
                 '<tbody>';
             
             list.forEach(function(item) {
-                var statusClass = item.status === 1 ? 'tag-success' : (item.status === 0 ? 'tag-primary' : 'tag-warning');
-                var statusText = item.status === 1 ? '已激活' : (item.status === 0 ? '待激活' : '处理中');
+                var isSelf = item.is_self_invited == 1;
+                var studentType = isSelf ? '邀请学员' : '其他学员';
                 
                 html += '<tr>' +
-                    '<td>' + self.maskPhone(item.user_phone || item.phone || '-') + '</td>' +
+                    '<td>' + self.maskPhone(item.student_phone || '-') + '</td>' +
                     '<td>' + (item.coach_name || '-') + '</td>' +
-                    '<td>¥' + (item.amount || '18') + '</td>' +
-                    '<td><span class="tag ' + statusClass + '">' + statusText + '</span></td>' +
-                    '<td>' + (item.activation_time || item.create_time || '-') + '</td></tr>';
+                    '<td>¥' + (item.amount || '0') + '</td>' +
+                    '<td>' + studentType + '</td>' +
+                    '<td>' + (item.create_time || '-') + '</td></tr>';
             });
             
             html += '</tbody></table>';
@@ -921,19 +921,9 @@ var Admin = {
             '<div class="card-header">' +
             '<h3 class="card-title">激活记录</h3>' +
             '</div>' +
-            '<div class="search-bar">' +
-            '<select class="form-input filter-select" id="filterActStatus">' +
-            '<option value="">全部状态</option>' +
-            '<option value="0">待激活</option>' +
-            '<option value="1">已激活</option>' +
-            '<option value="2">已失效</option>' +
-            '<option value="3">已退款</option>' +
-            '</select>' +
-            '<button class="btn btn-primary" onclick="Admin.loadActivations()">筛选</button>' +
-            '</div>' +
             '<div class="table-container">' +
             '<table>' +
-            '<thead><tr><th>ID</th><th>教练</th><th>学员手机</th><th>激活码</th><th>设备ID</th><th>金额</th><th>状态</th><th>激活时间</th><th>到期时间</th></tr></thead>' +
+            '<thead><tr><th>ID</th><th>教练</th><th>学员手机</th><th>扣款金额</th><th>学员类型</th><th>VIP到期时间</th><th>操作时间</th></tr></thead>' +
             '<tbody id="activationsBody"></tbody>' +
             '</table></div>' +
             '<div class="pagination">' +
@@ -946,12 +936,10 @@ var Admin = {
 
     loadActivations: function() {
         var self = this;
-        var status = document.getElementById('filterActStatus') ? document.getElementById('filterActStatus').value : '';
         var params = {
             page: this.pageParams.page || 1,
             page_size: 20
         };
-        if (status) params.status = status;
 
         this.showLoading();
 
@@ -961,31 +949,26 @@ var Admin = {
             var list = data.list || [];
             
             if (list.length === 0) {
-                document.getElementById('activationsBody').innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;padding:40px;">暂无激活记录</td></tr>';
+                document.getElementById('activationsBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:40px;">暂无激活记录</td></tr>';
                 document.getElementById('activationsInfo').textContent = '共 0 条';
                 return;
             }
 
             var html = '';
             list.forEach(function(item) {
-                var statusMap = {
-                    0: { text: '待激活', class: 'primary' },
-                    1: { text: '已激活', class: 'success' },
-                    2: { text: '已失效', class: 'danger' },
-                    3: { text: '已退款', class: 'warning' }
-                };
-                var statusInfo = statusMap[item.status] || statusMap[0];
+                var isSelf = item.is_self_invited == 1;
+                var studentType = isSelf ? 
+                    '<span class="tag tag-success">邀请学员</span>' : 
+                    '<span class="tag tag-warning">其他学员</span>';
                 
                 html += '<tr>' +
                     '<td>' + item.id + '</td>' +
                     '<td>' + (item.coach_name || '教练' + (item.coach_id || '-')) + '</td>' +
-                    '<td>' + self.maskPhone(item.user_phone || item.phone || '-') + '</td>' +
-                    '<td><code>' + (item.activation_code || item.code || '-') + '</code></td>' +
-                    '<td style="font-size:11px;color:#999;" title="' + (item.device_id || '') + '">' + (item.device_id ? item.device_id.substr(0, 8) + '...' : '-') + '</td>' +
-                    '<td>¥' + (item.amount || '18.00') + '</td>' +
-                    '<td><span class="tag tag-' + statusInfo.class + '">' + statusInfo.text + '</span></td>' +
-                    '<td>' + (item.activation_time || item.activated_at || '-') + '</td>' +
-                    '<td>' + (item.expire_time || item.expires_at || '-') + '</td></tr>';
+                    '<td>' + self.maskPhone(item.student_phone || '-') + '</td>' +
+                    '<td>¥' + (item.amount || '0.00') + '</td>' +
+                    '<td>' + studentType + '</td>' +
+                    '<td>' + (item.expire_at || '-') + '</td>' +
+                    '<td>' + (item.create_time || '-') + '</td></tr>';
             });
 
             document.getElementById('activationsBody').innerHTML = html;
