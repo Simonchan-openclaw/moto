@@ -210,6 +210,8 @@ var App = {
      */
     doRegister: function() {
         var phone = document.getElementById('regPhone').value.trim();
+        var name = document.getElementById('regName').value.trim();
+        var password = document.getElementById('regPassword').value;
         var deviceId = this.getDeviceId();
         var inviteCode = localStorage.getItem('invite_code') || '';
 
@@ -218,9 +220,19 @@ var App = {
             return;
         }
 
-        // 调用登录API（带邀请码，会创建新用户并绑定教练）
+        if (!name) {
+            this.showToast('请输入姓名');
+            return;
+        }
+
+        if (!password || password.length < 6) {
+            this.showToast('请输入6位以上密码');
+            return;
+        }
+
+        // 调用注册API
         var self = this;
-        API.register(phone, deviceId, inviteCode).then(function(res) {
+        API.register(phone, name, password, deviceId, inviteCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

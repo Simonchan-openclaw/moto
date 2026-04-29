@@ -116,18 +116,28 @@ class User
     public function register()
     {
         $phone = input('post.phone', '');
-        $deviceId = input('post.code', '');
+        $name = input('post.name', '');
+        $password = input('post.password', '');
+        $deviceId = input('post.device_id', '');
         $inviteCode = input('post.invite_code', '');
 
-        if (empty($phone) || empty($deviceId)) {
-            return jsonError('手机号和设备码不能为空');
+        if (empty($phone)) {
+            return jsonError('手机号不能为空');
         }
 
         if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
             return jsonError('手机号格式不正确');
         }
 
-        if (strlen($deviceId) < 8) {
+        if (empty($name)) {
+            return jsonError('姓名不能为空');
+        }
+
+        if (empty($password) || strlen($password) < 6) {
+            return jsonError('密码不能少于6位');
+        }
+
+        if (empty($deviceId) || strlen($deviceId) < 8) {
             return jsonError('设备码无效');
         }
 
@@ -150,8 +160,9 @@ class User
             }
         }
 
-        // 创建用户
-        $userId = $this->model->register($phone, '', '摩托学员', $deviceId, $invCoachId);
+        // 创建用户（密码需要加密）
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $userId = $this->model->register($phone, $passwordHash, $name, $deviceId, $invCoachId);
         $user = $this->model->findById($userId);
 
         // 生成JWT Token

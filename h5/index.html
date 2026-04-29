@@ -115,12 +115,20 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="regName" placeholder="请输入姓名" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="regPassword" placeholder="请输入密码（6位以上）" minlength="6">
+                </div>
+                <div class="form-group">
                     <label>设备码</label>
                     <div class="device-code-box">
                         <span id="regDeviceCodeDisplay">加载中...</span>
                     </div>
                 </div>
-                <button class="btn-primary" onclick="doRegister()">注册</button>
+                <button class="btn-primary" onclick="App.doRegister()">注册</button>
             </div>
         </div>
 
