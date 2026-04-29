@@ -18,7 +18,7 @@ class Coach
         $pageSize = min($pageSize, 100);
         $offset = ($page - 1) * $pageSize;
 
-        $where = ['status = 1'];
+        $where = [];
         $params = [];
 
         if (!empty($keyword)) {
@@ -27,7 +27,7 @@ class Coach
             $params[] = '%' . $keyword . '%';
         }
 
-        $whereStr = implode(' AND ', $where);
+        $whereStr = !empty($where) ? implode(' AND ', $where) : '1=1';
 
         // 获取列表
         $list = Db::query(
