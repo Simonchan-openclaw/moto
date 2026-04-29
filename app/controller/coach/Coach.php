@@ -106,8 +106,8 @@ class Coach
         $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
         
-        // 使用QR Server API生成二维码图片URL
-        $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=" . urlencode($inviteUrl);
+        // 使用中国可访问的二维码API
+        $qrCodeUrl = "https://api.uomg.com/api/qrcode?text=" . urlencode($inviteUrl) . "&size=300";
 
         return jsonSuccess([
             'coach_id'    => $coach['id'],
