@@ -239,7 +239,7 @@ var App = {
                     phoneCodeSelect.style.backgroundColor = '#f5f5f5';
                 }
                 if (inviteCodeEl) {
-                    inviteCodeEl.textContent = '加载中...';
+                    inviteCodeEl.value = '加载中...';
                 }
                 
                 // 调用API获取教练信息
@@ -247,16 +247,16 @@ var App = {
                 API.getCoachInfo(coachId).then(function(res) {
                     if (res.code === 200 && res.data) {
                         if (inviteCodeEl) {
-                            inviteCodeEl.textContent = res.data.real_name || '教练' + coachId;
+                            inviteCodeEl.value = res.data.real_name || '教练' + coachId;
                         }
                     } else {
                         if (inviteCodeEl) {
-                            inviteCodeEl.textContent = '教练' + coachId;
+                            inviteCodeEl.value = '未知教练';
                         }
                     }
                 }).catch(function() {
                     if (inviteCodeEl) {
-                        inviteCodeEl.textContent = '教练' + coachId;
+                        inviteCodeEl.value = '加载失败';
                     }
                 });
             } else {
