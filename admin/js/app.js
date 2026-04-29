@@ -782,9 +782,9 @@ var Admin = {
 
             var html = '';
             list.forEach(function(coach) {
-                var balance = coach.balance || 0;
-                var totalRecharged = coach.total_recharge || 0;
-                var activationCount = coach.activation_count || 0;
+                var balance = parseFloat(coach.balance) || 0;
+                var totalRecharged = parseFloat(coach.total_recharged) || 0;
+                var activationCount = parseInt(coach.activation_count) || 0;
                 
                 html += '<tr>' +
                     '<td>' + coach.id + '</td>' +
@@ -905,7 +905,7 @@ var Admin = {
         API.coachRecharge(coachId, amount).then(function(res) {
             self.hideLoading();
             self.closeModal();
-            self.showToast('充值成功，新余额：¥' + (res.data.balance || 0).toFixed(2));
+            self.showToast('充值成功，新余额：¥' + (parseFloat(res.data.balance) || 0).toFixed(2));
             self.loadCoaches();
         }).catch(function(err) {
             self.hideLoading();
