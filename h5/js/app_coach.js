@@ -183,13 +183,15 @@ var CoachApp = {
 
         var self = this;
         CoachAPI.register(name, phone, password).then(function(res) {
-            self.showToast('注册成功，请登录');
+            self.showToast('注册成功');
             // 清空表单
             document.getElementById('regName').value = '';
             document.getElementById('regPhone').value = '';
             document.getElementById('regPassword').value = '';
-            // 跳转到登录页
-            self.showPage('login');
+            // 跳转到客服页面
+            setTimeout(function() {
+                window.location.href = 'https://work.weixin.qq.com/kfid/kfcbce99f60b1428ee0';
+            }, 1500);
         }).catch(function(err) {
             self.showToast(err.message || '注册失败');
         });
