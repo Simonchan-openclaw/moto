@@ -8,7 +8,6 @@ Route::group('api', function () {
     Route::post('user/login', 'api.User/login');
     Route::post('user/register', 'api.User/register');
     Route::get('vip/status', 'api.Vip/status');
-    Route::get('coach/info', 'api.User/getCoachInfo');
     Route::get('user/getCoachInfo', 'api.User/getCoachInfo');
     
     // 管理后台登录（无需认证）
