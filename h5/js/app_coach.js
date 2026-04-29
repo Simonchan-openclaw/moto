@@ -389,19 +389,31 @@ var CoachApp = {
         var self = this;
         var qrcodeImg = document.getElementById('qrcodeImg');
         var qrcodeLoading = document.getElementById('qrcodeLoading');
+        var inviteMessage = document.getElementById('inviteMessage');
+        var coachNameEl = document.getElementById('coachName');
         
         // 显示加载中
         qrcodeLoading.style.display = 'block';
         if (qrcodeImg) qrcodeImg.style.display = 'none';
 
         CoachAPI.getInfo().then(function(res) {
-            var inviteCode = res.data.invite_code;
-            var qrcodeUrl = res.data.qrcode_url;
+            if (res.code !== 200) {
+                qrcodeLoading.innerHTML = '获取信息失败，请刷新重试';
+                return;
+            }
+
+            var data = res.data;
+            var inviteCode = data.invite_code;
+            var qrcodeUrl = data.qrcode_url;
+            var realName = data.real_name || '教练';
+
+            // 显示教练名字
+            if (coachNameEl) coachNameEl.textContent = realName;
 
             // 保存邀请码
             localStorage.setItem('invite_code', inviteCode);
 
-            // 使用后端返回的二维码URL（使用QR Server API）
+            // 使用后端返回的二维码URL
             if (qrcodeUrl) {
                 if (qrcodeImg) {
                     qrcodeImg.src = qrcodeUrl;
@@ -410,20 +422,15 @@ var CoachApp = {
                         qrcodeImg.style.display = 'block';
                     };
                     qrcodeImg.onerror = function() {
-                        qrcodeLoading.innerHTML = '加载失败，请刷新重试';
+                        qrcodeLoading.innerHTML = '二维码加载失败<br><a href="' + data.invite_url + '" style="color:#1890ff;font-size:12px;">点击复制邀请链接</a>';
                     };
-                } else {
-                    // 如果没有img标签，创建并显示
-                    var qrcodeBox = document.getElementById('qrcodeBox');
-                    if (qrcodeBox) {
-                        qrcodeBox.innerHTML = '<img id="qrcodeImg" src="' + qrcodeUrl + '" style="max-width:200px;border-radius:8px;" />';
-                        qrcodeLoading.style.display = 'none';
-                    }
                 }
             } else {
-                qrcodeLoading.innerHTML = '获取失败，请刷新重试';
+                // 如果没有二维码URL，显示邀请链接
+                qrcodeLoading.innerHTML = '<div style="padding:10px;"><p style="color:#666;margin-bottom:10px;">长按复制邀请链接：</p><a href="' + data.invite_url + '" style="word-break:break-all;color:#1890ff;font-size:12px;">' + data.invite_url + '</a></div>';
             }
         }).catch(function(err) {
+            console.error('获取邀请信息失败:', err);
             qrcodeLoading.innerHTML = '获取信息失败，请刷新重试';
         });
     },

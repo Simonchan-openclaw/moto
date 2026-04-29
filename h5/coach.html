@@ -32,6 +32,10 @@
         .qrcode-box canvas { max-width: 200px; height: auto; }
         .qrcode-loading { color: #999; padding: 60px; }
         .invite-desc { font-size: 12px; color: #999; margin-top: 10px; }
+        .invite-message { text-align: center; margin-bottom: 15px; }
+        .invite-title { font-size: 18px; color: #333; font-weight: bold; margin-bottom: 10px; }
+        .invite-content { font-size: 15px; color: #666; margin: 5px 0; }
+        .invite-hint { font-size: 13px; color: #999; margin-top: 10px; }
         .invite-list { background: #fff; border-radius: 12px; padding: 15px; }
         .invite-list h3 { font-size: 16px; margin-bottom: 15px; color: #333; }
         .invite-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
@@ -237,7 +241,12 @@
             </div>
             <div class="invite-container">
                 <div class="invite-qrcode">
-                    <p class="invite-desc">让学员扫码注册摩托车题库</p>
+                    <div class="invite-message" id="inviteMessage">
+                        <p class="invite-title">你好，我是<span id="coachName">教练</span></p>
+                        <p class="invite-content">现邀请你用题库刷题</p>
+                        <p class="invite-content">助你一次通过科一科四</p>
+                        <p class="invite-hint">（扫描或者识别下方二维码注册）</p>
+                    </div>
                     <div class="qrcode-box" id="qrcodeBox">
                         <img id="qrcodeImg" src="" style="display:none;max-width:200px;border-radius:8px;">
                         <div class="qrcode-loading" id="qrcodeLoading">加载中...</div>
