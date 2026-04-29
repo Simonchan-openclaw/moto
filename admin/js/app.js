@@ -328,9 +328,6 @@ var Admin = {
         }
     },
 
-    window.addEventListener('resize', function() {
-    },
-
     loadRecentActivations: function() {
         var self = this;
         API.getActivationList({ page: 1, page_size: 5 }).then(function(res) {
