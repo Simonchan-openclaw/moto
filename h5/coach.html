@@ -10,6 +10,15 @@
     <style>
         body { background: #f0f2f5; }
         .coach-header { background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); }
+        .btn-logout {
+            padding: 6px 12px;
+            background: #fff;
+            color: #ff4d4f;
+            border: 1px solid #ff4d4f;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
         .invite-container { padding: 15px; }
         .invite-qrcode { background: #fff; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
         .invite-tip { font-size: 16px; color: #333; margin-bottom: 15px; }
@@ -42,39 +51,39 @@
                     <span class="nickname">未登录</span>
                     <span class="status">点击登录</span>
                 </div>
+                <button class="btn-logout" id="btnLogout" style="display:none;" onclick="CoachApp.logout()">登出</button>
             </div>
 
             <div class="menu-grid">
                 <div class="menu-item" onclick="CoachApp.checkLogin('invite')">
                     <div class="icon">📱</div>
                     <span>邀请学员</span>
-                    <small>扫码注册得奖励</small>
+                    <small>邀请学员加入题库</small>
                 </div>
-                <div class="menu-item" onclick="CoachApp.checkLogin('activation-list')">
-                    <div class="icon">🎫</div>
-                    <span>激活记录</span>
-                    <small>查看/管理</small>
-                </div>
-                <div class="menu-item" onclick="CoachApp.checkLogin('recharge-list')">
-                    <div class="icon">💳</div>
-                    <span>充值记录</span>
-                    <small>查看历史</small>
+                <div class="menu-item" onclick="CoachApp.checkLogin('invite-list')">
+                    <div class="icon">👥</div>
+                    <span>邀请列表</span>
+                    <small>查看已邀请学员</small>
                 </div>
                 <div class="menu-item" onclick="CoachApp.checkLogin('activate')">
                     <div class="icon">✨</div>
                     <span>激活学员</span>
                     <small>通过手机号码激活</small>
                 </div>
-            </div>
-            
-            <!-- 余额卡片 -->
-            <div class="balance-card" id="balanceCard" style="display:none;">
-                <div class="balance-main">
-                    <span class="label">账户余额</span>
-                    <span class="amount" id="balanceAmount">¥0.00</span>
+                <div class="menu-item" onclick="CoachApp.checkLogin('activation-list')">
+                    <div class="icon">🎫</div>
+                    <span>激活记录</span>
+                    <small>查看/管理</small>
                 </div>
-                <div class="balance-actions">
-                    <button class="btn-recharge" onclick="CoachApp.checkLogin('recharge')">💰 充值</button>
+                <div class="menu-item" onclick="CoachApp.checkLogin('recharge')">
+                    <div class="icon">💰</div>
+                    <span>账户充值</span>
+                    <small>充值账户余额</small>
+                </div>
+                <div class="menu-item" onclick="CoachApp.checkLogin('recharge-list')">
+                    <div class="icon">💳</div>
+                    <span>充值记录</span>
+                    <small>查看充值历史</small>
                 </div>
             </div>
         </div>
@@ -221,6 +230,17 @@
                         <div class="qrcode-loading">加载中...</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 邀请列表页 -->
+        <div id="page-invite-list" class="page" style="display:none;">
+            <div class="header">
+                <div class="back-btn" onclick="CoachApp.showPage('home')">← 返回</div>
+                <h2>邀请列表</h2>
+            </div>
+            <div class="list-container" id="inviteListContainer">
+                <!-- 动态加载 -->
             </div>
         </div>
 

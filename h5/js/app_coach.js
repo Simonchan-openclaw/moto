@@ -35,14 +35,16 @@ var CoachApp = {
         var nickname = userInfo.querySelector('.nickname');
         var status = userInfo.querySelector('.status');
         var menuItems = document.querySelectorAll('.menu-grid .menu-item');
-        var rechargeBtn = document.querySelector('.btn-recharge');
+        var btnLogout = document.getElementById('btnLogout');
 
         if (this.coach) {
             nickname.textContent = this.coach.real_name || '教练';
-            status.textContent = '已登录';
+            status.textContent = '余额 ¥' + (parseFloat(this.coach.balance) || 0).toFixed(2) + '元';
             userInfo.onclick = null;
             userInfo.classList.remove('clickable');
-            document.getElementById('balanceCard').style.display = 'flex';
+            
+            // 显示登出按钮
+            if (btnLogout) btnLogout.style.display = 'block';
             
             // 启用菜单按钮
             menuItems.forEach(function(item) {
@@ -50,16 +52,25 @@ var CoachApp = {
                 item.style.pointerEvents = 'auto';
                 item.style.opacity = '1';
             });
-            if (rechargeBtn) {
-                rechargeBtn.classList.remove('disabled');
-                rechargeBtn.style.pointerEvents = 'auto';
-            }
         } else {
             nickname.textContent = '未登录';
             status.textContent = '点击登录';
             userInfo.onclick = function() {
                 CoachApp.showPage('login');
             };
+            userInfo.classList.add('clickable');
+            
+            // 隐藏登出按钮
+            if (btnLogout) btnLogout.style.display = 'none';
+            
+            // 禁用菜单按钮
+            menuItems.forEach(function(item) {
+                item.classList.add('disabled');
+                item.style.pointerEvents = 'none';
+                item.style.opacity = '0.5';
+            });
+        }
+    },
             userInfo.classList.add('clickable');
             document.getElementById('balanceCard').style.display = 'none';
             
@@ -106,10 +117,14 @@ var CoachApp = {
                 this.loadRechargeList();
                 break;
             case 'activate':
-                document.getElementById('currentBalance').textContent = '¥' + this.balance.toFixed(2);
+                var balanceEl = document.getElementById('currentBalance');
+                if (balanceEl) balanceEl.textContent = '¥' + this.balance.toFixed(2);
                 break;
             case 'invite':
                 this.loadInvitePage();
+                break;
+            case 'invite-list':
+                this.loadInviteList();
                 break;
         }
     },
