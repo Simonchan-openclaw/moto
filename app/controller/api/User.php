@@ -199,19 +199,19 @@ class User
             return jsonError('教练ID不能为空');
         }
         
-        $coach = \think\facade\Db::query(
-            "SELECT id, real_name, phone FROM coach WHERE id = ? AND status = 1",
-            [$coachId]
-        );
+        $coach = \think\facade\Db::name('coach')
+            ->where('id', $coachId)
+            ->where('status', 1)
+            ->find();
         
-        if (!$coach || !isset($coach[0])) {
+        if (!$coach) {
             return jsonError('教练不存在');
         }
         
         return jsonSuccess([
-            'coach_id'   => $coach[0]['id'],
-            'real_name'  => $coach[0]['real_name'] ?: '教练' . $coach[0]['id'],
-            'phone'      => substr($coach[0]['phone'], 0, 3) . '****' . substr($coach[0]['phone'], -4)
+            'coach_id'   => $coach['id'],
+            'real_name'  => $coach['real_name'] ?: ('教练' . $coach['id']),
+            'phone'      => substr($coach['phone'], 0, 3) . '****' . substr($coach['phone'], -4)
         ]);
     }
 
