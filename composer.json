@@ -7,7 +7,8 @@
         "topthink/framework": "^8.0",
         "topthink/think-orm": "^3.0",
         "topthink/think-captcha": "^3.0",
-        "firebase/php-jwt": "^6.0"
+        "firebase/php-jwt": "^6.0",
+        "endroid/qr-code": "^5.0"
     },
     "autoload": {
         "psr-4": {

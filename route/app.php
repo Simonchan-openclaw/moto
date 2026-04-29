@@ -52,6 +52,7 @@ Route::group('api', function () {
         Route::post('login', 'coach.Coach/login');
         Route::post('register', 'coach.Coach/register');
         Route::get('info', 'coach.Coach/getInfo');
+        Route::get('qrcode', 'coach.Coach/qrCode');
         Route::get('invite_list', 'coach.Coach/getInviteList');
         Route::get('balance', 'coach.Coach/getBalance');
         Route::post('recharge', 'coach.Coach/recharge');

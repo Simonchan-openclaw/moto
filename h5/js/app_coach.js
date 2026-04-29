@@ -402,63 +402,44 @@ var CoachApp = {
      */
     loadInvitePage: function() {
         var self = this;
+        var qrcodeImg = document.getElementById('qrcodeImg');
+        var qrcodeLoading = document.getElementById('qrcodeLoading');
         var qrcodeBox = document.getElementById('qrcodeBox');
         
         // 显示加载中
-        qrcodeBox.innerHTML = '<div class="qrcode-loading">加载中...</div>';
+        qrcodeLoading.style.display = 'block';
+        qrcodeImg.style.display = 'none';
 
         CoachAPI.getInfo().then(function(res) {
-            var inviteUrl = res.data.invite_url;
             var inviteCode = res.data.invite_code;
 
             // 保存邀请码
             localStorage.setItem('invite_code', inviteCode);
 
-            // 生成二维码
-            try {
-                if (typeof QRCode !== 'undefined') {
-                    self.generateQRCode(qrcodeBox, inviteUrl);
-                } else {
-                    // QRCode库未加载，显示链接
-                    qrcodeBox.innerHTML = '<div style="padding:20px;">' +
-                        '<p style="color:#666;margin-bottom:10px;">二维码加载失败</p>' +
-                        '<a href="' + inviteUrl + '" style="word-break:break-all;color:#1890ff;font-size:12px;">' + inviteUrl + '</a>' +
-                        '</div>';
-                }
-            } catch (e) {
-                qrcodeBox.innerHTML = '<div style="padding:20px;">' +
-                    '<p style="color:#666;margin-bottom:10px;">二维码加载失败</p>' +
-                    '<a href="' + inviteUrl + '" target="_blank" style="word-break:break-all;color:#1890ff;font-size:12px;">' + inviteUrl + '</a>' +
-                    '</div>';
-            }
+            // 直接使用后端生成的二维码图片
+            var token = localStorage.getItem('coach_token') || '';
+            qrcodeImg.src = Config.API_BASE.replace('/api/', '/api/coach/qrcode?t=' + Date.now() + '&token=' + encodeURIComponent(token));
+            
+            qrcodeImg.onload = function() {
+                qrcodeLoading.style.display = 'none';
+                qrcodeImg.style.display = 'block';
+            };
+            
+            qrcodeImg.onerror = function() {
+                qrcodeLoading.innerHTML = '加载失败，请刷新重试';
+                console.error('二维码加载失败');
+            };
         }).catch(function(err) {
-            qrcodeBox.innerHTML = '<div class="qrcode-loading">加载失败，请刷新重试</div>';
+            qrcodeLoading.innerHTML = '获取信息失败，请刷新重试';
             console.error('获取邀请信息失败:', err);
         });
     },
 
     /**
-     * 生成二维码
+     * 生成二维码（已废弃，使用后端API）
      */
     generateQRCode: function(container, text) {
-        // 使用 QRCode.js 库生成二维码
-        container.innerHTML = '';
-        try {
-            new QRCode(container, {
-                text: text,
-                width: 200,
-                height: 200,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } catch (e) {
-            // 显示为链接作为备选
-            container.innerHTML = '<div style="padding:10px;text-align:center;">' +
-                '<p style="color:#666;margin-bottom:10px;">长按复制链接：</p>' +
-                '<a href="' + text + '" style="word-break:break-all;color:#1890ff;font-size:11px;">' + text + '</a>' +
-                '</div>';
-        }
+        // 已改用后端API生成，此方法保留但不再使用
     },
 
     /**
