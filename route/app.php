@@ -8,6 +8,9 @@ Route::group('api', function () {
     Route::post('user/login', 'api.User/login');
     Route::get('vip/status', 'api.Vip/status');
     
+    // 管理后台登录（无需认证）
+    Route::post('admin/login', 'admin.Admin/login');
+    
     // 需要认证
     Route::group('', function () {
         Route::post('user/info', 'api.User/info');
@@ -27,9 +30,8 @@ Route::group('api', function () {
         Route::post('vip/activate', 'api.Vip/activate');
     })->middleware(\app\middleware\Auth::class);
     
-    // 管理后台API
+    // 管理后台API（需要认证）
     Route::group('admin', function () {
-        Route::post('login', 'admin.Admin/login');
         Route::post('question/list', 'admin.Question/list');
         Route::post('question/import', 'admin.Question/import');
         Route::post('question/add', 'admin.Question/add');

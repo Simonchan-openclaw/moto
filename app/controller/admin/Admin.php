@@ -20,19 +20,25 @@ class Admin
 
         // 查询管理员
         $admin = Db::query(
-            "SELECT * FROM admin WHERE username = ? AND status = 1",
+            "SELECT * FROM admin WHERE username = ?",
             [$username]
         );
 
+        // 账号不存在
         if (empty($admin)) {
-            return jsonError('用户名或密码错误');
+            return jsonError('账号不存在');
         }
 
         $admin = $admin[0];
 
+        // 账号被禁用
+        if ($admin['status'] != 1) {
+            return jsonError('账号已被禁用');
+        }
+
         // bcrypt密码验证
         if (!password_verify($password, $admin['password'])) {
-            return jsonError('用户名或密码错误');
+            return jsonError('密码错误');
         }
 
         // 生成Token
