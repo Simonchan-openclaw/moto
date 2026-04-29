@@ -237,7 +237,7 @@ var App = {
                 
                 // 调用API获取教练信息
                 var self = this;
-                API.getCoachInfo(coachId).then(function(res) {
+                API.getCoachInfo(coachId, inviteCode).then(function(res) {
                     if (res.code === 200 && res.data) {
                         if (inviteCodeEl) {
                             inviteCodeEl.value = res.data.real_name || '教练' + coachId;

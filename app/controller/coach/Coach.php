@@ -39,6 +39,58 @@ class Coach
     }
 
     /**
+     * 公开接口：根据邀请码获取教练信息（无需认证）
+     * GET /api/coach/check?invite_code=xxx
+     */
+    public function check()
+    {
+        $inviteCode = input('get.invite_code', '');
+        
+        if (empty($inviteCode)) {
+            return jsonError('邀请码不能为空');
+        }
+        
+        // 解析邀请码获取教练ID
+        $coachId = 0;
+        
+        // 支持新格式：C开头+教练ID
+        if (strpos($inviteCode, 'C') === 0) {
+            $coachId = intval(substr($inviteCode, 1));
+        }
+        // 支持旧格式：纯数字
+        elseif (is_numeric($inviteCode)) {
+            $coachId = intval($inviteCode);
+        }
+        // 支持base64 JSON格式
+        else {
+            try {
+                $decoded = json_decode(base64_decode($inviteCode), true);
+                if (isset($decoded['coach_id'])) {
+                    $coachId = intval($decoded['coach_id']);
+                }
+            } catch (\Exception $e) {
+                return jsonError('无效的邀请码');
+            }
+        }
+        
+        if (!$coachId) {
+            return jsonError('无效的邀请码');
+        }
+        
+        // 查询教练信息
+        $coach = $this->coachModel->findById($coachId);
+        
+        if (!$coach || $coach['status'] != 1) {
+            return jsonError('教练不存在');
+        }
+        
+        return jsonSuccess([
+            'coach_id'  => $coach['id'],
+            'real_name' => $coach['real_name'] ?: '教练' . $coach['id'],
+        ]);
+    }
+
+    /**
      * 教练登录
      * POST /api/coach/login
      */

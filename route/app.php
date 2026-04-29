@@ -52,6 +52,7 @@ Route::group('api', function () {
     Route::group('coach', function () {
         Route::post('login', 'coach.Coach/login');
         Route::post('register', 'coach.Coach/register');
+        Route::get('check', 'coach.Coach/check');  // 公开接口，无需认证
         Route::get('info', 'coach.Coach/getInfo');
         Route::get('qrcode', 'coach.Coach/qrCode');
         Route::get('invite_list', 'coach.Coach/getInviteList');

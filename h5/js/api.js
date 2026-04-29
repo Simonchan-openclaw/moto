@@ -99,10 +99,10 @@ var API = {
     },
 
     /**
-     * 获取教练信息
+     * 获取教练信息（公开接口）
      */
-    getCoachInfo: function(coachId) {
-        return this.request('user/getCoachInfo?id=' + coachId, 'GET', {}, false);
+    getCoachInfo: function(coachId, inviteCode) {
+        return this.request('coach/check?invite_code=' + encodeURIComponent(inviteCode || 'C' + coachId), 'GET', {}, false);
     },
 
     /**
