@@ -210,6 +210,7 @@ var App = {
         var userInfo = document.getElementById('userInfo');
         var nickname = userInfo.querySelector('.nickname');
         var status = userInfo.querySelector('.status');
+        var btnLogout = document.getElementById('btnLogout');
 
         if (!this.user) {
             // 未登录
@@ -219,6 +220,7 @@ var App = {
                 App.showPage('login');
             };
             userInfo.style.cursor = 'pointer';
+            if (btnLogout) btnLogout.style.display = 'none';
         } else if (!this.isActivated()) {
             // 登录未激活
             nickname.textContent = this.user.nickname || '摩托学员';
@@ -227,12 +229,14 @@ var App = {
                 App.showToast('请联系教练获取激活码');
             };
             userInfo.style.cursor = 'pointer';
+            if (btnLogout) btnLogout.style.display = 'block';
         } else {
             // 已登录已激活
             nickname.textContent = this.user.nickname || '摩托学员';
             status.textContent = '已登录';
             userInfo.onclick = null;
             userInfo.style.cursor = 'default';
+            if (btnLogout) btnLogout.style.display = 'block';
         }
     },
 

@@ -168,6 +168,25 @@ body {
     border-radius: 50%;
 }
 
+/* ============ 登出按钮 ============ */
+.btn-logout {
+    padding: 8px 16px;
+    background: transparent;
+    border: 2px solid #ff4d4f;
+    border-radius: 20px;
+    color: #ff4d4f;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-left: auto;
+}
+
+.btn-logout:hover {
+    background: #ff4d4f;
+    color: #fff;
+}
+
 /* ============ 菜单网格 ============ */
 .menu-grid {
     display: grid;
