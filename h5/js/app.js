@@ -474,6 +474,9 @@ var App = {
             App.updateMenuVisibility();
             App.showPage('home');
             App.showToast('登录成功');
+            
+            // 从服务器检查最新激活状态
+            App.checkActivationFromServer();
         }).catch(function(err) {
             self.showToast(err.message || '登录失败');
         });

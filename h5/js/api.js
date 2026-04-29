@@ -106,6 +106,23 @@ var API = {
     },
 
     /**
+     * 获取VIP激活状态
+     */
+    getVipStatus: function(deviceId) {
+        return this.request('vip/status?device_id=' + encodeURIComponent(deviceId), 'GET', {}, false);
+    },
+
+    /**
+     * 激活VIP
+     */
+    activateVip: function(activateCode, deviceId) {
+        return this.request('vip/activate', 'POST', {
+            activate_code: activateCode,
+            device_id: deviceId
+        }, true);
+    },
+
+    /**
      * 获取用户信息
      */
     getUserInfo: function() {

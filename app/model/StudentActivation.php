@@ -8,6 +8,33 @@ class StudentActivation
     protected $table = 'student_activation';
 
     /**
+     * 检查用户激活状态
+     */
+    public function checkUserActivation($userId, $deviceId)
+    {
+        // 直接从user表检查vip_expire
+        $user = Db::query("SELECT id, vip_expire FROM user WHERE id = ?", [$userId]);
+        
+        if (!$user || !isset($user[0])) {
+            return ['is_activated' => false, 'expire_at' => null];
+        }
+        
+        $user = $user[0];
+        $vipExpire = $user['vip_expire'] ?? null;
+        
+        if (!$vipExpire) {
+            return ['is_activated' => false, 'expire_at' => null];
+        }
+        
+        $isActivated = strtotime($vipExpire) > time();
+        
+        return [
+            'is_activated' => $isActivated,
+            'expire_at'     => $isActivated ? $vipExpire : null
+        ];
+    }
+
+    /**
      * 激活（绑定设备）
      */
     public function activate($activateCode, $deviceId, $userId)
