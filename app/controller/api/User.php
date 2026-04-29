@@ -116,7 +116,6 @@ class User
     public function register()
     {
         $phone = input('post.phone', '');
-        $name = input('post.name', '');
         $password = input('post.password', '');
         $deviceId = input('post.device_id', '');
         $inviteCode = input('post.invite_code', '');
@@ -127,10 +126,6 @@ class User
 
         if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
             return jsonError('手机号格式不正确');
-        }
-
-        if (empty($name)) {
-            return jsonError('姓名不能为空');
         }
 
         if (empty($password) || strlen($password) < 6) {
@@ -162,7 +157,7 @@ class User
 
         // 创建用户（密码需要加密）
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $userId = $this->model->register($phone, $passwordHash, $name, $deviceId, $invCoachId);
+        $userId = $this->model->register($phone, $passwordHash, '摩托学员', $deviceId, $invCoachId);
         $user = $this->model->findById($userId);
 
         // 生成JWT Token
@@ -179,6 +174,34 @@ class User
                 'create_time' => $user['create_time']
             ]
         ], $invCoachId > 0 ? '注册成功，已绑定邀请教练' : '注册成功');
+    }
+
+    /**
+     * 获取教练信息（根据coach_id）
+     * GET /api/coach/info?id=xxx
+     */
+    public function getCoachInfo()
+    {
+        $coachId = input('get.id/d', 0);
+        
+        if (!$coachId) {
+            return jsonError('教练ID不能为空');
+        }
+        
+        $coach = \think\facade\Db::query(
+            "SELECT id, real_name, phone FROM coach WHERE id = ? AND status = 1",
+            [$coachId]
+        );
+        
+        if (!$coach || !isset($coach[0])) {
+            return jsonError('教练不存在');
+        }
+        
+        return jsonSuccess([
+            'coach_id'   => $coach[0]['id'],
+            'real_name'  => $coach[0]['real_name'] ?: '教练' . $coach[0]['id'],
+            'phone'      => substr($coach[0]['phone'], 0, 3) . '****' . substr($coach[0]['phone'], -4)
+        ]);
     }
 
     /**

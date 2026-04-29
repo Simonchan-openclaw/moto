@@ -86,14 +86,20 @@ var API = {
     /**
      * 用户注册
      */
-    register: function(phone, name, password, deviceId, inviteCode) {
+    register: function(phone, password, deviceId, inviteCode) {
         return this.request('user/register', 'POST', {
             phone: phone,
-            name: name,
             password: password,
             device_id: deviceId || '',
             invite_code: inviteCode || ''
         }, true);
+    },
+
+    /**
+     * 获取教练信息
+     */
+    getCoachInfo: function(coachId) {
+        return this.request('user/getCoachInfo?id=' + coachId, 'GET', {}, false);
     },
 
     /**

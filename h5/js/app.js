@@ -203,6 +203,51 @@ var App = {
         if (deviceCodeEl) {
             deviceCodeEl.textContent = this.getDeviceId();
         }
+        
+        // 检查邀请码并显示教练信息
+        var inviteCodeEl = document.getElementById('inviteCoachName');
+        var inviteCoachGroup = document.getElementById('inviteCoachGroup');
+        var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
+        
+        if (inviteCode && inviteCoachGroup) {
+            try {
+                var decoded = JSON.parse(atob(inviteCode));
+                var coachId = decoded.coach_id;
+                
+                if (coachId) {
+                    inviteCoachGroup.style.display = 'block';
+                    if (inviteCodeEl) {
+                        inviteCodeEl.value = '加载中...';
+                    }
+                    
+                    // 调用API获取教练信息
+                    var self = this;
+                    API.getCoachInfo(coachId).then(function(res) {
+                        if (res.code === 200 && res.data) {
+                            if (inviteCodeEl) {
+                                inviteCodeEl.value = res.data.real_name || '教练' + coachId;
+                            }
+                        } else {
+                            if (inviteCodeEl) {
+                                inviteCodeEl.value = '未知教练';
+                            }
+                        }
+                    }).catch(function() {
+                        if (inviteCodeEl) {
+                            inviteCodeEl.value = '加载失败';
+                        }
+                    });
+                } else {
+                    inviteCoachGroup.style.display = 'none';
+                }
+            } catch (e) {
+                if (inviteCoachGroup) {
+                    inviteCoachGroup.style.display = 'none';
+                }
+            }
+        } else if (inviteCoachGroup) {
+            inviteCoachGroup.style.display = 'none';
+        }
     },
 
     /**
@@ -210,18 +255,12 @@ var App = {
      */
     doRegister: function() {
         var phone = document.getElementById('regPhone').value.trim();
-        var name = document.getElementById('regName').value.trim();
         var password = document.getElementById('regPassword').value;
         var deviceId = this.getDeviceId();
-        var inviteCode = localStorage.getItem('invite_code') || '';
+        var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
-            return;
-        }
-
-        if (!name) {
-            this.showToast('请输入姓名');
             return;
         }
 
@@ -232,7 +271,7 @@ var App = {
 
         // 调用注册API
         var self = this;
-        API.register(phone, name, password, deviceId, inviteCode).then(function(res) {
+        API.register(phone, password, deviceId, inviteCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

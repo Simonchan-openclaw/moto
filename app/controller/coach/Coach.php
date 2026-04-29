@@ -125,8 +125,8 @@ class Coach
             return jsonError('教练不存在');
         }
 
-        // 生成邀请链接
-        $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
+        // 生成邀请链接（直接使用教练ID作为邀请码）
+        $inviteCode = 'C' . $coachId;  // C开头避免与数字ID混淆
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
         
         // 生成二维码图片（使用endroid/qr-code库）
@@ -159,8 +159,8 @@ class Coach
             return jsonError('请先登录', 401);
         }
 
-        // 生成邀请链接
-        $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
+        // 生成邀请链接（直接使用教练ID作为邀请码）
+        $inviteCode = 'C' . $coachId;  // C开头避免与数字ID混淆
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
 
         // 使用endroid/qr-code库生成二维码
