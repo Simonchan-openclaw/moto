@@ -94,7 +94,15 @@ var API = {
     // ==================== 教练管理 ====================
 
     getCoachList: function(page, pageSize) {
-        return this.request('coach/list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
+        return this.request('admin/coach/list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
+    },
+
+    addCoach: function(phone, password, realName) {
+        return this.request('admin/coach/add', 'POST', { phone: phone, password: password, real_name: realName }, true);
+    },
+
+    coachRecharge: function(coachId, amount) {
+        return this.request('admin/coach/recharge', 'POST', { coach_id: coachId, amount: amount }, true);
     },
 
     getCoachBalance: function(coachId) {

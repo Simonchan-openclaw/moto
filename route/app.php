@@ -38,6 +38,10 @@ Route::group('api', function () {
         Route::post('question/edit', 'admin.Question/edit');
         Route::post('question/delete', 'admin.Question/delete');
         Route::get('user/list', 'admin.User/list');
+        Route::get('coach/list', 'admin.Coach/list');
+        Route::post('coach/add', 'admin.Coach/add');
+        Route::post('coach/recharge', 'admin.Coach/recharge');
+        Route::post('coach/delete', 'admin.Coach/delete');
         Route::get('exam/records', 'admin.Exam/records');
         Route::get('stat/summary', 'admin.Stat/summary');
     })->middleware(\app\middleware\Auth::class);

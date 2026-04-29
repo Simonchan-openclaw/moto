@@ -749,10 +749,11 @@ var Admin = {
         container.innerHTML = '<div class="card">' +
             '<div class="card-header">' +
             '<h3 class="card-title">教练列表</h3>' +
+            '<button class="btn btn-primary" onclick="Admin.showAddCoachModal()">+ 添加教练</button>' +
             '</div>' +
             '<div class="table-container">' +
             '<table>' +
-            '<thead><tr><th>ID</th><th>手机号</th><th>姓名</th><th>余额</th><th>累计充值</th><th>激活次数</th><th>注册时间</th></tr></thead>' +
+            '<thead><tr><th>ID</th><th>手机号</th><th>姓名</th><th>余额</th><th>累计充值</th><th>激活次数</th><th>注册时间</th><th>操作</th></tr></thead>' +
             '<tbody id="coachesBody"></tbody>' +
             '</table></div>' +
             '<div class="pagination">' +
@@ -774,7 +775,7 @@ var Admin = {
             var list = data.list || [];
             
             if (list.length === 0) {
-                document.getElementById('coachesBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:40px;">暂无教练数据</td></tr>';
+                document.getElementById('coachesBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:40px;">暂无教练数据</td></tr>';
                 document.getElementById('coachesInfo').textContent = '共 0 条';
                 return;
             }
@@ -788,11 +789,12 @@ var Admin = {
                 html += '<tr>' +
                     '<td>' + coach.id + '</td>' +
                     '<td>' + self.maskPhone(coach.phone || '-') + '</td>' +
-                    '<td>' + (coach.name || coach.nickname || '教练' + coach.id) + '</td>' +
+                    '<td>' + (coach.real_name || coach.name || '教练' + coach.id) + '</td>' +
                     '<td style="color:#52c41a;font-weight:bold;">¥' + balance.toFixed(2) + '</td>' +
                     '<td>¥' + totalRecharged.toFixed(2) + '</td>' +
                     '<td>' + activationCount + '</td>' +
-                    '<td>' + (coach.create_time || coach.created_at || '-').substr(0, 10) + '</td></tr>';
+                    '<td>' + (coach.create_time || coach.created_at || '-').substr(0, 10) + '</td>' +
+                    '<td><button class="btn btn-sm btn-success" onclick="Admin.showRechargeModal(' + coach.id + ', \'' + (coach.real_name || '教练' + coach.id) + '\'' + ')">充值余额</button></td></tr>';
             });
 
             document.getElementById('coachesBody').innerHTML = html;
@@ -804,7 +806,110 @@ var Admin = {
             });
         }).catch(function(err) {
             self.hideLoading();
-            document.getElementById('coachesBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:40px;">加载失败: ' + (err.message || '') + '</td></tr>';
+            document.getElementById('coachesBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:40px;">加载失败: ' + (err.message || '') + '</td></tr>';
+        });
+    },
+
+    /**
+     * 显示添加教练弹窗
+     */
+    showAddCoachModal: function() {
+        var body = '<div class="form-group">' +
+            '<label>手机号</label>' +
+            '<input type="tel" id="addCoachPhone" class="form-input" placeholder="请输入手机号" maxlength="11">' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label>姓名</label>' +
+            '<input type="text" id="addCoachName" class="form-input" placeholder="请输入教练姓名">' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label>登录密码</label>' +
+            '<input type="password" id="addCoachPassword" class="form-input" placeholder="请输入密码（至少6位）">' +
+            '</div>';
+        
+        var footer = '<button class="btn btn-primary" onclick="Admin.doAddCoach()">确认添加</button>' +
+            '<button class="btn" onclick="Admin.closeModal()">取消</button>';
+        
+        this.showModal('添加教练', body, footer);
+    },
+
+    /**
+     * 执行添加教练
+     */
+    doAddCoach: function() {
+        var phone = document.getElementById('addCoachPhone').value.trim();
+        var realName = document.getElementById('addCoachName').value.trim();
+        var password = document.getElementById('addCoachPassword').value;
+
+        if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+            this.showToast('请输入正确的手机号');
+            return;
+        }
+
+        if (!password || password.length < 6) {
+            this.showToast('密码至少6位');
+            return;
+        }
+
+        var self = this;
+        this.showLoading();
+
+        API.addCoach(phone, password, realName).then(function(res) {
+            self.hideLoading();
+            self.closeModal();
+            self.showToast('教练添加成功');
+            self.loadCoaches();
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '添加失败');
+        });
+    },
+
+    /**
+     * 显示充值弹窗
+     */
+    showRechargeModal: function(coachId, coachName) {
+        this.tempCoachId = coachId;
+        
+        var body = '<div class="form-group">' +
+            '<label>教练</label>' +
+            '<input type="text" class="form-input" value="' + coachName + ' (ID:' + coachId + ')" disabled>' +
+            '</div>' +
+            '<div class="form-group">' +
+            '<label>充值金额</label>' +
+            '<input type="number" id="rechargeAmount" class="form-input" placeholder="请输入金额" min="1" step="1">' +
+            '</div>' +
+            '<div class="form-tips">最低充值金额：1元</div>';
+        
+        var footer = '<button class="btn btn-primary" onclick="Admin.doCoachRecharge()">确认充值</button>' +
+            '<button class="btn" onclick="Admin.closeModal()">取消</button>';
+        
+        this.showModal('充值余额', body, footer);
+    },
+
+    /**
+     * 执行教练充值
+     */
+    doCoachRecharge: function() {
+        var coachId = this.tempCoachId;
+        var amount = parseFloat(document.getElementById('rechargeAmount').value);
+
+        if (!amount || amount <= 0) {
+            this.showToast('请输入正确的金额');
+            return;
+        }
+
+        var self = this;
+        this.showLoading();
+
+        API.coachRecharge(coachId, amount).then(function(res) {
+            self.hideLoading();
+            self.closeModal();
+            self.showToast('充值成功，新余额：¥' + (res.data.balance || 0).toFixed(2));
+            self.loadCoaches();
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '充值失败');
         });
     },
 
