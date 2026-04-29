@@ -71,21 +71,6 @@ var CoachApp = {
             });
         }
     },
-            userInfo.classList.add('clickable');
-            document.getElementById('balanceCard').style.display = 'none';
-            
-            // 禁用菜单按钮
-            menuItems.forEach(function(item) {
-                item.classList.add('disabled');
-                item.style.pointerEvents = 'none';
-                item.style.opacity = '0.5';
-            });
-            if (rechargeBtn) {
-                rechargeBtn.classList.add('disabled');
-                rechargeBtn.style.pointerEvents = 'none';
-            }
-        }
-    },
 
     loadBalance: function() {
         CoachAPI.getBalance().then(function(res) {
