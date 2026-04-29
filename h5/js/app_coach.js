@@ -427,22 +427,6 @@ var CoachApp = {
         }
     },
 
-        // 对齐图案（版本2+需要）
-        // 这里简化处理
-        
-        // 基于文本生成一些随机但确定的点
-        var hash = this.simpleHash(text);
-        for (var i = 0; i < size * size; i++) {
-            var row = Math.floor(i / size);
-            var col = i % size;
-            // 跳过定位符区域
-            if (this.isReserved(row, col, size)) continue;
-            matrix[row][col] = ((hash + i) % 3) === 0;
-        }
-
-        return matrix;
-    },
-
     /**
      * 加载邀请学员列表
      */
