@@ -13,19 +13,19 @@ class Vip
     }
 
     /**
-     * 获取VIP状态
+     * VIP状态查询
+     * 通过JWT token验证用户身份
      * GET /api/vip/status
      */
     public function status()
     {
-        $userId = getCurrentUserId();
-        $deviceId = input('get.device_id', '');
+        $userId = $this->getCurrentUserId();
 
-        if (empty($deviceId)) {
-            return jsonError('设备ID不能为空');
+        if (!$userId) {
+            return jsonError('用户未登录', 401);
         }
 
-        $result = $this->model->checkUserActivation($userId, $deviceId);
+        $result = $this->model->checkUserActivation($userId);
 
         return jsonSuccess($result);
     }
@@ -38,7 +38,7 @@ class Vip
     {
         $userId = getCurrentUserId();
         $data = input('post.');
-        
+
         $activateCode = $data['activate_code'] ?? '';
         $deviceId = $data['device_id'] ?? '';
 
@@ -61,5 +61,18 @@ class Vip
             'coach_phone' => $result['coach_phone'],
             'message'     => '激活成功'
         ], '激活成功');
+    }
+
+    /**
+     * 获取当前用户ID（从token）
+     */
+    protected function getCurrentUserId()
+    {
+        $token = request()->header('Authorization', '');
+        if (empty($token)) {
+            return 0;
+        }
+        $token = str_replace('Bearer ', '', $token);
+        return getUserIdFromToken($token);
     }
 }

@@ -107,9 +107,10 @@ var API = {
 
     /**
      * 获取VIP激活状态
+     * 通过JWT token验证，无需额外参数
      */
-    getVipStatus: function(deviceId) {
-        return this.request('vip/status?device_id=' + encodeURIComponent(deviceId), 'GET', {}, false);
+    getVipStatus: function() {
+        return this.request('vip/status', 'GET', {}, true);
     },
 
     /**

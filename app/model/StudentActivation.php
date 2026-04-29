@@ -10,7 +10,7 @@ class StudentActivation
     /**
      * 检查用户激活状态
      */
-    public function checkUserActivation($userId, $deviceId)
+    public function checkUserActivation($userId)
     {
         // 直接从user表检查vip_expire
         $user = Db::query("SELECT id, vip_expire FROM user WHERE id = ?", [$userId]);
