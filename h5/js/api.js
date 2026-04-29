@@ -86,9 +86,10 @@ var API = {
     /**
      * 用户注册
      */
-    register: function(phone, password, deviceId, inviteCode) {
+    register: function(phone, name, password, deviceId, inviteCode) {
         return this.request('user/register', 'POST', {
             phone: phone,
+            name: name,
             password: password,
             device_id: deviceId || '',
             invite_code: inviteCode || ''

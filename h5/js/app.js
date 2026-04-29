@@ -208,45 +208,83 @@ var App = {
         var inviteCodeEl = document.getElementById('inviteCoachName');
         var inviteCoachGroup = document.getElementById('inviteCoachGroup');
         var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
+        var phoneInput = document.getElementById('regPhone');
+        var phoneCodeSelect = document.getElementById('regCountryCode');
         
-        if (inviteCode && inviteCoachGroup) {
-            try {
-                var decoded = JSON.parse(atob(inviteCode));
-                var coachId = decoded.coach_id;
-                
-                if (coachId) {
-                    inviteCoachGroup.style.display = 'block';
-                    if (inviteCodeEl) {
-                        inviteCodeEl.value = '加载中...';
-                    }
-                    
-                    // 调用API获取教练信息
-                    var self = this;
-                    API.getCoachInfo(coachId).then(function(res) {
-                        if (res.code === 200 && res.data) {
-                            if (inviteCodeEl) {
-                                inviteCodeEl.value = res.data.real_name || '教练' + coachId;
-                            }
-                        } else {
-                            if (inviteCodeEl) {
-                                inviteCodeEl.value = '未知教练';
-                            }
-                        }
-                    }).catch(function() {
-                        if (inviteCodeEl) {
-                            inviteCodeEl.value = '加载失败';
-                        }
-                    });
-                } else {
-                    inviteCoachGroup.style.display = 'none';
-                }
-            } catch (e) {
-                if (inviteCoachGroup) {
-                    inviteCoachGroup.style.display = 'none';
+        if (inviteCode) {
+            // 解析邀请码（新格式：C开头+教练ID，或旧格式：base64 JSON）
+            var coachId = 0;
+            if (inviteCode.startsWith('C')) {
+                // 新格式：C10001 -> coachId = 10001
+                coachId = parseInt(inviteCode.substring(1));
+            } else {
+                // 旧格式：base64 JSON
+                try {
+                    var decoded = JSON.parse(atob(inviteCode));
+                    coachId = decoded.coach_id || 0;
+                } catch (e) {
+                    coachId = 0;
                 }
             }
-        } else if (inviteCoachGroup) {
+            
+            if (coachId > 0 && inviteCoachGroup) {
+                // 有邀请码，显示教练信息，锁定手机号
+                inviteCoachGroup.style.display = 'block';
+                if (phoneInput) {
+                    phoneInput.setAttribute('readonly', 'readonly');
+                    phoneInput.style.backgroundColor = '#f5f5f5';
+                }
+                if (phoneCodeSelect) {
+                    phoneCodeSelect.disabled = true;
+                    phoneCodeSelect.style.backgroundColor = '#f5f5f5';
+                }
+                if (inviteCodeEl) {
+                    inviteCodeEl.textContent = '加载中...';
+                }
+                
+                // 调用API获取教练信息
+                var self = this;
+                API.getCoachInfo(coachId).then(function(res) {
+                    if (res.code === 200 && res.data) {
+                        if (inviteCodeEl) {
+                            inviteCodeEl.textContent = res.data.real_name || '教练' + coachId;
+                        }
+                    } else {
+                        if (inviteCodeEl) {
+                            inviteCodeEl.textContent = '教练' + coachId;
+                        }
+                    }
+                }).catch(function() {
+                    if (inviteCodeEl) {
+                        inviteCodeEl.textContent = '教练' + coachId;
+                    }
+                });
+            } else {
+                this.hideInviteInfo();
+            }
+        } else {
+            this.hideInviteInfo();
+        }
+    },
+    
+    /**
+     * 隐藏邀请信息（无邀请码时）
+     */
+    hideInviteInfo: function() {
+        var inviteCoachGroup = document.getElementById('inviteCoachGroup');
+        var phoneInput = document.getElementById('regPhone');
+        var phoneCodeSelect = document.getElementById('regCountryCode');
+        
+        if (inviteCoachGroup) {
             inviteCoachGroup.style.display = 'none';
+        }
+        if (phoneInput) {
+            phoneInput.removeAttribute('readonly');
+            phoneInput.style.backgroundColor = '';
+        }
+        if (phoneCodeSelect) {
+            phoneCodeSelect.disabled = false;
+            phoneCodeSelect.style.backgroundColor = '';
         }
     },
 
@@ -255,12 +293,18 @@ var App = {
      */
     doRegister: function() {
         var phone = document.getElementById('regPhone').value.trim();
+        var name = document.getElementById('regName').value.trim();
         var password = document.getElementById('regPassword').value;
         var deviceId = this.getDeviceId();
         var inviteCode = localStorage.getItem('invite_code') || this.getInviteCodeFromUrl() || '';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
+            return;
+        }
+
+        if (!name) {
+            this.showToast('请输入姓名');
             return;
         }
 
@@ -271,7 +315,7 @@ var App = {
 
         // 调用注册API
         var self = this;
-        API.register(phone, password, deviceId, inviteCode).then(function(res) {
+        API.register(phone, name, password, deviceId, inviteCode).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 

@@ -116,6 +116,7 @@ class User
     public function register()
     {
         $phone = input('post.phone', '');
+        $name = input('post.name', '');
         $password = input('post.password', '');
         $deviceId = input('post.device_id', '');
         $inviteCode = input('post.invite_code', '');
@@ -126,6 +127,10 @@ class User
 
         if (!preg_match('/^1[3-9]\d{9}$/', $phone)) {
             return jsonError('手机号格式不正确');
+        }
+
+        if (empty($name)) {
+            return jsonError('姓名不能为空');
         }
 
         if (empty($password) || strlen($password) < 6) {
@@ -142,22 +147,28 @@ class User
             return jsonError('该手机号已注册，请直接登录');
         }
 
-        // 解析邀请码
+        // 解析邀请码（新格式：C开头+教练ID，或旧格式：base64 JSON）
         $invCoachId = 0;
         if (!empty($inviteCode)) {
-            try {
-                $decoded = json_decode(base64_decode($inviteCode), true);
-                if (isset($decoded['coach_id']) && intval($decoded['coach_id']) > 0) {
-                    $invCoachId = intval($decoded['coach_id']);
+            if (strpos($inviteCode, 'C') === 0) {
+                // 新格式：C10001 -> coachId = 10001
+                $invCoachId = intval(substr($inviteCode, 1));
+            } else {
+                // 旧格式：base64 JSON
+                try {
+                    $decoded = json_decode(base64_decode($inviteCode), true);
+                    if (isset($decoded['coach_id']) && intval($decoded['coach_id']) > 0) {
+                        $invCoachId = intval($decoded['coach_id']);
+                    }
+                } catch (\Exception $e) {
+                    // 无效的邀请码，忽略
                 }
-            } catch (\Exception $e) {
-                // 无效的邀请码，忽略
             }
         }
 
         // 创建用户（密码需要加密）
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $userId = $this->model->register($phone, $passwordHash, '摩托学员', $deviceId, $invCoachId);
+        $userId = $this->model->register($phone, $passwordHash, $name, $deviceId, $invCoachId);
         $user = $this->model->findById($userId);
 
         // 生成JWT Token
