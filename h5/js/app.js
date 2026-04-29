@@ -44,6 +44,15 @@ var App = {
 
         // 清理过期缓存
         this.cleanupCache();
+
+        // 检测邀请码，有则跳转到注册页面
+        var inviteCode = this.getInviteCodeFromUrl();
+        if (inviteCode) {
+            // 保存邀请码
+            localStorage.setItem('invite_code', inviteCode);
+            // 跳转到注册页面
+            this.showPage('register');
+        }
     },
 
     /**
@@ -170,6 +179,9 @@ var App = {
             case 'login':
                 this.showLoginPage();
                 break;
+            case 'register':
+                this.showRegisterPage();
+                break;
         }
     },
 
@@ -181,6 +193,54 @@ var App = {
         if (deviceCodeEl) {
             deviceCodeEl.textContent = this.getDeviceId();
         }
+    },
+
+    /**
+     * 显示注册页（扫码注册专用）
+     */
+    showRegisterPage: function() {
+        var deviceCodeEl = document.getElementById('regDeviceCodeDisplay');
+        if (deviceCodeEl) {
+            deviceCodeEl.textContent = this.getDeviceId();
+        }
+    },
+
+    /**
+     * 执行注册（扫码注册）
+     */
+    doRegister: function() {
+        var phone = document.getElementById('regPhone').value.trim();
+        var deviceId = this.getDeviceId();
+        var nickname = document.getElementById('regNickname').value.trim() || '';
+        var inviteCode = localStorage.getItem('invite_code') || '';
+
+        if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+            this.showToast('请输入正确的手机号');
+            return;
+        }
+
+        // 调用登录API（带邀请码，会创建新用户并绑定教练）
+        var self = this;
+        API.login(phone, deviceId, nickname, inviteCode).then(function(res) {
+            App.token = res.data.token;
+            App.user = res.data.userInfo;
+
+            localStorage.setItem('token', App.token);
+            localStorage.setItem('user', JSON.stringify(App.user));
+
+            // 如果有邀请码，清除URL中的参数
+            if (inviteCode) {
+                App.clearInviteCodeFromUrl();
+                App.showToast('注册成功，已绑定教练');
+            } else {
+                App.showToast('注册成功');
+            }
+            App.updateUserInfo();
+            App.updateMenuVisibility();
+            App.showPage('home');
+        }).catch(function(err) {
+            App.showToast(err.message || '注册失败');
+        });
     },
 
     /**
@@ -286,33 +346,27 @@ var App = {
         var phone = document.getElementById('loginPhone').value.trim();
         var countryCode = document.getElementById('countryCode').value;
         var deviceId = this.getDeviceId();
-        var nickname = document.getElementById('loginNickname').value.trim() || '';
 
         if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
             this.showToast('请输入正确的手机号');
             return;
         }
 
-        // 获取邀请码
-        var inviteCode = this.getInviteCodeFromUrl() || localStorage.getItem('invite_code') || '';
-
         // 使用设备码作为登录凭证
-        API.login(phone, deviceId, nickname, inviteCode).then(function(res) {
+        var self = this;
+        API.login(phone, deviceId).then(function(res) {
             App.token = res.data.token;
             App.user = res.data.userInfo;
 
             localStorage.setItem('token', App.token);
             localStorage.setItem('user', JSON.stringify(App.user));
 
-            // 清除URL中的邀请码参数
-            this.clearInviteCodeFromUrl();
-
             App.updateUserInfo();
             App.updateMenuVisibility();
             App.showPage('home');
             App.showToast('登录成功');
         }).catch(function(err) {
-            App.showToast(err.message || '登录失败');
+            self.showToast(err.message || '登录失败');
         });
     },
 
