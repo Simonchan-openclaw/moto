@@ -112,6 +112,6 @@ var API = {
     // ==================== 统计数据 ====================
 
     getStatistics: function() {
-        return this.request('admin/statistics', 'GET', {}, true);
+        return this.request('admin/stat/summary', 'GET', {}, true);
     }
 };

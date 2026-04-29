@@ -3,12 +3,12 @@
  */
 
 var Config = {
-    // API 基础地址
-    API_BASE: 'http://localhost:8080/backend/public/index.php/api/',
+    // API 基础地址（生产环境）
+    API_BASE: 'https://moto.zd16688.com/index.php/api/',
 
-    // 管理员 Token
-    ADMIN_TOKEN: 'admin_token_123456',
+    // 管理员 Token（从登录获取）
+    ADMIN_TOKEN: '',
 
     // 调试模式
-    DEBUG: true
+    DEBUG: false
 };
