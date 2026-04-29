@@ -490,7 +490,7 @@ class Coach
             'expire_at'     => $expireAt,
             'create_time'   => date('Y-m-d H:i:s')
         ];
-        \\think\\facade\\Db::name('activation_log')->insert($logData);
+        \think\facade\Db::name('activation_log')->insert($logData);
 
         // 获取最新余额
         $newBalance = $this->coachModel->getBalance($coachId);
