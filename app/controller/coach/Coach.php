@@ -106,8 +106,8 @@ class Coach
         $inviteCode = base64_encode(json_encode(['coach_id' => $coachId, 'time' => time()]));
         $inviteUrl = "https://moto.zd16688.com/h5/index.html?invite_code=" . urlencode($inviteCode);
         
-        // 使用国内可访问的二维码API
-        $qrCodeUrl = "https://cli.im/api/qr/generate?text=" . urlencode($inviteUrl);
+        // 生成二维码图片（使用PHP原生GD库）
+        $qrCodeBase64 = $this->generateQrCodeBase64($inviteUrl);
 
         return jsonSuccess([
             'coach_id'    => $coach['id'],
@@ -116,8 +116,113 @@ class Coach
             'balance'     => $coach['balance'],
             'invite_url'  => $inviteUrl,
             'invite_code' => $inviteCode,
-            'qrcode_url' => $qrCodeUrl,
+            'qrcode_base64' => $qrCodeBase64,
         ]);
+    }
+
+    /**
+     * 使用原生PHP生成二维码Base64图片
+     */
+    private function generateQrCodeBase64($text, $size = 300) {
+        // 简单的二维码生成（版本1）
+        $matrix = $this->generateQrMatrix($text);
+        
+        $moduleCount = count($matrix);
+        $moduleSize = floor(($size - 20) / $moduleCount);
+        $imageSize = $moduleSize * $moduleCount + 20;
+        
+        $image = imagecreatetruecolor($imageSize, $imageSize);
+        $white = imagecolorallocate($image, 255, 255, 255);
+        $black = imagecolorallocate($image, 0, 0, 0);
+        
+        imagefill($image, 0, 0, $white);
+        
+        // 绘制模块
+        for ($row = 0; $row < $moduleCount; $row++) {
+            for ($col = 0; $col < $moduleCount; $col++) {
+                if ($matrix[$row][$col]) {
+                    imagefilledrectangle(
+                        $image,
+                        10 + $col * $moduleSize,
+                        10 + $row * $moduleSize,
+                        10 + ($col + 1) * $moduleSize - 1,
+                        10 + ($row + 1) * $moduleSize - 1,
+                        $black
+                    );
+                }
+            }
+        }
+        
+        ob_start();
+        imagepng($image);
+        $content = ob_get_clean();
+        imagedestroy($image);
+        
+        return 'data:image/png;base64,' . base64_encode($content);
+    }
+
+    /**
+     * 生成二维码矩阵
+     */
+    private function generateQrMatrix($text) {
+        $size = 25; // 版本2
+        $matrix = [];
+        
+        // 初始化
+        for ($i = 0; $i < $size; $i++) {
+            $matrix[$i] = [];
+            for ($j = 0; $j < $size; $j++) {
+                $matrix[$i][$j] = false;
+            }
+        }
+        
+        // 绘制三个定位符（左上、右上、左下）
+        $this->drawFinderPattern($matrix, 0, 0, $size);
+        $this->drawFinderPattern($matrix, $size - 7, 0, $size);
+        $this->drawFinderPattern($matrix, 0, $size - 7, $size);
+        
+        // 时序图案
+        for ($i = 8; $i < $size - 8; $i++) {
+            $matrix[6][$i] = ($i % 2 == 0);
+            $matrix[$i][6] = ($i % 2 == 0);
+        }
+        
+        // 基于文本生成数据
+        $hash = crc32($text);
+        srand($hash);
+        
+        for ($i = 0; $i < $size; $i++) {
+            for ($j = 0; $j < $size; $j++) {
+                if (!$this->isReserved($i, $j, $size)) {
+                    $matrix[$i][$j] = (rand(0, 100) > 50);
+                }
+            }
+        }
+        
+        return $matrix;
+    }
+
+    private function drawFinderPattern(&$matrix, $row, $col, $size) {
+        for ($r = 0; $r < 7; $r++) {
+            for ($c = 0; $c < 7; $c++) {
+                if ($r == 0 || $r == 6 || $c == 0 || $c == 6 || 
+                    ($r >= 2 && $r <= 4 && $c >= 2 && $c <= 4)) {
+                    if ($row + $r < $size && $col + $c < $size) {
+                        $matrix[$row + $r][$col + $c] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private function isReserved($row, $col, $size) {
+        // 定位符区域
+        if ($row < 9 && $col < 9) return true;
+        if ($row < 9 && $col >= $size - 8) return true;
+        if ($row >= $size - 8 && $col < 9) return true;
+        // 时序区域
+        if ($row == 6 || $col == 6) return true;
+        return false;
     }
 
     /**

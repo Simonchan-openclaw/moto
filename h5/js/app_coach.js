@@ -404,7 +404,7 @@ var CoachApp = {
 
             var data = res.data;
             var inviteCode = data.invite_code;
-            var qrcodeUrl = data.qrcode_url;
+            var qrcodeBase64 = data.qrcode_base64;
             var realName = data.real_name || '教练';
 
             // 显示教练名字
@@ -413,10 +413,10 @@ var CoachApp = {
             // 保存邀请码
             localStorage.setItem('invite_code', inviteCode);
 
-            // 使用后端返回的二维码URL
-            if (qrcodeUrl) {
+            // 使用后端返回的二维码Base64数据
+            if (qrcodeBase64) {
                 if (qrcodeImg) {
-                    qrcodeImg.src = qrcodeUrl;
+                    qrcodeImg.src = qrcodeBase64;
                     qrcodeImg.onload = function() {
                         qrcodeLoading.style.display = 'none';
                         qrcodeImg.style.display = 'block';
