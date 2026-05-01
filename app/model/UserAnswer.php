@@ -13,7 +13,7 @@ class UserAnswer
     public function create($userId, $questionId, $userAnswer, $isCorrect, $answerTime = 0)
     {
         Db::execute(
-            "INSERT INTO {$this->table} (user_id, question_id, user_answer, is_correct, answer_time, create_time) 
+            "INSERT INTO {$this->table} (user_id, question_id, user_answer, is_correct, answer_time, created_at) 
              VALUES (?, ?, ?, ?, ?, NOW())",
             [$userId, $questionId, $userAnswer, $isCorrect ? 1 : 0, $answerTime]
         );
