@@ -478,15 +478,12 @@ body {
 }
 
 .question-info {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
     margin-bottom: 15px;
-    gap: 8px;
+    line-height: 1.6;
 }
 
 .question-type {
-    display: inline-block;
+    display: inline;
     background: rgba(102, 126, 234, 0.1);
     color: var(--primary);
     padding: 4px 10px;
@@ -495,9 +492,11 @@ body {
     white-space: nowrap;
     margin-right: 8px;
     font-size: 14px;
+    vertical-align: middle;
 }
 
 .question-text {
+    display: inline;
     font-size: 16px;
     line-height: 1.6;
     color: var(--text);
