@@ -541,6 +541,10 @@ var App = {
         this.practice.subject = subject;
         document.getElementById('chapterTitle').textContent = subject === 1 ? '科目一 练习' : '科目四 练习';
 
+        // 显示加载中
+        var list = document.getElementById('chapterList');
+        list.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>加载中...</p></div>';
+
         // 直接加载所有题目，不再按章节分类
         API.getQuestionList({
             subject: subject,
@@ -555,11 +559,25 @@ var App = {
                 return;
             }
             
-            // 直接跳转到答题页面
+            // 初始化练习数据
             self.practice.chapterId = null;
             self.practice.currentIndex = 0;
             self.practice.questions = questions;
             self.practice.isExam = false;
+            self.practice.sessionCorrect = 0;
+            self.practice.sessionWrong = 0;
+            self.practice.sessionAnswered = 0;
+            self.practice.totalQuestions = questions.length; // 设置总题数
+            
+            // 获取科目总题数
+            API.getQuestionCount(subject).then(function(countRes) {
+                self.practice.totalQuestions = countRes.data.count || questions.length;
+                self.updatePracticeStats();
+            }).catch(function() {
+                self.practice.totalQuestions = questions.length;
+                self.updatePracticeStats();
+            });
+            
             self.showPage('practice');
             self.showPracticeQuestion();
         }).catch(function(err) {
