@@ -605,13 +605,14 @@ var App = {
         var questionImage = document.getElementById('questionImage');
 
         content.textContent = question.content;
-        container.querySelector('.chapter-name').textContent = question.chapter_name || '';
+        // 移除章节名称显示
+        // container.querySelector('.chapter-name').textContent = question.chapter_name || '';
         
         // 显示题型
         var typeText = '';
         if (question.question_type == 1) typeText = '单选题';
-        else if (question.question_type == 2) typeText = '多选题';
-        else if (question.question_type == 3) typeText = '判断题';
+        else if (question.question_type == 2) typeText = '判断题';
+        else if (question.question_type == 3) typeText = '多选题';
         container.querySelector('.question-type').textContent = typeText;
 
         // 显示图片（如有）
@@ -659,8 +660,8 @@ var App = {
         var options = container.querySelectorAll('.option-item');
         var btnNext = document.getElementById('btnNext');
 
-        // 多选题：切换选择状态
-        if (question.question_type == 2) {
+        // 多选题：切换选择状态（题型3为多选题）
+        if (question.question_type == 3) {
             options.forEach(function(item) {
                 if (item.querySelector('.option-key').textContent === optionKey) {
                     item.classList.toggle('selected');
@@ -728,8 +729,8 @@ var App = {
             return;
         }
 
-        // 多选题且未确认答案
-        if (question.question_type == 2 && btnNext.textContent === '确认答案') {
+        // 多选题且未确认答案（题型3为多选题）
+        if (question.question_type == 3 && btnNext.textContent === '确认答案') {
             // 计算答题用时
             this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
 
@@ -853,8 +854,8 @@ var App = {
             // 显示题型
             var typeText = '';
             if (question.question_type == 1) typeText = '单选题';
-            else if (question.question_type == 2) typeText = '多选题';
-            else if (question.question_type == 3) typeText = '判断题';
+            else if (question.question_type == 2) typeText = '判断题';
+            else if (question.question_type == 3) typeText = '多选题';
             container.querySelector('.question-type').textContent = typeText;
 
             // 显示图片（如有）
@@ -1099,7 +1100,7 @@ var App = {
                     '</div>' +
                     '<div class="record-detail">' +
                     '<span>科目' + item.subject + '</span>' +
-                    '<span>' + (item.question_type == 1 ? '选择题' : '判断题') + '</span>' +
+                    '<span>' + (item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题')) + '</span>' +
                     '</div></div>';
             });
 
@@ -1193,6 +1194,20 @@ function doLogin() {
  */
 function showPage(pageId, params) {
     App.showPage(pageId, params);
+}
+
+/**
+ * 全局下一题函数 - 供HTML的onclick调用
+ */
+function nextQuestion() {
+    App.nextQuestion();
+}
+
+/**
+ * 全局考试下一题函数
+ */
+function nextExamQuestion() {
+    App.nextExamQuestion();
 }
 
 // 页面加载完成后初始化
