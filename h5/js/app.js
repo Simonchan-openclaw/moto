@@ -624,12 +624,12 @@ var App = {
 
         var container = document.getElementById('questionContainer');
         var typeEl = container.querySelector('.question-type');
-        var content = container.querySelector('.question-content');
+        var textEl = container.querySelector('.question-text');
         var options = container.querySelector('.options-list');
         var result = container.querySelector('.answer-result');
         var questionImage = document.getElementById('questionImage');
 
-        // 显示题型（先设置，避免被content.textContent覆盖）
+        // 显示题型
         var typeText = '';
         if (question.question_type == 1) typeText = '单选题';
         else if (question.question_type == 2) typeText = '判断题';
@@ -637,7 +637,7 @@ var App = {
         typeEl.textContent = typeText;
         
         // 显示题目内容
-        content.textContent = question.content;
+        textEl.textContent = question.content;
 
         // 显示图片（如有）
         if (question.image) {

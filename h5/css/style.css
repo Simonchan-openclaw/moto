@@ -477,16 +477,24 @@ body {
     box-shadow: var(--shadow);
 }
 
-.question-content {
+.question-info {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.question-text {
     font-size: 16px;
     line-height: 1.6;
     color: var(--text);
     font-weight: 500;
     word-break: break-all;
+    flex: 1;
 }
 
 .question-type {
-    display: inline;
+    display: inline-block;
     background: rgba(102, 126, 234, 0.1);
     color: var(--primary);
     padding: 4px 10px;
