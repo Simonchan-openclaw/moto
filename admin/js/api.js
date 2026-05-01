@@ -97,7 +97,6 @@ var API = {
             var token = localStorage.getItem('admin_token') || '';
             xhr.setRequestHeader('Authorization', 'Bearer ' + token);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Content-Type', 'application/json');
 
             xhr.onload = function() {
                 Admin.hideLoading();
@@ -119,7 +118,12 @@ var API = {
                 reject({ message: '网络连接失败' });
             };
 
-            xhr.send(jsonContent);
+            // 构造请求体：{subject: 1, content: "[...]json..."}
+            var payload = {
+                subject: subject,
+                content: jsonContent
+            };
+            xhr.send(JSON.stringify(payload));
         });
     },
 
