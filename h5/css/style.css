@@ -479,19 +479,10 @@ body {
 
 .question-info {
     display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    align-items: flex-start;
     margin-bottom: 15px;
     gap: 8px;
-}
-
-.question-text {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--text);
-    font-weight: 500;
-    word-break: break-all;
-    flex: 1;
 }
 
 .question-type {
@@ -502,6 +493,16 @@ body {
     border-radius: 20px;
     font-weight: 500;
     white-space: nowrap;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.question-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 500;
+    word-break: break-all;
 }
 
 .options-list {
