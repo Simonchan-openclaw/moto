@@ -6,6 +6,7 @@ use app\model\RechargeRecord as RechargeRecordModel;
 use app\model\StudentActivation as StudentActivationModel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use think\Log;
 use think\Response;
 
 class Coach
@@ -348,9 +349,8 @@ class Coach
         $signStr .= 'key=' . $key;
         $sign = md5($signStr);
         
-        // 调试日志
-        $debugLog = '签名字符串: ' . $signStr . "\n" . '签名: ' . $sign;
-        file_put_contents('/tmp/yipay_debug.log', $debugLog);
+        // 日志记录
+        Log::info('【易支付充值】教练ID:'.$coachId.',充值金额:'.$amount.',实付金额:'.$actualPayAmount.',订单号:'.$tradeNo);
 
         // 调用易支付API
         $apiUrl = 'https://icu.zd16688.com/mapi.php';
@@ -373,6 +373,8 @@ class Coach
         if ($payResult && isset($payResult['code']) && $payResult['code'] == 1) {
             // 创建充值记录（待支付状态）
             $this->rechargeModel->create($coachId, $amount, $payMethod, $tradeNo, 0);
+            
+            Log::info('【易支付】发起支付成功,订单号:'.$tradeNo.',返回:'.json_encode($payResult));
 
             return jsonSuccess([
                 'trade_no' => $tradeNo,
@@ -425,8 +427,11 @@ class Coach
         $checkSign = md5($signStr);
 
         if ($sign != $checkSign) {
+            Log::error('【易支付回调】签名验证失败,订单号:'.$out_trade_no);
             return 'fail';
         }
+
+        Log::info('【易支付回调】收到回调,订单号:'.$out_trade_no.',状态:'.$trade_status.',金额:'.$pay_money);
 
         // 验证支付状态
         if ($trade_status == 'TRADE_SUCCESS') {
@@ -446,9 +451,13 @@ class Coach
                     \think\facade\Db::name('recharge_record')
                         ->where('id', $record['id'])
                         ->update(['status' => 1, 'pay_time' => date('Y-m-d H:i:s')]);
-
+                    
                     // 增加教练余额
                     $this->coachModel->addBalance($coachId, $record['amount']);
+                    
+                    Log::info('【易支付回调】充值成功,教练ID:'.$coachId.',订单号:'.$out_trade_no.',充值余额:'.$record['amount']);
+                } else {
+                    Log::warning('【易支付回调】充值记录不存在或已处理,订单号:'.$out_trade_no);
                 }
             }
         }
