@@ -312,12 +312,12 @@ class Coach
         // 生成订单号
         $tradeNo = 'C' . $coachId . date('YmdHis') . rand(100, 999);
 
-        // 支付方式映射
+        // 支付方式映射（注意：易支付平台返回的type值是wxpays和alipay）
         $payTypeMap = [
-            1 => 'wxpay',   // 微信
+            1 => 'wxpays',  // 微信（平台返回wxpays）
             2 => 'alipay',  // 支付宝
         ];
-        $payType = $payTypeMap[$payMethod] ?? 'wxpay';
+        $payType = $payTypeMap[$payMethod] ?? 'wxpays';
 
         // 易支付配置
         $pid = config('payment.yipay.pid', '1006');
