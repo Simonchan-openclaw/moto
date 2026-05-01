@@ -37,7 +37,8 @@ var Admin = {
             '<input type="password" class="form-input" id="loginPassword" placeholder="请输入密码">' +
             '</div>' +
             '<button class="btn btn-primary" style="width:100%;padding:12px;" onclick="Admin.doLogin()">登录</button>' +
-            '</div></div>';
+            '</div></div>' +
+            '<div class="toast" id="toast"><span id="toastText"></span></div>';
 
         document.body.innerHTML = html;
     },
@@ -1507,7 +1508,12 @@ var Admin = {
 
     showToast: function(text) {
         var toast = document.getElementById('toast');
-        document.getElementById('toastText').textContent = text;
+        var toastText = document.getElementById('toastText');
+        if (!toast || !toastText) {
+            alert(text);
+            return;
+        }
+        toastText.textContent = text;
         toast.style.display = 'block';
 
         setTimeout(function() {
