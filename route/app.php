@@ -21,6 +21,7 @@ Route::group('api', function () {
         Route::get('question/chapters', 'api.Question/chapters');
         Route::get('question/list', 'api.Question/list');
         Route::get('question/detail', 'api.Question/detail');
+        Route::get('question/count', 'api.Question/count');
         Route::post('answer/submit', 'api.Answer/submit');
         Route::get('answer/error_list', 'api.Answer/errorList');
         Route::delete('answer/error_clear', 'api.Answer/errorClear');
