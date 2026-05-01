@@ -526,41 +526,50 @@ var App = {
         this.showPage('home');
     },
 
-    // ==================== 章节练习 ====================
+    // ==================== 题目练习 ====================
 
     /**
-     * 加载章节列表
+     * 加载题目列表（直接显示所有题目，跳过章节选择）
      */
     loadChapters: function(subject) {
         var self = this;
         this.practice.subject = subject;
-        document.getElementById('chapterTitle').textContent = subject === 1 ? '科目一 章节练习' : '科目四 章节练习';
+        document.getElementById('chapterTitle').textContent = subject === 1 ? '科目一 练习' : '科目四 练习';
 
-        API.getChapters(subject).then(function(res) {
+        // 直接加载所有题目，不再按章节分类
+        API.getQuestionList({
+            subject: subject,
+            page: 1,
+            page_size: 100
+        }).then(function(res) {
             var list = document.getElementById('chapterList');
-            var html = '';
-
-            res.data.forEach(function(chapter) {
-                html += '<div class="chapter-item" onclick="App.startChapterPractice(' + chapter.chapter_id + ', \'' + chapter.chapter_name + '\')">' +
-                    '<div class="chapter-icon">' + chapter.sort + '</div>' +
-                    '<div class="chapter-info">' +
-                    '<span class="chapter-name">' + chapter.chapter_name + '</span>' +
-                    '</div></div>';
-            });
-
-            list.innerHTML = html || '<div class="empty-state"><div class="icon">📚</div><p>暂无章节数据</p></div>';
+            var questions = res.data.list || [];
+            
+            if (questions.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">📚</div><p>暂无题目数据</p></div>';
+                return;
+            }
+            
+            // 直接跳转到答题页面
+            self.practice.chapterId = null;
+            self.practice.currentIndex = 0;
+            self.practice.questions = questions;
+            self.practice.isExam = false;
+            self.showPage('practice');
+            self.showPracticeQuestion();
         }).catch(function(err) {
             document.getElementById('chapterList').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>加载失败</p></div>';
         });
     },
 
     /**
-     * 开始章节练习
+     * 开始章节练习（保留兼容）
      */
     startChapterPractice: function(chapterId, chapterName) {
         this.practice.chapterId = chapterId;
         this.practice.currentIndex = 0;
         this.practice.questions = [];
+        this.practice.isExam = false;
 
         this.showPage('practice');
 
