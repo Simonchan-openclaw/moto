@@ -240,8 +240,8 @@ var CoachApp = {
 
     doRecharge: function() {
         var amount = parseInt(document.getElementById('customAmount').value) || 0;
-        if (amount < 18) {
-            this.showToast('最低充值金额为18元');
+        if (amount < 1) {
+            this.showToast('最低充值金额为1元');
             return;
         }
         var self = this;

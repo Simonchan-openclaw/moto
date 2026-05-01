@@ -298,7 +298,7 @@ class Coach
         $amount = floatval(input('post.amount', 0));
         $payMethod = intval(input('post.pay_method', 1)); // 1=微信, 2=支付宝
 
-        $minAmount = 18.00;
+        $minAmount = 1.00;
 
         if ($amount < $minAmount) {
             return jsonError("最低充值金额为 {$minAmount} 元");
