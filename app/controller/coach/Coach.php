@@ -331,19 +331,19 @@ class Coach
             'out_trade_no' => $tradeNo,
             'notify_url' => $notifyUrl,
             'return_url' => $returnUrl,
-            'name' => '教练余额充值',
+            'name' => 'Coach Balance Recharge',
             'money' => strval($actualPayAmount),
             'clientip' => request()->ip(),
             'device' => 'mobile',
             'param' => $coachId,
         ];
 
-        // 生成签名（参数值需要URL编码以保持一致）
+        // 生成签名（按ASCII顺序拼接，参数值用原始值）
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
             if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
-                $signStr .= $k . '=' . urlencode($v) . '&';
+                $signStr .= $k . '=' . $v . '&';
             }
         }
         $signStr .= 'key=' . $key;
