@@ -27,7 +27,12 @@ var App = {
         answerTime: 0,
         startTime: null,
         selectedAnswer: null,
-        answerSubmitted: false // 是否已提交答案
+        answerSubmitted: false, // 是否已提交答案
+        // 本次练习统计
+        sessionCorrect: 0,
+        sessionWrong: 0,
+        sessionAnswered: 0,
+        totalQuestions: 0
     },
 
     /**
