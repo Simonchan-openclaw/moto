@@ -347,6 +347,10 @@ class Coach
         }
         $signStr .= 'key=' . $key;
         $sign = md5($signStr);
+        
+        // 调试日志
+        $debugLog = '签名字符串: ' . $signStr . "\n" . '签名: ' . $sign;
+        file_put_contents('/tmp/yipay_debug.log', $debugLog);
 
         // 调用易支付API
         $apiUrl = 'https://icu.zd16688.com/mapi.php';
