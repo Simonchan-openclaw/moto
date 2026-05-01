@@ -154,8 +154,8 @@
                 <h2 id="practiceTitle">练习</h2>
             </div>
             <div class="practice-stats" id="practiceStats">
-                <span class="stat-item" id="statCollection">
-                    <span class="stat-num" id="statColNum">0</span>
+                <span class="stat-item clickable" id="statCollection" onclick="toggleFavorite()">
+                    <span class="stat-num" id="statColNum">☆</span>
                     <span class="stat-label">收藏</span>
                 </span>
                 <span class="stat-item" id="statCorrect">
@@ -167,8 +167,8 @@
                     <span class="stat-label">答错</span>
                 </span>
                 <span class="stat-item" id="statTotal">
-                    <span class="stat-num" id="statDoneNum">0</span>
-                    <span class="stat-label" id="statTotalText">/ 0</span>
+                    <span class="stat-num" id="statDoneNum">0<span id="statTotalSuffix">/0</span></span>
+                    <span class="stat-label">已做题</span>
                 </span>
             </div>
             <div class="question-container" id="questionContainer">

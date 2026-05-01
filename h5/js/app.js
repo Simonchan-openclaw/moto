@@ -570,6 +570,10 @@ var App = {
         this.practice.currentIndex = 0;
         this.practice.questions = [];
         this.practice.isExam = false;
+        // 初始化本次练习的统计
+        this.practice.sessionCorrect = 0;
+        this.practice.sessionWrong = 0;
+        this.practice.sessionAnswered = 0;
 
         this.showPage('practice');
         
@@ -584,13 +588,16 @@ var App = {
         API.getQuestionList({
             chapter_id: chapterId,
             page: 1,
-            page_size: 20
+            page_size: 100
         }).then(function(res) {
-            self.practice.questions = res.data.list;
+            self.practice.questions = res.data.list || [];
+            // 设置本次练习的题库总数
+            self.practice.totalQuestions = self.practice.questions.length;
+            self.updatePracticeStats();
             if (self.practice.questions.length > 0) {
                 self.showPracticeQuestion();
             } else {
-                document.querySelector('#page-practice .question-content').textContent = '该章节暂无题目';
+                document.querySelector('#page-practice .question-text').textContent = '该章节暂无题目';
             }
         }).catch(function(err) {
             self.showToast('加载失败');
@@ -598,21 +605,32 @@ var App = {
     },
 
     /**
-     * 加载练习统计
+     * 加载练习统计（总统计）
      */
     loadPracticeStatistics: function() {
+        var self = this;
         API.getStatistics().then(function(res) {
             var data = res.data || {};
-            document.getElementById('statColNum').textContent = data.collection_count || 0;
-            document.getElementById('statCorrectNum').textContent = data.correct_count || 0;
-            document.getElementById('statWrongNum').textContent = data.wrong_count || 0;
-            var done = data.total_answered || 0;
-            var total = data.total_questions || 0;
-            document.getElementById('statDoneNum').textContent = done;
-            document.getElementById('statTotalText').textContent = '/ ' + total;
+            document.getElementById('statColNum').textContent = data.collection_count > 0 ? '⭐' : '☆';
         }).catch(function(err) {
             console.log('Statistics load failed');
         });
+        // 初始化本次练习的显示
+        this.updatePracticeStats();
+    },
+
+    /**
+     * 更新本次练习的统计
+     */
+    updatePracticeStats: function() {
+        var correct = this.practice.sessionCorrect || 0;
+        var wrong = this.practice.sessionWrong || 0;
+        var answered = this.practice.sessionAnswered || 0;
+        var total = this.practice.totalQuestions || 0;
+        
+        document.getElementById('statCorrectNum').textContent = correct;
+        document.getElementById('statWrongNum').textContent = wrong;
+        document.getElementById('statDoneNum').innerHTML = answered + '<span id="statTotalSuffix">/' + total + '</span>';
     },
 
     /**
@@ -722,6 +740,15 @@ var App = {
         var options = container.querySelectorAll('.option-item');
         var result = container.querySelector('.answer-result');
         var isCorrect = data.is_correct;
+
+        // 更新本次练习统计
+        this.practice.sessionAnswered++;
+        if (isCorrect) {
+            this.practice.sessionCorrect++;
+        } else {
+            this.practice.sessionWrong++;
+        }
+        this.updatePracticeStats();
 
         // 显示结果
         options.forEach(function(item) {

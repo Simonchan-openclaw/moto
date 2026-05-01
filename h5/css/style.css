@@ -1074,6 +1074,16 @@ body {
     border: 1px solid #e8e8e8;
 }
 
+.practice-stats .stat-item.clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.practice-stats .stat-item.clickable:active {
+    transform: scale(0.95);
+    background: #f0f0f0;
+}
+
 .practice-stats .stat-num {
     font-size: 16px;
     font-weight: bold;
@@ -1086,7 +1096,7 @@ body {
     margin-top: 2px;
 }
 
-#statCollection .stat-num { color: #faad14; }
+#statCollection .stat-num { color: #faad14; font-size: 20px; }
 #statCorrect .stat-num { color: #52c41a; }
 #statWrong .stat-num { color: #ff4d4f; }
 #statTotal .stat-num { color: #1890ff; }
