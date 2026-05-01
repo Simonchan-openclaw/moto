@@ -34,7 +34,7 @@ Route::group('api', function () {
     
     // 管理后台API（需要认证）
     Route::group('admin', function () {
-        Route::post('question/list', 'admin.Question/list');
+        Route::get('question/list', 'admin.Question/list');
         Route::post('question/import', 'admin.Question/import');
         Route::post('question/jsonImport', 'admin.Question/jsonImport');
         Route::post('question/add', 'admin.Question/add');
