@@ -339,19 +339,19 @@ class Coach
             'param' => $coachId,
         ];
 
-        // 生成签名（SDK标准格式）
+        // 生成签名（最终正确版）
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
-            if ($k != 'sign' && $k != 'sign_type' && $v !== '') {
+            if ($k != 'sign' && $k != 'sign_type' && $v != '') {
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        // 去掉最后多余的 & 符号
+        // 删除最后多余的 &
         $signStr = rtrim($signStr, '&');
-        // 直接拼接密钥，不加任何前缀
+        // 直接拼接KEY
         $signStr .= $key;
-        // MD5 小写
+        // MD5小写
         $sign = strtolower(md5($signStr));
         
         // 日志记录
@@ -424,15 +424,15 @@ class Coach
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
-            if ($k != 'sign' && $k != 'sign_type' && $v !== '') {
+            if ($k != 'sign' && $k != 'sign_type' && $v != '') {
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        // 去掉最后多余的 & 符号
+        // 删除最后多余的 &
         $signStr = rtrim($signStr, '&');
-        // 直接拼接密钥，不加任何前缀
+        // 直接拼接KEY
         $signStr .= $key;
-        // MD5 小写
+        // MD5小写
         $checkSign = strtolower(md5($signStr));
 
         if ($sign != $checkSign) {
