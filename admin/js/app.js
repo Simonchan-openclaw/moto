@@ -623,10 +623,14 @@ var Admin = {
             '<div class="form-tips" style="margin-top:10px;">' +
             '<b>📋 JSON格式示例：</b><br><br>' +
             '<pre style="background:#f5f5f5;padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;">' +
-            '[{"question":"题目内容","options":{"A":"选项A","B":"选项B"},"correct_answer":"A"}]' +
+            '[{"type":1,"question":"机动车靠右侧通行","options":{"A":"正确","B":"错误"},"correct_answer":"A"},' +
+            '{"type":2,"question":"会车时应减速慢行","options":{"A":"正确","B":"错误"},"correct_answer":"A"},' +
+            '{"type":3,"question":"以下哪些情况需要开启转向灯？","options":{"A":"左转弯","B":"右转弯","C":"变道","D":"靠边停车"},"correct_answer":"ABCD"}]' +
             '</pre>' +
             '<div style="margin-top:10px;">' +
+            '<b>type 编码：</b> 1=单选题 | 2=判断题 | 3=多选题<br>' +
             '<b>字段说明：</b><br>' +
+            '• <b>type</b>：题型（必填，1/2/3）<br>' +
             '• <b>question</b>：题目内容（必填）<br>' +
             '• <b>options</b>：选项对象，A/B/C/D为键（必填）<br>' +
             '• <b>correct_answer</b>：正确答案<br>' +
