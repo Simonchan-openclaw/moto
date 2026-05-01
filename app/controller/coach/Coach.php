@@ -295,7 +295,7 @@ class Coach
     public function recharge()
     {
         $coachId = $this->getCurrentCoachId();
-        $amount = floatval(input('post.amount', 0));
+        $amount = floatval(input('post.amount', 1));
         $payMethod = intval(input('post.pay_method', 1)); // 1=微信, 2=支付宝
 
         $minAmount = 1.00;
@@ -314,10 +314,10 @@ class Coach
 
         // 支付方式映射（注意：易支付平台返回的type值是wxpays和alipay）
         $payTypeMap = [
-            1 => 'wxpays',  // 微信（平台返回wxpays）
+            1 => 'wxpay',  // 微信
             2 => 'alipay',  // 支付宝
         ];
-        $payType = $payTypeMap[$payMethod] ?? 'wxpays';
+        $payType = $payTypeMap[$payMethod] ?? 'wxpay';
 
         // 易支付配置
         $pid = config('payment.yipay.pid', '1006');
