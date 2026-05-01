@@ -20,7 +20,7 @@ class ErrorQuestion
 
         if (!$exists) {
             Db::execute(
-                "INSERT INTO {$this->table} (user_id, question_id, create_time) VALUES (?, ?, NOW())",
+                "INSERT INTO {$this->table} (user_id, question_id, created_at) VALUES (?, ?, NOW())",
                 [$userId, $questionId]
             );
         }
