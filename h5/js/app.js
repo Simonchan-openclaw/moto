@@ -572,6 +572,11 @@ var App = {
         this.practice.isExam = false;
 
         this.showPage('practice');
+        
+        // 更新标题
+        var subject = this.practice.subject || 1;
+        document.getElementById('practiceTitle').textContent = '科目' + (subject == 1 ? '一' : '四') + '练习';
+        
         this.loadPracticeStatistics();
 
         // 加载章节题目
@@ -597,10 +602,14 @@ var App = {
      */
     loadPracticeStatistics: function() {
         API.getStatistics().then(function(res) {
-            document.getElementById('statCollection').innerHTML = '⭐ 收藏: ' + (res.data.collection_count || 0);
-            document.getElementById('statCorrect').innerHTML = '✅ 答对: ' + (res.data.correct_count || 0);
-            document.getElementById('statWrong').innerHTML = '❌ 答错: ' + (res.data.wrong_count || 0);
-            document.getElementById('statTotal').innerHTML = '📝 已做: ' + (res.data.total_answered || 0);
+            var data = res.data || {};
+            document.getElementById('statColNum').textContent = data.collection_count || 0;
+            document.getElementById('statCorrectNum').textContent = data.correct_count || 0;
+            document.getElementById('statWrongNum').textContent = data.wrong_count || 0;
+            var done = data.total_answered || 0;
+            var total = data.total_questions || 0;
+            document.getElementById('statDoneNum').textContent = done;
+            document.getElementById('statTotalText').textContent = '/ ' + total;
         }).catch(function(err) {
             console.log('Statistics load failed');
         });
@@ -811,6 +820,11 @@ var App = {
         API.toggleCollection(question.id, newStatus).then(function() {
             question.is_collected = !isCollected;
             App.showToast(newStatus ? '已收藏' : '已取消收藏');
+            // 更新收藏统计
+            var colNum = parseInt(document.getElementById('statColNum').textContent) || 0;
+            document.getElementById('statColNum').textContent = newStatus ? colNum + 1 : colNum - 1;
+            // 更新收藏图标
+            document.getElementById('statCollection').querySelector('.stat-num').textContent = newStatus ? '⭐' : '☆';
         }).catch(function(err) {
             App.showToast('操作失败');
         });
@@ -1144,6 +1158,24 @@ var App = {
 
         }).catch(function(err) {
             document.getElementById('collectionListContainer').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>加载失败</p></div>';
+        });
+    },
+
+    /**
+     * 显示题目详情
+     */
+    showQuestionDetail: function(questionId) {
+        var self = this;
+        API.getQuestionDetail(questionId).then(function(res) {
+            var question = res.data;
+            if (!question) {
+                self.showToast('题目不存在');
+                return;
+            }
+            // 使用题目详情弹窗或直接显示
+            self.showToast('题目ID: ' + questionId);
+        }).catch(function(err) {
+            self.showToast('加载失败');
         });
     },
 
