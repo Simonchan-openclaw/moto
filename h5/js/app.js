@@ -592,6 +592,7 @@ var App = {
             self.practice.totalQuestions = res.data.count || 0;
             self.updatePracticeStats();
         }).catch(function(err) {
+            // API获取失败时使用章节题目数量
             self.practice.totalQuestions = 0;
         });
         
@@ -604,6 +605,11 @@ var App = {
             page_size: 100
         }).then(function(res) {
             self.practice.questions = res.data.list || [];
+            // 如果没有从API获取到总题数，使用章节题目数量
+            if (self.practice.totalQuestions === 0) {
+                self.practice.totalQuestions = self.practice.questions.length;
+            }
+            self.updatePracticeStats();
             if (self.practice.questions.length > 0) {
                 self.showPracticeQuestion();
             } else {
