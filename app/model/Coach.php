@@ -9,25 +9,42 @@ class Coach
 
     /**
      * 验证登录
+     * @return array ['success' => bool, 'coach' => array|null, 'message' => string]
      */
     public function verifyLogin($phone, $password)
     {
+        // 先查询该手机号是否存在
         $coach = Db::query(
-            "SELECT * FROM {$this->table} WHERE phone = ? AND status = 1",
+            "SELECT * FROM {$this->table} WHERE phone = ?",
             [$phone]
         );
 
+        // 账号不存在
         if (empty($coach)) {
-            return null;
+            return ['success' => false, 'coach' => null, 'message' => '账号不存在'];
         }
 
         $coach = $coach[0];
 
-        if (md5($password) !== $coach['password']) {
-            return null;
+        // 检查账号状态
+        $status = $coach['status'] ?? 0;
+        $statusMessages = [
+            '-2' => '账号已被撤销资格，请联系管理员',
+            '-1'  => '审核未通过，请联系管理员',
+            '0'   => '账号审核中，请等待审核通过后再登录',
+        ];
+
+        if ($status != 1) {
+            $message = $statusMessages[strval($status)] ?? '账号状态异常，请联系管理员';
+            return ['success' => false, 'coach' => null, 'message' => $message];
         }
 
-        return $coach;
+        // 状态正常，验证密码
+        if (md5($password) !== $coach['password']) {
+            return ['success' => false, 'coach' => null, 'message' => '密码错误'];
+        }
+
+        return ['success' => true, 'coach' => $coach, 'message' => '登录成功'];
     }
 
     /**
