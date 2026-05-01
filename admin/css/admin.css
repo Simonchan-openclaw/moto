@@ -152,6 +152,11 @@ body {
     font-weight: 600;
 }
 
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
 /* 统计卡片 */
 .stats-grid {
     display: grid;
@@ -791,4 +796,15 @@ select.form-input {
 
 .option-editor input {
     flex: 1;
+}
+
+/* 表单提示 */
+.form-tips {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 13px;
+    color: #52c41a;
+    line-height: 1.6;
 }

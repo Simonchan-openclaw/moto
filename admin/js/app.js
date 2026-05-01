@@ -372,7 +372,10 @@ var Admin = {
         container.innerHTML = '<div class="card">' +
             '<div class="card-header">' +
             '<h3 class="card-title">题目列表</h3>' +
-            '<button class="btn btn-primary" onclick="Admin.showQuestionModal()">添加题目</button>' +
+            '<div class="header-actions">' +
+            '<button class="btn btn-success" onclick="Admin.showJsonImportModal()">📥 JSON导入</button>' +
+            '<button class="btn btn-primary" onclick="Admin.showQuestionModal()">+ 添加题目</button>' +
+            '</div>' +
             '</div>' +
             '<div class="search-bar">' +
             '<input type="text" class="search-input" id="searchKeyword" placeholder="搜索题目内容...">' +
@@ -584,6 +587,139 @@ var Admin = {
         if (!confirm('确定要删除这道题目吗？')) return;
         this.showToast('删除成功');
         this.loadQuestions();
+    },
+
+    // ==================== JSON批量导入题库 ====================
+
+    /**
+     * 显示JSON导入弹窗
+     */
+    showJsonImportModal: function() {
+        var body = '<form id="jsonImportForm">' +
+            '<div class="form-group">' +
+            '<label class="form-label">科目选择 <span style="color:#ff4d4f">*</span></label>' +
+            '<select class="form-input" id="jsonImportSubject" required>' +
+            '<option value="">请选择科目</option>' +
+            '<option value="1">科目一</option>' +
+            '<option value="4">科目四</option>' +
+            '</select></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">题型选择 <span style="color:#ff4d4f">*</span></label>' +
+            '<select class="form-input" id="jsonImportType" required>' +
+            '<option value="">请选择题型</option>' +
+            '<option value="1">单选题</option>' +
+            '<option value="2">多选题</option>' +
+            '<option value="3">判断题</option>' +
+            '</select></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">JSON文件 <span style="color:#ff4d4f">*</span></label>' +
+            '<div class="upload-area" onclick="document.getElementById(\'jsonFile\').click()">' +
+            '<div class="icon">📁</div>' +
+            '<p id="jsonFileName">点击选择JSON文件</p>' +
+            '<p style="color:#999;font-size:12px;margin-top:5px;">支持 .json 格式</p>' +
+            '<input type="file" id="jsonFile" accept=".json" style="display:none;" onchange="Admin.handleJsonFileSelect(this)">' +
+            '</div></div>' +
+            '<div class="form-tips" style="margin-top:10px;">' +
+            '<b>📋 JSON格式示例：</b><br><br>' +
+            '<pre style="background:#f5f5f5;padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;">' +
+            '[{"question":"题目内容","options":{"A":"选项A","B":"选项B"},"correct_answer":"A"}]' +
+            '</pre>' +
+            '<div style="margin-top:10px;">' +
+            '<b>字段说明：</b><br>' +
+            '• <b>question</b>：题目内容（必填）<br>' +
+            '• <b>options</b>：选项对象，A/B/C/D为键（必填）<br>' +
+            '• <b>correct_answer</b>：正确答案<br>' +
+            '   - 单选题："A"、"B"、"C"、"D"<br>' +
+            '   - 多选题："AB"、"ACD" 等组合<br>' +
+            '   - 判断题："A"（正确）或 "B"（错误）<br>' +
+            '</div></div>' +
+            '</form>';
+
+        var footer = '<button class="btn btn-primary" onclick="Admin.doJsonImport()">开始导入</button>' +
+            '<button class="btn" onclick="Admin.closeModal()">取消</button>';
+
+        this.showModal('JSON批量导入题库', body, footer);
+    },
+
+    /**
+     * 处理JSON文件选择
+     */
+    handleJsonFileSelect: function(input) {
+        if (input.files.length > 0) {
+            var fileName = input.files[0].name;
+            var label = document.getElementById('jsonFileName');
+            if (label) {
+                label.textContent = '已选择: ' + fileName;
+                label.style.color = '#52c41a';
+            }
+            // 保存文件引用
+            this.selectedJsonFile = input.files[0];
+        }
+    },
+
+    /**
+     * 执行JSON导入
+     */
+    doJsonImport: function() {
+        var subject = document.getElementById('jsonImportSubject').value;
+        var questionType = document.getElementById('jsonImportType').value;
+        var file = this.selectedJsonFile;
+
+        // 验证科目
+        if (!subject) {
+            this.showToast('请选择科目');
+            return;
+        }
+
+        // 验证题型
+        if (!questionType) {
+            this.showToast('请选择题型');
+            return;
+        }
+
+        // 验证文件
+        if (!file) {
+            this.showToast('请选择JSON文件');
+            return;
+        }
+
+        var self = this;
+        this.showLoading();
+
+        API.jsonImport(parseInt(subject), parseInt(questionType), file).then(function(res) {
+            self.hideLoading();
+            self.closeModal();
+            self.selectedJsonFile = null; // 清空文件引用
+            
+            var successCount = res.data.success_count || 0;
+            var failCount = res.data.fail_count || 0;
+            var errors = res.data.errors || [];
+            
+            var message = '导入成功：' + successCount + '条';
+            if (failCount > 0) {
+                message += '，失败：' + failCount + '条';
+            }
+            
+            self.showToast(message);
+            
+            // 如果有错误，显示详情
+            if (errors.length > 0) {
+                var errorHtml = '<div style="max-height:200px;overflow-y:auto;text-align:left;font-size:12px;">' +
+                    '<b>导入详情：</b><br>' +
+                    errors.map(function(e) { return '• ' + e; }).join('<br>') +
+                    '</div>';
+                
+                var detailBody = '<div class="form-group">' + errorHtml + '</div>';
+                var detailFooter = '<button class="btn btn-primary" onclick="Admin.closeModal();Admin.loadQuestions();">确定</button>';
+                self.showModal('导入结果', detailBody, detailFooter);
+            } else {
+                // 刷新题库列表
+                self.loadQuestions();
+            }
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '导入失败');
+        });
     },
 
     // ==================== 章节管理 ====================
