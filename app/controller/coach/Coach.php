@@ -411,6 +411,9 @@ class Coach
         $trade_status = input('get.trade_status/s', '');
         $param = input('get.param/s', '');
         $sign = input('get.sign/s', '');
+        
+        // 调试日志
+        Log::info('【易支付回调】收到的参数: type=' . $pay_type . ', trade_no=' . $trade_no . ', out_trade_no=' . $out_trade_no);
 
         // 验证签名
         $params = [
