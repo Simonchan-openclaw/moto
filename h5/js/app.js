@@ -581,19 +581,24 @@ var App = {
         var subject = this.practice.subject || 1;
         document.getElementById('practiceTitle').textContent = '科目' + (subject == 1 ? '一' : '四') + '练习';
         
+        // 获取科目总题数
+        var self = this;
+        API.getQuestionCount(subject).then(function(res) {
+            self.practice.totalQuestions = res.data.count || 0;
+            self.updatePracticeStats();
+        }).catch(function(err) {
+            self.practice.totalQuestions = 0;
+        });
+        
         this.loadPracticeStatistics();
 
         // 加载章节题目
-        var self = this;
         API.getQuestionList({
             chapter_id: chapterId,
             page: 1,
             page_size: 100
         }).then(function(res) {
             self.practice.questions = res.data.list || [];
-            // 设置本次练习的题库总数
-            self.practice.totalQuestions = self.practice.questions.length;
-            self.updatePracticeStats();
             if (self.practice.questions.length > 0) {
                 self.showPracticeQuestion();
             } else {
@@ -685,9 +690,9 @@ var App = {
             };
         });
 
-        // 下一题按钮文字（初始为空，选择答案后显示"提交答案"）
+        // 下一题按钮文字（初始显示提示文字）
         var btnNext = document.getElementById('btnNext');
-        btnNext.textContent = '';
+        btnNext.textContent = '请选择答案';
         this.practice.answerSubmitted = false; // 标记是否已提交
 
         // 开始计时

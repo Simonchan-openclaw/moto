@@ -270,5 +270,12 @@ var API = {
      */
     getStatistics: function() {
         return this.request('user/statistics', 'GET', {}, true);
+    },
+
+    /**
+     * 获取科目题目总数
+     */
+    getQuestionCount: function(subject) {
+        return this.request('question/count?subject=' + subject, 'GET', {}, true);
     }
 };

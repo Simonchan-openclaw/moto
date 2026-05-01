@@ -119,4 +119,24 @@ class Question
 
         return jsonSuccess($question);
     }
+
+    /**
+     * 获取科目题目总数
+     * GET /api/question/count
+     */
+    public function count()
+    {
+        $subject = input('get.subject/d', 1);
+        
+        if (!in_array($subject, [1, 4])) {
+            return jsonError('科目参数错误');
+        }
+
+        $count = Db::name('question')
+            ->where('subject', $subject)
+            ->where('status', 1)
+            ->count();
+
+        return jsonSuccess(['count' => $count, 'subject' => $subject]);
+    }
 }
