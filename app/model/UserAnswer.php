@@ -17,6 +17,6 @@ class UserAnswer
              VALUES (?, ?, ?, ?, ?, NOW())",
             [$userId, $questionId, $userAnswer, $isCorrect ? 1 : 0, $answerTime]
         );
-        return Db::getLastInsID();
+        return Db::getLastInsID($this->table);
     }
 }

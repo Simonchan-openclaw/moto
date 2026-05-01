@@ -17,7 +17,7 @@ class RechargeRecord
              VALUES (?, ?, ?, ?, ?, NOW())",
             [$coachId, $amount, $payMethod, $tradeNo, $status]
         );
-        return Db::getLastInsID();
+        return Db::getLastInsID($this->table);
     }
 
     /**

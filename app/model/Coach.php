@@ -76,7 +76,7 @@ class Coach
             [$phone, $passwordHash, $realName]
         );
 
-        return Db::getLastInsID();
+        return Db::getLastInsID($this->table);
     }
 
     /**

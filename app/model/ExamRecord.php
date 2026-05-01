@@ -17,7 +17,7 @@ class ExamRecord
              VALUES (?, ?, ?, ?, ?, ?, NOW())",
             [$userId, $subject, $score, $totalQuestions, $correctCount, $timeUsed]
         );
-        return Db::getLastInsID();
+        return Db::getLastInsID($this->table);
     }
 
     /**
