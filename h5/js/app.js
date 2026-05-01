@@ -572,6 +572,7 @@ var App = {
         this.practice.isExam = false;
 
         this.showPage('practice');
+        this.loadPracticeStatistics();
 
         // 加载章节题目
         var self = this;
@@ -588,6 +589,20 @@ var App = {
             }
         }).catch(function(err) {
             self.showToast('加载失败');
+        });
+    },
+
+    /**
+     * 加载练习统计
+     */
+    loadPracticeStatistics: function() {
+        API.getStatistics().then(function(res) {
+            document.getElementById('statCollection').innerHTML = '⭐ 收藏: ' + (res.data.collection_count || 0);
+            document.getElementById('statCorrect').innerHTML = '✅ 答对: ' + (res.data.correct_count || 0);
+            document.getElementById('statWrong').innerHTML = '❌ 答错: ' + (res.data.wrong_count || 0);
+            document.getElementById('statTotal').innerHTML = '📝 已做: ' + (res.data.total_answered || 0);
+        }).catch(function(err) {
+            console.log('Statistics load failed');
         });
     },
 
@@ -1076,14 +1091,15 @@ var App = {
 
             var html = '';
             res.data.list.forEach(function(item) {
-                html += '<div class="record-item">' +
+                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题');
+                html += '<div class="record-item" onclick="App.showQuestionDetail(' + item.question_id + ')">' +
                     '<div class="record-header">' +
-                    '<span class="subject">第' + item.id + '题</span>' +
-                    '<span class="date">错误' + item.error_count + '次</span>' +
+                    '<span class="type-tag">' + typeName + '</span>' +
+                    '<span class="subject">' + (item.question_title || '').substr(0, 30) + '</span>' +
                     '</div>' +
                     '<div class="record-detail">' +
-                    '<span>科目' + item.subject + '</span>' +
-                    '<span>' + item.chapter_name + '</span>' +
+                    '<span>错误' + (item.error_count || 1) + '次</span>' +
+                    '<span>' + (item.answer || '') + '</span>' +
                     '</div></div>';
             });
 
@@ -1112,13 +1128,15 @@ var App = {
 
             var html = '';
             res.data.list.forEach(function(item) {
-                html += '<div class="record-item">' +
+                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题');
+                html += '<div class="record-item" onclick="App.showQuestionDetail(' + item.question_id + ')">' +
                     '<div class="record-header">' +
-                    '<span class="subject">' + item.content.substr(0, 20) + '...</span>' +
+                    '<span class="type-tag">' + typeName + '</span>' +
+                    '<span class="subject">' + (item.question_title || '').substr(0, 30) + '</span>' +
                     '</div>' +
                     '<div class="record-detail">' +
-                    '<span>科目' + item.subject + '</span>' +
-                    '<span>' + (item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题')) + '</span>' +
+                    '<span>收藏</span>' +
+                    '<span>' + (item.created_at ? item.created_at.substr(0, 10) : '') + '</span>' +
                     '</div></div>';
             });
 

@@ -39,7 +39,7 @@ class ErrorQuestion
         )[0]['cnt'] ?? 0;
 
         $list = Db::query(
-            "SELECT e.*, q.title as question_title, q.content as question_content, q.answer, q.analysis 
+            "SELECT e.*, q.title as question_title, q.subject, q.question_type, q.answer, q.analysis 
              FROM {$this->table} e 
              LEFT JOIN question q ON e.question_id = q.id 
              WHERE e.user_id = ? 

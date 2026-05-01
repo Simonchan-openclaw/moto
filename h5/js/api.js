@@ -261,5 +261,14 @@ var API = {
      */
     checkActivation: function(deviceId) {
         return this.request('student/check?device_id=' + deviceId, 'GET', {}, true);
+    },
+
+    // ==================== 统计模块 ====================
+
+    /**
+     * 获取用户答题统计
+     */
+    getStatistics: function() {
+        return this.request('user/statistics', 'GET', {}, true);
     }
 };

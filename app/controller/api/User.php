@@ -289,4 +289,51 @@ class User
         // TODO: 实现设备绑定逻辑
         return jsonSuccess(['success' => true], '设备绑定成功');
     }
+
+    /**
+     * 获取用户答题统计
+     * GET /api/user/statistics
+     */
+    public function statistics()
+    {
+        $userId = getCurrentUserId();
+
+        // 收藏数
+        $collectionCount = Db::query(
+            "SELECT COUNT(*) as cnt FROM collection WHERE user_id = ?",
+            [$userId]
+        )[0]['cnt'] ?? 0;
+
+        // 已做题数
+        $totalAnswered = Db::query(
+            "SELECT COUNT(*) as cnt FROM user_answer WHERE user_id = ?",
+            [$userId]
+        )[0]['cnt'] ?? 0;
+
+        // 答对数
+        $correctCount = Db::query(
+            "SELECT COUNT(*) as cnt FROM user_answer WHERE user_id = ? AND is_correct = 1",
+            [$userId]
+        )[0]['cnt'] ?? 0;
+
+        // 答错数
+        $wrongCount = Db::query(
+            "SELECT COUNT(*) as cnt FROM user_answer WHERE user_id = ? AND is_correct = 0",
+            [$userId]
+        )[0]['cnt'] ?? 0;
+
+        // 错题数
+        $errorCount = Db::query(
+            "SELECT COUNT(*) as cnt FROM error_question WHERE user_id = ?",
+            [$userId]
+        )[0]['cnt'] ?? 0;
+
+        return jsonSuccess([
+            'collection_count'  => $collectionCount,
+            'total_answered'    => $totalAnswered,
+            'correct_count'     => $correctCount,
+            'wrong_count'      => $wrongCount,
+            'error_count'       => $errorCount
+        ]);
+    }
 }

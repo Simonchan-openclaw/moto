@@ -55,7 +55,7 @@ class Collection
         )[0]['cnt'] ?? 0;
 
         $list = Db::query(
-            "SELECT c.*, q.title as question_title, q.content as question_content 
+            "SELECT c.*, q.title as question_title, q.subject, q.question_type 
              FROM {$this->table} c 
              LEFT JOIN question q ON c.question_id = q.id 
              WHERE c.user_id = ? 
