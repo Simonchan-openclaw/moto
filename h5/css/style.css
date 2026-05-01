@@ -64,7 +64,7 @@ body {
     border-radius: 0 0 30px 30px;
     box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
 }
-
+/*
 .header::after {
     content: '';
     position: absolute;
@@ -76,6 +76,7 @@ body {
     background: white;
     border-radius: 2px;
 }
+*/
 
 .header h1 {
     font-size: 22px;
