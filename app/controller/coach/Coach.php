@@ -436,7 +436,7 @@ class Coach
         $checkSign = strtolower(md5($signStr));
 
         if ($sign != $checkSign) {
-            Log::error('【易支付回调】签名验证失败,订单号:'.$out_trade_no);
+            Log::error('【易支付回调】签名验证失败,订单号:'.$out_trade_no.',本地签名:'.$checkSign.',回调签名:'.$sign.',签名字符串:'.$signStr);
             return 'fail';
         }
 
