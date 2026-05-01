@@ -74,21 +74,24 @@ class Question
     /**
      * JSON批量导入题目
      * POST /api/admin/question/jsonImport
+     * 
+     * JSON格式：
+     * {
+     *   "type": 1,  // 题型：1=单选题、2=判断题、3=多选题
+     *   "question": "题目内容",
+     *   "options": {"A": "选项A", "B": "选项B", "C": "选项C", "D": "选项D"},
+     *   "correct_answer": "A",
+     *   "analysis": "解析内容（可选）"
+     * }
      */
     public function jsonImport()
     {
         // 获取参数
         $subject = input('post.subject/d', 0);
-        $questionType = input('post.question_type/d', 0);
         
         // 验证科目
         if (!in_array($subject, [1, 4])) {
             return jsonError('请选择正确的科目（科目一或科目四）');
-        }
-        
-        // 验证题型
-        if (!in_array($questionType, [1, 2, 3])) {
-            return jsonError('请选择正确的题型（选择题、判断题或多选题）');
         }
         
         // 检查文件上传
@@ -121,10 +124,27 @@ class Question
         $errors = [];
         $now = date('Y-m-d H:i:s');
         
+        // 题型映射
+        $typeMap = [
+            1 => '单选题',
+            2 => '判断题',
+            3 => '多选题'
+        ];
+        
         // 准备批量插入
         $insertData = [];
         
         foreach ($questions as $index => $item) {
+            // 从JSON中获取type，自动设置题型
+            $questionType = isset($item['type']) ? intval($item['type']) : 0;
+            
+            // 验证题型
+            if (!in_array($questionType, [1, 2, 3])) {
+                $failCount++;
+                $errors[] = '第' . ($index + 1) . '条：type无效（应为1=单选题、2=判断题、3=多选题）';
+                continue;
+            }
+            
             // 验证必填字段
             if (empty($item['question'])) {
                 $failCount++;
@@ -154,17 +174,17 @@ class Question
                     continue;
                 }
             } elseif ($questionType == 2) {
-                // 多选题：必须是多个字母组合
-                if (!preg_match('/^[A-D]{1,4}$/', $answer) || strlen($answer) < 2) {
-                    $failCount++;
-                    $errors[] = '第' . ($index + 1) . '条：多选题答案必须是多个选项组合（如AB、ACD）';
-                    continue;
-                }
-            } elseif ($questionType == 3) {
                 // 判断题：只能是A或B
                 if (!in_array($answer, ['A', 'B'])) {
                     $failCount++;
                     $errors[] = '第' . ($index + 1) . '条：判断题答案必须是A或B';
+                    continue;
+                }
+            } elseif ($questionType == 3) {
+                // 多选题：必须是多个字母组合
+                if (!preg_match('/^[A-D]{1,4}$/', $answer) || strlen($answer) < 2) {
+                    $failCount++;
+                    $errors[] = '第' . ($index + 1) . '条：多选题答案必须是多个选项组合（如AB、ACD）';
                     continue;
                 }
             }
@@ -176,7 +196,7 @@ class Question
             $optionD = $item['options']['D'] ?? '';
             
             // 判断题只需要A/B选项
-            if ($questionType == 3) {
+            if ($questionType == 2) {
                 $optionC = '';
                 $optionD = '';
             }
