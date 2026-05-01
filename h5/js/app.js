@@ -680,11 +680,14 @@ var App = {
         result.style.display = 'none';
         container.querySelectorAll('.option-item').forEach(function(item) {
             item.classList.remove('selected', 'correct', 'wrong');
+            item.onclick = function() {
+                App.selectOption(item.querySelector('.option-key').textContent);
+            };
         });
 
-        // 下一题按钮文字
+        // 下一题按钮文字（初始为空，选择答案后显示"提交答案"）
         var btnNext = document.getElementById('btnNext');
-        btnNext.textContent = '下一题';
+        btnNext.textContent = '';
         this.practice.answerSubmitted = false; // 标记是否已提交
 
         // 开始计时
@@ -729,6 +732,8 @@ var App = {
             }
         });
         this.practice.selectedAnswer = optionKey;
+        // 选择答案后显示提交按钮
+        btnNext.textContent = '提交答案';
     },
 
     /**
@@ -739,6 +744,7 @@ var App = {
         var container = document.getElementById('questionContainer');
         var options = container.querySelectorAll('.option-item');
         var result = container.querySelector('.answer-result');
+        var btnNext = document.getElementById('btnNext');
         var isCorrect = data.is_correct;
 
         // 更新本次练习统计
@@ -764,6 +770,9 @@ var App = {
         result.querySelector('.result-icon').textContent = isCorrect ? '✅' : '❌';
         result.querySelector('.result-text').textContent = isCorrect ? '回答正确' : '回答错误';
         result.querySelector('.analysis').textContent = data.analysis || '暂无解析';
+        
+        // 更新按钮为下一题
+        btnNext.textContent = '下一题';
     },
 
     /**
@@ -831,6 +840,7 @@ var App = {
             this.showPage('chapters', { subject: this.practice.subject });
         } else {
             this.showPracticeQuestion();
+            this.updatePracticeStats();
         }
     },
 
