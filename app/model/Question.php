@@ -10,30 +10,30 @@ class Question extends Model
     protected $pk = 'id';
 
     /**
-     * 获取题目列表
+     * 获取题目列表（学员端使用）
      */
     public function getList($params = [])
     {
-        $where = ['status = 1'];
+        $where = ['q.status = 1'];
         $whereParams = [];
 
         if (!empty($params['subject'])) {
-            $where[] = 'subject = ?';
+            $where[] = 'q.subject = ?';
             $whereParams[] = $params['subject'];
         }
 
         if (!empty($params['question_type'])) {
-            $where[] = 'question_type = ?';
+            $where[] = 'q.question_type = ?';
             $whereParams[] = $params['question_type'];
         }
 
         if (!empty($params['chapter_id'])) {
-            $where[] = 'chapter_id = ?';
+            $where[] = 'q.chapter_id = ?';
             $whereParams[] = $params['chapter_id'];
         }
 
         if (!empty($params['keyword'])) {
-            $where[] = '(content LIKE ? OR keywords LIKE ?)';
+            $where[] = '(q.title LIKE ? OR q.keywords LIKE ?)';
             $whereParams[] = '%' . $params['keyword'] . '%';
             $whereParams[] = '%' . $params['keyword'] . '%';
         }
@@ -46,7 +46,7 @@ class Question extends Model
 
         // 获取总数
         $total = Db::query(
-            "SELECT COUNT(*) as cnt FROM {$this->name} WHERE {$whereSql}",
+            "SELECT COUNT(*) as cnt FROM {$this->name} q WHERE {$whereSql}",
             $whereParams
         )[0]['cnt'] ?? 0;
 
