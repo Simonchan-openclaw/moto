@@ -133,6 +133,17 @@ var API = {
         return this.request('question/chapters?subject=' + (subject || 1), 'GET', {}, true);
     },
 
+    // ==================== 题目管理 ====================
+
+    /**
+     * 切换题目状态
+     * @param {number} questionId - 题目ID
+     * @param {number} status - 状态：1=启用, 0=禁用
+     */
+    toggleQuestionStatus: function(questionId, status) {
+        return this.request('admin/question/setStatus', 'POST', { id: questionId, status: status }, true);
+    },
+
     // ==================== 用户管理 ====================
 
     getUserList: function(params) {

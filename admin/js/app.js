@@ -389,6 +389,7 @@ var Admin = {
             '<option value="">题型</option>' +
             '<option value="1">选择题</option>' +
             '<option value="2">判断题</option>' +
+            '<option value="3">多选题</option>' +
             '</select>' +
             '<button class="btn btn-primary" onclick="self.loadQuestions()">搜索</button>' +
             '</div>' +
@@ -431,7 +432,7 @@ var Admin = {
             }
             
             var html = '<table>' +
-                '<thead><tr><th>ID</th><th>科目</th><th>题型</th><th>章节</th><th>题目内容</th><th>答案</th><th>状态</th><th>操作</th></tr></thead>' +
+                '<thead><tr><th>ID</th><th>科目</th><th>题型</th><th>题目内容</th><th>答案</th><th>状态</th><th>操作</th></tr></thead>' +
                 '<tbody>';
 
             list.forEach(function(q) {
@@ -440,17 +441,19 @@ var Admin = {
                 var status = q.status == 1 ? '<span class="tag tag-success">启用</span>' : '<span class="tag tag-danger">禁用</span>';
                 var title = q.content && q.content.length > 30 ? q.content.substr(0, 30) + '...' : (q.content || '-');
 
+        // 安全地将对象转换为JSON字符串
+        var qJson = JSON.stringify(q).replace(/'/g, "\\'").replace(/"/g, '\\"');
                 html += '<tr>' +
                     '<td>' + q.id + '</td>' +
                     '<td>' + subjectName + '</td>' +
                     '<td>' + typeName + '</td>' +
-                    '<td>第' + (q.chapter_id || 1) + '章</td>' +
-                    '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (q.content || '') + '">' + title + '</td>' +
+                    '<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (q.content || '') + '">' + title + '</td>' +
                     '<td>' + q.answer + '</td>' +
                     '<td>' + status + '</td>' +
                     '<td>' +
-                    '<button class="btn btn-sm btn-primary" onclick="Admin.showQuestionModal(' + q.id + ', ' + JSON.stringify(q).replace(/'/g, "\\'") + ')">编辑</button>' +
-                    '<button class="btn btn-sm btn-danger" onclick="Admin.deleteQuestion(' + q.id + ')">删除</button>' +
+                    '<button class="btn btn-sm" onclick="Admin.viewQuestion(' + q.id + ', ' + qJson + ')">查看</button> ' +
+                    '<button class="btn btn-sm btn-primary" onclick="Admin.showQuestionModal(' + q.id + ', ' + qJson + ')">编辑</button> ' +
+                    '<button class="btn btn-sm ' + (q.status == 1 ? 'btn-warning' : 'btn-success') + '" onclick="Admin.toggleQuestionStatus(' + q.id + ', ' + (q.status == 1 ? 0 : 1) + ')">' + (q.status == 1 ? '禁用' : '启用') + '</button>' +
                     '</td></tr>';
             });
 
@@ -603,10 +606,82 @@ var Admin = {
         this.loadQuestions();
     },
 
+    /**
+     * 切换题目状态（软删除/恢复）
+     */
+    toggleQuestionStatus: function(id, newStatus) {
+        if (!confirm('确定要' + (newStatus == 1 ? '启用' : '禁用') + '这道题目吗？')) return;
+        
+        var self = this;
+        this.showLoading();
+        
+        API.toggleQuestionStatus(id, newStatus).then(function(res) {
+            self.hideLoading();
+            self.showToast((newStatus == 1 ? '启用' : '禁用') + '成功');
+            self.loadQuestions();
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '操作失败');
+        });
+    },
+
+    /**
+     * 查看题目详情（只读）
+     */
+    viewQuestion: function(id, questionData) {
+        if (!questionData) {
+            this.showToast('题目数据不存在');
+            return;
+        }
+        
+        var typeName = questionData.question_type == 1 ? '单选题' : (questionData.question_type == 2 ? '判断题' : '多选题');
+        var subjectName = questionData.subject == 1 ? '科目一' : '科目四';
+        var statusName = questionData.status == 1 ? '启用' : '禁用';
+        
+        var body = '<form id="questionViewForm" style="pointer-events:none;">' +
+            '<div class="form-group">' +
+            '<label class="form-label">科目</label>' +
+            '<input type="text" class="form-input" value="' + subjectName + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">题型</label>' +
+            '<input type="text" class="form-input" value="' + typeName + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">题目内容</label>' +
+            '<textarea class="form-input" rows="3" readonly>' + (questionData.content || '') + '</textarea></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">选项A</label>' +
+            '<input type="text" class="form-input" value="' + (questionData.option_a || '') + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">选项B</label>' +
+            '<input type="text" class="form-input" value="' + (questionData.option_b || '') + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">选项C</label>' +
+            '<input type="text" class="form-input" value="' + (questionData.option_c || '') + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">选项D</label>' +
+            '<input type="text" class="form-input" value="' + (questionData.option_d || '') + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">正确答案</label>' +
+            '<input type="text" class="form-input" value="' + (questionData.answer || '') + '" readonly></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">题目解析</label>' +
+            '<textarea class="form-input" rows="2" readonly>' + (questionData.analysis || '无') + '</textarea></div>' +
+            '<div class="form-group">' +
+            '<label class="form-label">状态</label>' +
+            '<input type="text" class="form-input" value="' + statusName + '" readonly></div>' +
+            '</form>';
+
+        var footer = '<button class="btn" onclick="Admin.closeModal()">关闭</button>';
+
+        this.showModal('查看题目', body, footer);
+    },
+
+    /**
+     * 删除题目（软删除）
+     */
     deleteQuestion: function(id) {
         if (!confirm('确定要删除这道题目吗？')) return;
-        this.showToast('删除成功');
-        this.loadQuestions();
+        this.toggleQuestionStatus(id, 0);
     },
 
     // ==================== JSON批量导入题库 ====================

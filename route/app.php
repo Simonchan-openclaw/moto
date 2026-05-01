@@ -40,6 +40,7 @@ Route::group('api', function () {
         Route::post('question/add', 'admin.Question/add');
         Route::post('question/edit', 'admin.Question/edit');
         Route::post('question/delete', 'admin.Question/delete');
+        Route::post('question/setStatus', 'admin.Question/setStatus');
         Route::get('user/list', 'admin.User/list');
         Route::get('coach/list', 'admin.Coach/list');
         Route::post('coach/add', 'admin.Coach/add');

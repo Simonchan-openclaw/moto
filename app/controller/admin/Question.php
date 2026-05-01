@@ -283,7 +283,7 @@ class Question
     }
 
     /**
-     * 删除题目
+     * 删除题目（软删除）
      * POST /api/admin/question/delete
      */
     public function delete()
@@ -294,7 +294,39 @@ class Question
             return jsonError('题目ID不能为空');
         }
 
-        // TODO: 实现删除逻辑（软删除）
-        return jsonSuccess(['success' => true], '删除成功');
+        // 软删除：设置status为0
+        $result = Db::name('question')->where('id', $id)->update(['status' => 0, 'updated_at' => date('Y-m-d H:i:s')]);
+        
+        if ($result) {
+            return jsonSuccess(['success' => true], '删除成功');
+        } else {
+            return jsonError('删除失败');
+        }
+    }
+
+    /**
+     * 设置题目状态（启用/禁用）
+     * POST /api/admin/question/setStatus
+     */
+    public function setStatus()
+    {
+        $id = input('post.id/d', 0);
+        $status = input('post.status/d', 0);
+        
+        if ($id <= 0) {
+            return jsonError('题目ID不能为空');
+        }
+        
+        if (!in_array($status, [0, 1])) {
+            return jsonError('状态值无效');
+        }
+
+        $result = Db::name('question')->where('id', $id)->update(['status' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
+        
+        if ($result) {
+            return jsonSuccess(['success' => true], $status == 1 ? '启用成功' : '禁用成功');
+        } else {
+            return jsonError('操作失败');
+        }
     }
 }
