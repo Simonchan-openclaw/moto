@@ -70,13 +70,17 @@ class Coach
 
         $passwordHash = md5($password);
 
-        Db::execute(
-            "INSERT INTO {$this->table} (phone, password, real_name, balance, total_recharged, status, create_time) 
-             VALUES (?, ?, ?, 0, 0, 0, NOW())",
-            [$phone, $passwordHash, $realName]
-        );
+        $data = [
+            'phone'       => $phone,
+            'password'    => $passwordHash,
+            'real_name'   => $realName,
+            'balance'     => 0,
+            'total_recharged' => 0,
+            'status'      => 0,
+            'create_time' => date('Y-m-d H:i:s')
+        ];
 
-        return Db::getLastInsID($this->table);
+        return Db::name('coach')->insert($data, true);
     }
 
     /**

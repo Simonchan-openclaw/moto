@@ -12,11 +12,15 @@ class UserAnswer
      */
     public function create($userId, $questionId, $userAnswer, $isCorrect, $answerTime = 0)
     {
-        Db::execute(
-            "INSERT INTO {$this->table} (user_id, question_id, user_answer, is_correct, answer_time, created_at) 
-             VALUES (?, ?, ?, ?, ?, NOW())",
-            [$userId, $questionId, $userAnswer, $isCorrect ? 1 : 0, $answerTime]
-        );
-        return Db::getLastInsID($this->table);
+        $data = [
+            'user_id'     => $userId,
+            'question_id' => $questionId,
+            'user_answer' => $userAnswer,
+            'is_correct'  => $isCorrect ? 1 : 0,
+            'answer_time' => $answerTime,
+            'created_at'  => date('Y-m-d H:i:s')
+        ];
+        
+        return Db::name('user_answer')->insert($data, true);
     }
 }

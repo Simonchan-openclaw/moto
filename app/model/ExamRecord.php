@@ -12,12 +12,17 @@ class ExamRecord
      */
     public function create($userId, $subject, $score, $totalQuestions, $correctCount, $timeUsed = 0)
     {
-        Db::execute(
-            "INSERT INTO {$this->table} (user_id, subject, score, total_questions, correct_count, time_used, create_time) 
-             VALUES (?, ?, ?, ?, ?, ?, NOW())",
-            [$userId, $subject, $score, $totalQuestions, $correctCount, $timeUsed]
-        );
-        return Db::getLastInsID($this->table);
+        $data = [
+            'user_id'        => $userId,
+            'subject'        => $subject,
+            'score'          => $score,
+            'total_questions'=> $totalQuestions,
+            'correct_count'  => $correctCount,
+            'time_used'      => $timeUsed,
+            'create_time'    => date('Y-m-d H:i:s')
+        ];
+        
+        return Db::name('exam_record')->insert($data, true);
     }
 
     /**

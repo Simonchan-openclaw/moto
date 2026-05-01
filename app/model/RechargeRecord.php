@@ -12,12 +12,16 @@ class RechargeRecord
      */
     public function create($coachId, $amount, $payMethod, $tradeNo, $status = 0)
     {
-        Db::execute(
-            "INSERT INTO {$this->table} (coach_id, amount, pay_method, trade_no, status, create_time) 
-             VALUES (?, ?, ?, ?, ?, NOW())",
-            [$coachId, $amount, $payMethod, $tradeNo, $status]
-        );
-        return Db::getLastInsID($this->table);
+        $data = [
+            'coach_id'    => $coachId,
+            'amount'      => $amount,
+            'pay_method'  => $payMethod,
+            'trade_no'    => $tradeNo,
+            'status'      => $status,
+            'create_time' => date('Y-m-d H:i:s')
+        ];
+        
+        return Db::name('recharge_record')->insert($data, true);
     }
 
     /**
