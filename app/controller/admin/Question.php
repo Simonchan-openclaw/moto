@@ -75,7 +75,13 @@ class Question
      * JSON批量导入题目
      * POST /api/admin/question/jsonImport
      * 
-     * JSON格式：
+     * 请求格式：JSON body
+     * {
+     *   "subject": 1,  // 科目：1=科目一、4=科目四
+     *   "content": "[...JSON数组...]"  // JSON格式的题目内容
+     * }
+     * 
+     * JSON数组格式：
      * {
      *   "type": 1,  // 题型：1=单选题、2=判断题、3=多选题
      *   "question": "题目内容",
@@ -86,32 +92,33 @@ class Question
      */
     public function jsonImport()
     {
+        // 获取原始JSON内容
+        $jsonContent = file_get_contents('php://input');
+        $params = json_decode($jsonContent, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return jsonError('请求参数格式错误：' . json_last_error_msg());
+        }
+        
         // 获取参数
-        $subject = input('post.subject/d', 0);
+        $subject = isset($params['subject']) ? intval($params['subject']) : 0;
+        $content = isset($params['content']) ? $params['content'] : '';
         
         // 验证科目
         if (!in_array($subject, [1, 4])) {
             return jsonError('请选择正确的科目（科目一或科目四）');
         }
         
-        // 检查文件上传
-        $file = request()->file('file');
-        if (!$file) {
-            return jsonError('请上传JSON文件');
+        // 验证JSON内容
+        if (empty($content)) {
+            return jsonError('JSON内容不能为空');
         }
         
-        // 检查文件类型
-        $ext = strtolower($file->getExtension());
-        if ($ext !== 'json') {
-            return jsonError('只支持JSON文件');
-        }
-        
-        // 读取文件内容
-        $content = file_get_contents($file->getPathname());
+        // 解析JSON内容
         $questions = json_decode($content, true);
         
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return jsonError('JSON格式错误：' . json_last_error_msg());
+            return jsonError('JSON内容格式错误：' . json_last_error_msg());
         }
         
         if (!is_array($questions) || empty($questions)) {

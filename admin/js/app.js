@@ -605,24 +605,12 @@ var Admin = {
             '<option value="4">科目四</option>' +
             '</select></div>' +
             '<div class="form-group">' +
-            '<label class="form-label">题型选择 <span style="color:#ff4d4f">*</span></label>' +
-            '<select class="form-input" id="jsonImportType" required>' +
-            '<option value="">请选择题型</option>' +
-            '<option value="1">单选题</option>' +
-            '<option value="2">多选题</option>' +
-            '<option value="3">判断题</option>' +
-            '</select></div>' +
-            '<div class="form-group">' +
-            '<label class="form-label">JSON文件 <span style="color:#ff4d4f">*</span></label>' +
-            '<div class="upload-area" onclick="document.getElementById(\'jsonFile\').click()">' +
-            '<div class="icon">📁</div>' +
-            '<p id="jsonFileName">点击选择JSON文件</p>' +
-            '<p style="color:#999;font-size:12px;margin-top:5px;">支持 .json 格式</p>' +
-            '<input type="file" id="jsonFile" accept=".json" style="display:none;" onchange="Admin.handleJsonFileSelect(this)">' +
-            '</div></div>' +
+            '<label class="form-label">JSON内容 <span style="color:#ff4d4f">*</span></label>' +
+            '<textarea class="form-input" id="jsonImportContent" rows="12" style="font-family:Consolas,Monaco,monospace;font-size:12px;" placeholder="{}"></textarea>' +
+            '<div style="margin-top:5px;color:#999;font-size:12px;">支持批量多行JSON格式</div></div>' +
             '<div class="form-tips" style="margin-top:10px;">' +
             '<b>📋 JSON格式示例：</b><br><br>' +
-            '<pre style="background:#f5f5f5;padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;">' +
+            '<pre style="background:#f5f5f5;padding:10px;border-radius:4px;font-size:12px;overflow-x:auto;white-space:pre-wrap;">' +
             '[{"type":1,"question":"机动车靠右侧通行","options":{"A":"正确","B":"错误"},"correct_answer":"A"},' +
             '{"type":2,"question":"会车时应减速慢行","options":{"A":"正确","B":"错误"},"correct_answer":"A"},' +
             '{"type":3,"question":"以下哪些情况需要开启转向灯？","options":{"A":"左转弯","B":"右转弯","C":"变道","D":"靠边停车"},"correct_answer":"ABCD"}]' +
@@ -637,6 +625,7 @@ var Admin = {
             '   - 单选题："A"、"B"、"C"、"D"<br>' +
             '   - 多选题："AB"、"ACD" 等组合<br>' +
             '   - 判断题："A"（正确）或 "B"（错误）<br>' +
+            '• <b>analysis</b>：题目解析（可选）<br>' +
             '</div></div>' +
             '</form>';
 
@@ -647,28 +636,11 @@ var Admin = {
     },
 
     /**
-     * 处理JSON文件选择
-     */
-    handleJsonFileSelect: function(input) {
-        if (input.files.length > 0) {
-            var fileName = input.files[0].name;
-            var label = document.getElementById('jsonFileName');
-            if (label) {
-                label.textContent = '已选择: ' + fileName;
-                label.style.color = '#52c41a';
-            }
-            // 保存文件引用
-            this.selectedJsonFile = input.files[0];
-        }
-    },
-
-    /**
      * 执行JSON导入
      */
     doJsonImport: function() {
         var subject = document.getElementById('jsonImportSubject').value;
-        var questionType = document.getElementById('jsonImportType').value;
-        var file = this.selectedJsonFile;
+        var jsonContent = document.getElementById('jsonImportContent').value;
 
         // 验证科目
         if (!subject) {
@@ -676,25 +648,26 @@ var Admin = {
             return;
         }
 
-        // 验证题型
-        if (!questionType) {
-            this.showToast('请选择题型');
+        // 验证JSON内容
+        if (!jsonContent || jsonContent.trim() === '') {
+            this.showToast('请输入JSON内容');
             return;
         }
 
-        // 验证文件
-        if (!file) {
-            this.showToast('请选择JSON文件');
+        // 验证JSON格式
+        try {
+            JSON.parse(jsonContent);
+        } catch (e) {
+            this.showToast('JSON格式错误：' + e.message);
             return;
         }
 
         var self = this;
         this.showLoading();
 
-        API.jsonImport(parseInt(subject), parseInt(questionType), file).then(function(res) {
+        API.jsonImport(parseInt(subject), jsonContent).then(function(res) {
             self.hideLoading();
             self.closeModal();
-            self.selectedJsonFile = null; // 清空文件引用
             
             var successCount = res.data.success_count || 0;
             var failCount = res.data.fail_count || 0;

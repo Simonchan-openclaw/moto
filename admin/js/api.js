@@ -82,17 +82,11 @@ var API = {
     /**
      * JSON批量导入题目
      * @param {number} subject - 科目：1=科目一, 4=科目四
-     * @param {number} questionType - 题型：1=单选题, 2=多选题, 3=判断题
-     * @param {File} file - JSON文件
+     * @param {string} jsonContent - JSON格式的题目内容（字符串）
      */
-    jsonImport: function(subject, questionType, file) {
+    jsonImport: function(subject, jsonContent) {
         return new Promise(function(resolve, reject) {
             Admin.showLoading();
-
-            var formData = new FormData();
-            formData.append('subject', subject);
-            formData.append('question_type', questionType);
-            formData.append('file', file);
 
             var xhr = new XMLHttpRequest();
             var apiUrl = Config.API_BASE + 'admin/question/jsonImport';
@@ -102,7 +96,8 @@ var API = {
             // 获取 token
             var token = localStorage.getItem('admin_token') || '';
             xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            // 不设置 Content-Type，让浏览器自动处理 multipart/form-data
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Content-Type', 'application/json');
 
             xhr.onload = function() {
                 Admin.hideLoading();
@@ -124,7 +119,7 @@ var API = {
                 reject({ message: '网络连接失败' });
             };
 
-            xhr.send(formData);
+            xhr.send(jsonContent);
         });
     },
 
