@@ -23,7 +23,7 @@ class Coach
 
         $coach = $coach[0];
 
-        if (!password_verify($password, $coach['password'])) {
+        if (md5($password) !== $coach['password']) {
             return null;
         }
 
@@ -68,7 +68,7 @@ class Coach
             throw new \Exception('该手机号已注册');
         }
 
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $passwordHash = md5($password);
 
         Db::execute(
             "INSERT INTO {$this->table} (phone, password, real_name, balance, total_recharged, status, create_time) 

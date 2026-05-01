@@ -49,7 +49,7 @@ class User extends Model
             'country_code' => $countryCode,
             'nickname'     => $nickname ?: '摩托学员',
             'status'       => 1,
-            'password'     => password_hash($password ?: $deviceId, PASSWORD_DEFAULT),
+            'password'     => md5($password ?: $deviceId),
             'device_id'    => $deviceId,
             'inv_coach_id' => intval($invCoachId),
             'create_time'  => date('Y-m-d H:i:s'),
@@ -120,7 +120,7 @@ class User extends Model
             return false;
         }
 
-        if (!empty($user['password']) && !password_verify($password, $user['password'])) {
+        if (!empty($user['password']) && md5($password) !== $user['password']) {
             return false;
         }
 
