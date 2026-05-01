@@ -211,9 +211,9 @@ class Question extends Model
 
         // 处理选项
         foreach ($list as &$item) {
+            // 保留 title 字段用于列表显示，同时添加 content 兼容
             $item['content'] = $item['title'];
             $item['options'] = $this->formatOptions($item);
-            unset($item['title']);
         }
 
         return [

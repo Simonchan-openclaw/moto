@@ -438,18 +438,18 @@ var Admin = {
                 var subjectName = q.subject == 1 ? '科目一' : '科目四';
                 var typeName = q.question_type == 1 ? '选择题' : (q.question_type == 2 ? '判断题' : '多选题');
                 var status = q.status == 1 ? '<span class="tag tag-success">启用</span>' : '<span class="tag tag-danger">禁用</span>';
-                var title = q.title && q.title.length > 30 ? q.title.substr(0, 30) + '...' : (q.title || '-');
+                var title = q.content && q.content.length > 30 ? q.content.substr(0, 30) + '...' : (q.content || '-');
 
                 html += '<tr>' +
                     '<td>' + q.id + '</td>' +
                     '<td>' + subjectName + '</td>' +
                     '<td>' + typeName + '</td>' +
                     '<td>第' + (q.chapter_id || 1) + '章</td>' +
-                    '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (q.title || '') + '">' + title + '</td>' +
+                    '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (q.content || '') + '">' + title + '</td>' +
                     '<td>' + q.answer + '</td>' +
                     '<td>' + status + '</td>' +
                     '<td>' +
-                    '<button class="btn btn-sm btn-primary" onclick="Admin.showQuestionModal(' + q.id + ')">编辑</button>' +
+                    '<button class="btn btn-sm btn-primary" onclick="Admin.showQuestionModal(' + q.id + ', ' + JSON.stringify(q).replace(/'/g, "\\'") + ')">编辑</button>' +
                     '<button class="btn btn-sm btn-danger" onclick="Admin.deleteQuestion(' + q.id + ')">删除</button>' +
                     '</td></tr>';
             });
@@ -498,11 +498,12 @@ var Admin = {
         if (callback) callback(page);
     },
 
-    showQuestionModal: function(id) {
+    showQuestionModal: function(id, questionData) {
         var title = id ? '编辑题目' : '添加题目';
         var isEdit = !!id;
 
         var body = '<form id="questionForm">' +
+            '<input type="hidden" id="qId" value="' + (id || '') + '">' +
             '<div class="form-group">' +
             '<label class="form-label">科目</label>' +
             '<select class="form-input" id="qSubject" required>' +
@@ -514,6 +515,7 @@ var Admin = {
             '<select class="form-input" id="qType" required>' +
             '<option value="1">选择题</option>' +
             '<option value="2">判断题</option>' +
+            '<option value="3">多选题</option>' +
             '</select></div>' +
             '<div class="form-group">' +
             '<label class="form-label">所属章节</label>' +
@@ -543,8 +545,6 @@ var Admin = {
             '<option value="B">B</option>' +
             '<option value="C">C</option>' +
             '<option value="D">D</option>' +
-            '<option value="true">正确</option>' +
-            '<option value="false">错误</option>' +
             '</select></div>' +
             '<div class="form-group">' +
             '<label class="form-label">题目解析</label>' +
@@ -555,6 +555,20 @@ var Admin = {
             '<button class="btn" onclick="Admin.closeModal()">取消</button>';
 
         this.showModal(title, body, footer);
+        
+        // 如果是编辑模式，填充表单数据
+        if (isEdit && questionData) {
+            document.getElementById('qSubject').value = questionData.subject || '1';
+            document.getElementById('qType').value = questionData.question_type || '1';
+            document.getElementById('qChapter').value = questionData.chapter_id || '1';
+            document.getElementById('qContent').value = questionData.content || '';
+            document.getElementById('qOptionA').value = questionData.option_a || '';
+            document.getElementById('qOptionB').value = questionData.option_b || '';
+            document.getElementById('qOptionC').value = questionData.option_c || '';
+            document.getElementById('qOptionD').value = questionData.option_d || '';
+            document.getElementById('qAnswer').value = questionData.answer || 'A';
+            document.getElementById('qAnalysis').value = questionData.analysis || '';
+        }
     },
 
     saveQuestion: function() {
@@ -565,6 +579,7 @@ var Admin = {
         }
 
         // 获取表单数据
+        var questionId = document.getElementById('qId').value;
         var data = {
             subject: document.getElementById('qSubject').value,
             question_type: document.getElementById('qType').value,
@@ -577,6 +592,10 @@ var Admin = {
             answer: document.getElementById('qAnswer').value,
             analysis: document.getElementById('qAnalysis').value
         };
+        
+        if (questionId) {
+            data.id = questionId;
+        }
 
         console.log('保存题目:', data);
         this.closeModal();
