@@ -6,6 +6,7 @@ use app\model\RechargeRecord as RechargeRecordModel;
 use app\model\StudentActivation as StudentActivationModel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use think\Env;
 use think\facade\Log;
 use think\Response;
 
@@ -319,8 +320,8 @@ class Coach
         $payType = $payTypeMap[$payMethod] ?? 'wxpay';
 
         // 易支付配置
-        $pid = config('payment.yipay.pid');
-        $key = config('payment.yipay.key');
+        $pid = Env::get('yipay.MCH_ID', '1006');
+        $key = Env::get('yipay.MCH_KEY', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
         $notifyUrl = request()->domain() . '/api/coach/rechargeNotify';
         $returnUrl = request()->domain() . '/h5/coach.html?page=recharge-success';
 
@@ -347,7 +348,7 @@ class Coach
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr = substr($signStr, 0, -1) . 'sMxhHZTTwHwssbWBLLbSGMxm9T2x2g94';
+        $signStr = substr($signStr, 0, -1) . $key;
         $sign = md5($signStr);
         
         // 日志记录
@@ -396,8 +397,8 @@ class Coach
      */
     public function rechargeNotify()
     {
-        $pid = config('payment.yipay.pid');
-        $key = config('payment.yipay.key');
+        $pid = Env::get('yipay.MCH_ID', '1006');
+        $key = Env::get('yipay.MCH_KEY', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
 
         // 接收回调参数
         $trade_no = input('get.trade_no/s', '');
