@@ -347,7 +347,7 @@ class Coach
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr = substr($signStr, 0, -1) . $key;
+        $signStr = substr($signStr, 0, -1) . 'sMxhHZTTwHwssbWBLLbSGMxm9T2x2g94';
         $sign = md5($signStr);
         
         // 日志记录
