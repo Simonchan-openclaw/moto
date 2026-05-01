@@ -623,21 +623,21 @@ var App = {
         if (!question) return;
 
         var container = document.getElementById('questionContainer');
+        var typeEl = container.querySelector('.question-type');
         var content = container.querySelector('.question-content');
         var options = container.querySelector('.options-list');
         var result = container.querySelector('.answer-result');
         var questionImage = document.getElementById('questionImage');
 
-        content.textContent = question.content;
-        // 移除章节名称显示
-        // container.querySelector('.chapter-name').textContent = question.chapter_name || '';
-        
-        // 显示题型
+        // 显示题型（先设置，避免被content.textContent覆盖）
         var typeText = '';
         if (question.question_type == 1) typeText = '单选题';
         else if (question.question_type == 2) typeText = '判断题';
         else if (question.question_type == 3) typeText = '多选题';
-        container.querySelector('.question-type').textContent = typeText;
+        typeEl.textContent = typeText;
+        
+        // 显示题目内容
+        content.textContent = question.content;
 
         // 显示图片（如有）
         if (question.image) {
@@ -895,15 +895,17 @@ var App = {
             var question = res.data;
             var container = document.getElementById('examQuestionContainer');
             var examImage = document.getElementById('examQuestionImage');
+            var typeEl = container.querySelector('.question-type');
 
-            container.querySelector('.question-content').textContent = question.content;
-            
-            // 显示题型
+            // 显示题型（先设置，避免被content.textContent覆盖）
             var typeText = '';
             if (question.question_type == 1) typeText = '单选题';
             else if (question.question_type == 2) typeText = '判断题';
             else if (question.question_type == 3) typeText = '多选题';
-            container.querySelector('.question-type').textContent = typeText;
+            typeEl.textContent = typeText;
+            
+            // 显示题目内容
+            container.querySelector('.question-content').textContent = question.content;
 
             // 显示图片（如有）
             if (question.image) {
