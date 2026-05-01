@@ -6,6 +6,7 @@ use app\model\RechargeRecord as RechargeRecordModel;
 use app\model\StudentActivation as StudentActivationModel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use think\facade\Log;
 use think\Response;
 
 class Coach
@@ -349,7 +350,7 @@ class Coach
         $sign = md5($signStr);
         
         // 日志记录
-        trace_info('【易支付充值】教练ID:'.$coachId.',充值金额:'.$amount.',实付金额:'.$actualPayAmount.',订单号:'.$tradeNo);
+        Log::info('【易支付充值】教练ID:' . $coachId . ',充值金额:' . $amount . ',实付金额:' . $actualPayAmount . ',订单号:' . $tradeNo . ',签名字符串:' . $signStr . ',签名:' . $sign);
 
         // 调用易支付API
         $apiUrl = 'https://icu.zd16688.com/mapi.php';
