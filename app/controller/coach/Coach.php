@@ -338,15 +338,16 @@ class Coach
             'param' => $coachId,
         ];
 
-        // 生成签名（按ASCII顺序拼接，参数值用原始值）
+        // 生成签名（SDK标准格式）
         ksort($params);
+        reset($params);
         $signStr = '';
         foreach ($params as $k => $v) {
-            if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
+            if ($k != 'sign' && $k != 'sign_type' && $v != '') {
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr .= 'key=' . $key;
+        $signStr = substr($signStr, 0, -1) . '&key=' . $key;
         $sign = md5($signStr);
         
         // 日志记录
