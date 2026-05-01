@@ -320,8 +320,8 @@ class Coach
         $payType = $payTypeMap[$payMethod] ?? 'wxpay';
 
         // 易支付配置
-        $pid = Env::get('yipay.MCH_ID', '1006');
-        $key = Env::get('yipay.MCH_KEY', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
+        $pid = config('payment.yipay.pid', '1006');
+        $key = config('payment.yipay.key', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
         $notifyUrl = request()->domain() . '/api/coach/rechargeNotify';
         $returnUrl = request()->domain() . '/h5/coach.html?page=recharge-success';
 
@@ -348,7 +348,7 @@ class Coach
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr = substr($signStr, 0, -1) . $key;
+        $signStr .= 'key=' . $key;
         $sign = md5($signStr);
         
         // 日志记录
@@ -397,8 +397,8 @@ class Coach
      */
     public function rechargeNotify()
     {
-        $pid = Env::get('yipay.MCH_ID', '1006');
-        $key = Env::get('yipay.MCH_KEY', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
+        $pid = config('payment.yipay.pid', '1006');
+        $key = config('payment.yipay.key', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
 
         // 接收回调参数
         $trade_no = input('get.trade_no/s', '');
