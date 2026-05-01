@@ -36,6 +36,7 @@ Route::group('api', function () {
     Route::group('admin', function () {
         Route::post('question/list', 'admin.Question/list');
         Route::post('question/import', 'admin.Question/import');
+        Route::post('question/jsonImport', 'admin.Question/jsonImport');
         Route::post('question/add', 'admin.Question/add');
         Route::post('question/edit', 'admin.Question/edit');
         Route::post('question/delete', 'admin.Question/delete');
