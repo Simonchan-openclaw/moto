@@ -156,8 +156,8 @@
             <div class="question-container" id="questionContainer">
                 <div class="question-info">
                     <span class="question-type"></span>
+                    <span class="question-content" style="flex:1;"></span>
                 </div>
-                <div class="question-content"></div>
                 <div class="question-image" id="questionImage" style="display:none;"></div>
                 <div class="options-list"></div>
                 <div class="answer-result" style="display:none;">
@@ -166,7 +166,7 @@
                     <div class="analysis"></div>
                 </div>
                 <div class="question-actions">
-                    <button class="btn-favorite" onclick="toggleFavorite()">⭐ 收藏</button>
+                    <button class="btn-analysis" id="btnAnalysis" onclick="showAnalysis()">📖 解析</button>
                     <button class="btn-next" id="btnNext" onclick="nextQuestion()">下一题</button>
                 </div>
             </div>

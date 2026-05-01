@@ -801,6 +801,24 @@ var App = {
         });
     },
 
+    /**
+     * 显示解析
+     */
+    showAnalysis: function() {
+        var question = this.practice.questions[this.practice.currentIndex];
+        if (!question) return;
+        
+        var container = document.getElementById('questionContainer');
+        var result = container.querySelector('.answer-result');
+        
+        // 如果已经有答案结果，直接显示
+        if (this.practice.answerSubmitted) {
+            result.style.display = 'block';
+        } else {
+            this.showToast('请先答题');
+        }
+    },
+
     // ==================== 模拟考试 ====================
 
     /**
@@ -1208,6 +1226,20 @@ function nextQuestion() {
  */
 function nextExamQuestion() {
     App.nextExamQuestion();
+}
+
+/**
+ * 全局显示解析函数
+ */
+function showAnalysis() {
+    App.showAnalysis();
+}
+
+/**
+ * 全局切换收藏函数
+ */
+function toggleFavorite() {
+    App.toggleFavorite();
 }
 
 // 页面加载完成后初始化
