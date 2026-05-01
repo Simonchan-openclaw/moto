@@ -231,8 +231,8 @@ var CoachApp = {
     },
 
     showRecharge: function() {
-        document.getElementById('customAmount').value = '50';
-        this.selectedAmount = 50;
+        document.getElementById('customAmount').value = '90';
+        this.selectedAmount = 90;
         this.selectedPayMethod = 1;
         this.showPage('recharge');
         this.updateRechargeShow();
