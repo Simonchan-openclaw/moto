@@ -341,15 +341,18 @@ class Coach
 
         // 生成签名（SDK标准格式）
         ksort($params);
-        reset($params);
         $signStr = '';
         foreach ($params as $k => $v) {
-            if ($k != 'sign' && $k != 'sign_type' && $v != '') {
+            if ($k != 'sign' && $k != 'sign_type' && $v !== '') {
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr .= 'key=' . $key;
-        $sign = md5($signStr);
+        // 去掉最后多余的 & 符号
+        $signStr = rtrim($signStr, '&');
+        // 直接拼接密钥，不加任何前缀
+        $signStr .= $key;
+        // MD5 小写
+        $sign = strtolower(md5($signStr));
         
         // 日志记录
         Log::info('【易支付充值】教练ID:' . $coachId . ',充值金额:' . $amount . ',实付金额:' . $actualPayAmount . ',订单号:' . $tradeNo . ',签名字符串:' . $signStr . ',签名:' . $sign);
@@ -421,12 +424,16 @@ class Coach
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
-            if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
+            if ($k != 'sign' && $k != 'sign_type' && $v !== '') {
                 $signStr .= $k . '=' . $v . '&';
             }
         }
-        $signStr .= 'key=' . $key;
-        $checkSign = md5($signStr);
+        // 去掉最后多余的 & 符号
+        $signStr = rtrim($signStr, '&');
+        // 直接拼接密钥，不加任何前缀
+        $signStr .= $key;
+        // MD5 小写
+        $checkSign = strtolower(md5($signStr));
 
         if ($sign != $checkSign) {
             Log::error('【易支付回调】签名验证失败,订单号:'.$out_trade_no);
