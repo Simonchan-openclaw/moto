@@ -180,7 +180,7 @@
                     <input type="number" id="customAmount" placeholder="最低18元" min="18" step="1">
                 </div>
                 <div class="form-group">
-                    <label>支付方式</label>
+                    <label>支付方式 <span style="color:#999;font-size:12px;">（通道费0.6%）</span></label>
                     <div class="pay-methods">
                         <div class="pay-item selected" onclick="CoachApp.selectPayMethod(1)">
                             <span class="pay-icon">💚</span>
@@ -190,6 +190,15 @@
                             <span class="pay-icon">💙</span>
                             <span>支付宝</span>
                         </div>
+                    </div>
+                </div>
+                <div class="form-group" style="background:#f5f5f5;padding:10px;border-radius:8px;margin-bottom:15px;">
+                    <div style="font-size:12px;color:#666;">
+                        <div>充值 <span id="showAmount">0</span> 元，实付金额为：</div>
+                        <div style="font-size:18px;color:#52c41a;font-weight:bold;margin:5px 0;">
+                            ¥<span id="actualPay">0</span> 元
+                        </div>
+                        <div style="font-size:11px;color:#999;">公式：充值金额 ÷ 0.994</div>
                     </div>
                 </div>
                 <button class="btn-primary" style="background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);" onclick="CoachApp.doRecharge()">立即充值</button>

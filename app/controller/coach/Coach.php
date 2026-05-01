@@ -288,12 +288,13 @@ class Coach
     /**
      * 教练充值
      * POST /api/coach/recharge
+     * 实际支付金额 = 充值金额 ÷ 0.994
      */
     public function recharge()
     {
         $coachId = $this->getCurrentCoachId();
         $amount = floatval(input('post.amount', 0));
-        $payMethod = intval(input('post.pay_method', 1));
+        $payMethod = intval(input('post.pay_method', 1)); // 1=微信, 2=支付宝
 
         $minAmount = 18.00;
 
@@ -301,25 +302,154 @@ class Coach
             return jsonError("最低充值金额为 {$minAmount} 元");
         }
 
-        // TODO: 调用支付接口
-        $tradeNo = 'WX' . date('YmdHis') . rand(1000, 9999);
+        // 计算实际支付金额 (扣除0.6%通道费后，平台收到的是充值金额)
+        // 即：充值金额 = 实际支付金额 * 0.994
+        // 所以：实际支付金额 = 充值金额 / 0.994
+        $actualPayAmount = round($amount / 0.994, 2);
 
-        // 创建充值记录
-        $recordId = $this->rechargeModel->create($coachId, $amount, $payMethod, $tradeNo, 1);
+        // 生成订单号
+        $tradeNo = 'C' . $coachId . date('YmdHis') . rand(100, 999);
 
-        // 增加教练余额
-        $this->coachModel->addBalance($coachId, $amount);
+        // 支付方式映射
+        $payTypeMap = [
+            1 => 'wxpay',   // 微信
+            2 => 'alipay',  // 支付宝
+        ];
+        $payType = $payTypeMap[$payMethod] ?? 'wxpay';
 
-        // 获取最新余额
-        $balance = $this->coachModel->getBalance($coachId);
+        // 易支付配置
+        $pid = config('payment.yipay.pid');
+        $key = config('payment.yipay.key');
+        $notifyUrl = request()->domain() . '/api/coach/rechargeNotify';
+        $returnUrl = request()->domain() . '/h5/coach.html?page=recharge-success';
 
-        return jsonSuccess([
-            'record_id' => $recordId,
-            'trade_no'  => $tradeNo,
-            'amount'    => $amount,
-            'balance'   => $balance,
-            'message'   => '充值成功'
-        ], '充值成功');
+        // 签名参数
+        $params = [
+            'pid' => $pid,
+            'type' => $payType,
+            'out_trade_no' => $tradeNo,
+            'notify_url' => $notifyUrl,
+            'return_url' => $returnUrl,
+            'name' => '教练余额充值',
+            'money' => strval($actualPayAmount),
+            'clientip' => request()->ip(),
+            'device' => 'mobile',
+            'param' => $coachId,
+        ];
+
+        // 生成签名
+        ksort($params);
+        $signStr = '';
+        foreach ($params as $k => $v) {
+            if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
+                $signStr .= $k . '=' . $v . '&';
+            }
+        }
+        $signStr .= 'key=' . $key;
+        $sign = md5($signStr);
+
+        // 调用易支付API
+        $apiUrl = 'https://icu.zd16688.com/mapi.php';
+        $params['sign'] = $sign;
+        $params['sign_type'] = 'MD5';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $apiUrl);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $payResult = json_decode($response, true);
+
+        if ($payResult && isset($payResult['code']) && $payResult['code'] == 1) {
+            // 创建充值记录（待支付状态）
+            $this->rechargeModel->create($coachId, $amount, $payMethod, $tradeNo, 0);
+
+            return jsonSuccess([
+                'trade_no' => $tradeNo,
+                'amount' => $amount,
+                'actual_pay' => $actualPayAmount,
+                'payurl' => $payResult['payurl'] ?? '',
+                'qrcode' => $payResult['qrcode'] ?? '',
+                'message' => '正在跳转支付...'
+            ]);
+        } else {
+            return jsonError('发起支付失败：' . ($payResult['msg'] ?? '未知错误'));
+        }
+    }
+
+    /**
+     * 充值异步回调
+     * GET /api/coach/rechargeNotify
+     */
+    public function rechargeNotify()
+    {
+        $pid = config('payment.yipay.pid');
+        $key = config('payment.yipay.key');
+
+        // 接收回调参数
+        $trade_no = input('get.trade_no/s', '');
+        $out_trade_no = input('get.out_trade_no/s', '');
+        $pay_type = input('get.type/s', '');
+        $pay_money = input('get.money/f', 0);
+        $trade_status = input('get.trade_status/s', '');
+        $param = input('get.param/s', '');
+        $sign = input('get.sign/s', '');
+
+        // 验证签名
+        $params = [
+            'pid' => $pid,
+            'trade_no' => $trade_no,
+            'out_trade_no' => $out_trade_no,
+            'type' => $pay_type,
+            'money' => $pay_money,
+            'trade_status' => $trade_status,
+        ];
+        ksort($params);
+        $signStr = '';
+        foreach ($params as $k => $v) {
+            if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
+                $signStr .= $k . '=' . $v . '&';
+            }
+        }
+        $signStr .= 'key=' . $key;
+        $checkSign = md5($signStr);
+
+        if ($sign != $checkSign) {
+            return 'fail';
+        }
+
+        // 验证支付状态
+        if ($trade_status == 'TRADE_SUCCESS') {
+            // 从订单号获取教练ID
+            preg_match('/^C(\d+)/', $out_trade_no, $matches);
+            $coachId = isset($matches[1]) ? intval($matches[1]) : 0;
+
+            if ($coachId > 0) {
+                // 获取充值记录
+                $record = \think\facade\Db::name('recharge_record')
+                    ->where('trade_no', $out_trade_no)
+                    ->where('status', 0)
+                    ->find();
+
+                if ($record) {
+                    // 更新充值记录为已支付
+                    \think\facade\Db::name('recharge_record')
+                        ->where('id', $record['id'])
+                        ->update(['status' => 1, 'pay_time' => date('Y-m-d H:i:s')]);
+
+                    // 增加教练余额
+                    $this->coachModel->addBalance($coachId, $record['amount']);
+                }
+            }
+        }
+
+        return 'success';
     }
 
     /**

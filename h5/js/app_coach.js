@@ -208,52 +208,81 @@ var CoachApp = {
     selectAmount: function(amount) {
         this.selectedAmount = amount;
         document.getElementById('customAmount').value = amount;
-
         document.querySelectorAll('.amount-item').forEach(function(item) {
             item.classList.remove('selected');
         });
         event.target.classList.add('selected');
+        this.updateRechargeShow();
     },
 
     selectPayMethod: function(method) {
         this.selectedPayMethod = method;
-
         document.querySelectorAll('.pay-item').forEach(function(item) {
             item.classList.remove('selected');
         });
         event.currentTarget.classList.add('selected');
     },
 
+    updateRechargeShow: function() {
+        var amount = parseInt(document.getElementById('customAmount').value) || 0;
+        document.getElementById('showAmount').textContent = amount;
+        var actualPay = amount > 0 ? (amount / 0.994).toFixed(2) : '0.00';
+        document.getElementById('actualPay').textContent = actualPay;
+    },
+
     showRecharge: function() {
         document.getElementById('customAmount').value = '50';
         this.selectedAmount = 50;
+        this.selectedPayMethod = 1;
         this.showPage('recharge');
+        this.updateRechargeShow();
     },
 
     doRecharge: function() {
         var amount = parseInt(document.getElementById('customAmount').value) || 0;
-
         if (amount < 18) {
             this.showToast('最低充值金额为18元');
             return;
         }
-
         var self = this;
-
         CoachAPI.recharge(amount, this.selectedPayMethod).then(function(res) {
-            self.balance = parseFloat(res.data.balance);
-            document.getElementById('balanceAmount').textContent = '¥' + self.balance.toFixed(2);
-            document.getElementById('currentBalance').textContent = '¥' + self.balance.toFixed(2);
-            self.showToast('充值成功');
-            self.showPage('home');
+            if (res.data.payurl) {
+                window.location.href = res.data.payurl;
+            } else if (res.data.qrcode) {
+                self.showPayQRCode(res.data.qrcode, amount);
+            } else {
+                self.showToast('充值成功');
+                self.showPage('home');
+            }
         }).catch(function(err) {
             self.showToast(err.message || '充值失败');
         });
     },
 
-    /**
-     * 核实学员是否被教练邀请
-     */
+    showPayQRCode: function(qrcodeUrl, amount) {
+        var html = '<div style="text-align:center;padding:20px;">' +
+            '<div style="font-size:16px;margin-bottom:15px;">请扫码支付 <span style="color:#52c41a;font-weight:bold;">¥' + (amount / 0.994).toFixed(2) + '</span></div>' +
+            '<div id="qrcodeImg" style="margin:10px auto;"></div>' +
+            '<div style="font-size:12px;color:#999;margin-top:10px;">支付完成后点击"已完成支付"按钮</div>' +
+            '<button class="btn-primary" style="margin-top:15px;" onclick="CoachApp.checkRechargeResult()">已完成支付</button>' +
+            '</div>';
+        document.getElementById('page-recharge').querySelector('.form-container').innerHTML = html;
+        new QRCode(document.getElementById('qrcodeImg'), qrcodeUrl);
+    },
+
+    checkRechargeResult: function() {
+        var self = this;
+        this.showToast('查询中...');
+        CoachAPI.getBalance().then(function(res) {
+            self.balance = parseFloat(res.data.balance);
+            document.getElementById('balanceAmount').textContent = '¥' + self.balance.toFixed(2);
+            self.showToast('充值成功');
+            self.showPage('home');
+        }).catch(function() {
+            self.showToast('请稍后重试');
+        });
+    },
+
     verifyStudent: function() {
         var countryCode = document.getElementById('studentCountryCode').value;
         var studentPhone = document.getElementById('studentPhone').value.trim();

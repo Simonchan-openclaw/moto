@@ -64,6 +64,7 @@ Route::group('api', function () {
         Route::get('invite_list', 'coach.Coach/getInviteList');
         Route::get('balance', 'coach.Coach/getBalance');
         Route::post('recharge', 'coach.Coach/recharge');
+        Route::get('rechargeNotify', 'coach.Coach/rechargeNotify');
         Route::get('recharge_list', 'coach.Coach/rechargeList');
         Route::post('activate', 'coach.Coach/activate');
         Route::post('verify_student', 'coach.Coach/verifyStudent');
