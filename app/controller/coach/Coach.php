@@ -338,12 +338,12 @@ class Coach
             'param' => $coachId,
         ];
 
-        // 生成签名
+        // 生成签名（参数值需要URL编码以保持一致）
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
             if ($v !== '' && $k != 'sign' && $k != 'sign_type') {
-                $signStr .= $k . '=' . $v . '&';
+                $signStr .= $k . '=' . urlencode($v) . '&';
             }
         }
         $signStr .= 'key=' . $key;
@@ -374,7 +374,7 @@ class Coach
             // 创建充值记录（待支付状态）
             $this->rechargeModel->create($coachId, $amount, $payMethod, $tradeNo, 0);
             
-            trace_info('【易支付】发起支付成功,订单号:'.$tradeNo.',返回:'.json_encode($payResult));
+            Log::info('【易支付】发起支付成功,订单号:'.$tradeNo.',返回:'.json_encode($payResult));
 
             return jsonSuccess([
                 'trade_no' => $tradeNo,
@@ -427,11 +427,11 @@ class Coach
         $checkSign = md5($signStr);
 
         if ($sign != $checkSign) {
-            trace_error('【易支付回调】签名验证失败,订单号:'.$out_trade_no);
+            Log::error('【易支付回调】签名验证失败,订单号:'.$out_trade_no);
             return 'fail';
         }
 
-        trace_info('【易支付回调】收到回调,订单号:'.$out_trade_no.',状态:'.$trade_status.',金额:'.$pay_money);
+        Log::info('【易支付回调】收到回调,订单号:'.$out_trade_no.',状态:'.$trade_status.',金额:'.$pay_money);
 
         // 验证支付状态
         if ($trade_status == 'TRADE_SUCCESS') {
@@ -455,9 +455,9 @@ class Coach
                     // 增加教练余额
                     $this->coachModel->addBalance($coachId, $record['amount']);
                     
-                    trace_info('【易支付回调】充值成功,教练ID:'.$coachId.',订单号:'.$out_trade_no.',充值余额:'.$record['amount']);
+                    Log::info('【易支付回调】充值成功,教练ID:'.$coachId.',订单号:'.$out_trade_no.',充值余额:'.$record['amount']);
                 } else {
-                    trace_error('【易支付回调】充值记录不存在或已处理,订单号:'.$out_trade_no);
+                    Log::error('【易支付回调】充值记录不存在或已处理,订单号:'.$out_trade_no);
                 }
             }
         }
