@@ -479,9 +479,10 @@ body {
 
 .question-info {
     display: flex;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
     margin-bottom: 15px;
+    gap: 8px;
 }
 
 .question-text {
@@ -501,7 +502,6 @@ body {
     border-radius: 20px;
     font-weight: 500;
     white-space: nowrap;
-    margin-right: 8px;
 }
 
 .options-list {
