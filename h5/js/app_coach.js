@@ -90,6 +90,12 @@ var CoachApp = {
             page.style.display = 'block';
         }
 
+        // 每次切换页面都刷新教练信息
+        this.updateUserInfo();
+        if (this.token) {
+            this.loadBalance();
+        }
+
         this.loadPageData(pageId);
     },
 
