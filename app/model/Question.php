@@ -16,58 +16,61 @@ class Question extends Model
     {
         $where = ['q.status = 1'];
         $whereParams = [];
-
+    
         if (!empty($params['subject'])) {
             $where[] = 'q.subject = ?';
             $whereParams[] = $params['subject'];
         }
-
+    
         if (!empty($params['question_type'])) {
             $where[] = 'q.question_type = ?';
             $whereParams[] = $params['question_type'];
         }
-
+    
         if (!empty($params['chapter_id'])) {
             $where[] = 'q.chapter_id = ?';
             $whereParams[] = $params['chapter_id'];
         }
-
+    
         if (!empty($params['keyword'])) {
             $where[] = '(q.title LIKE ? OR q.keywords LIKE ?)';
             $whereParams[] = '%' . $params['keyword'] . '%';
             $whereParams[] = '%' . $params['keyword'] . '%';
         }
-
+    
         $page = max(1, $params['page'] ?? 1);
         $pageSize = min(50, max(1, $params['page_size'] ?? 20));
         $offset = ($page - 1) * $pageSize;
-
+    
         $whereSql = implode(' AND ', $where);
-
+    
         // 获取总数
         $total = Db::query(
             "SELECT COUNT(*) as cnt FROM {$this->name} q WHERE {$whereSql}",
             $whereParams
         )[0]['cnt'] ?? 0;
-
+    
+        // ========== 核心修改：判断是否随机 ==========
+        $orderSql = empty($params['random']) ? 'q.id DESC' : 'RAND()';
+    
         // 获取列表
         $list = Db::query(
             "SELECT q.*, c.name as chapter_name 
              FROM {$this->name} q 
              LEFT JOIN chapter c ON q.chapter_id = c.id 
              WHERE {$whereSql} 
-             ORDER BY q.id DESC 
+             ORDER BY $orderSql 
              LIMIT ? OFFSET ?",
             array_merge($whereParams, [$pageSize, $offset])
         );
-
+    
         // 处理选项
         foreach ($list as &$item) {
             $item['options'] = $this->formatOptions($item);
             $item['content'] = $item['title'];
             unset($item['title'], $item['option_a'], $item['option_b'], $item['option_c'], $item['option_d']);
         }
-
+    
         return [
             'list'        => $list,
             'total'       => $total,
