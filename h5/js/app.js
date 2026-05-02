@@ -693,7 +693,7 @@ var App = {
 
         // 显示图片（如有）
         if (question.image) {
-            questionImage.innerHTML = '<img src="' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
+            questionImage.innerHTML = '<img src="https://moto.zd16688.com/h5/images/' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
             questionImage.style.display = 'block';
         } else {
             questionImage.innerHTML = '';
@@ -981,7 +981,7 @@ var App = {
 
             // 显示图片（如有）
             if (question.image) {
-                examImage.innerHTML = '<img src="' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
+                examImage.innerHTML = '<img src="https://moto.zd16688.com/h5/images/' + question.image + '" alt="题目图片" style="max-width:100%;border-radius:8px;margin:10px 0;">';
                 examImage.style.display = 'block';
             } else {
                 examImage.innerHTML = '';
