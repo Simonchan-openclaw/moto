@@ -834,8 +834,19 @@ class Coach
         $vipExpire = date('Y-m-d H:i:s', strtotime("+{$expireDays} days"));
         \think\facade\Db::name('user')->where('id', $student['id'])->update(['vip_expire' => $vipExpire]);
 
-        // 创建激活记录
-        $this->activationModel->create($student['id'], $coachId, $activationFee);
+        // 记录激活日志
+        $logData = [
+            'coach_id'      => $coachId,
+            'user_id'       => $student['id'],
+            'student_phone' => $studentPhone,
+            'amount'        => $activationFee,
+            'is_self_invited' => 1,
+            'inv_coach_id'  => $coachId,
+            'commission'    => 0,
+            'expire_at'     => $vipExpire,
+            'create_time'   => date('Y-m-d H:i:s')
+        ];
+        \think\facade\Db::name('activation_log')->insert($logData);
 
         return jsonSuccess(['vip_expire' => $vipExpire], '激活成功，扣除' . $activationFee . '元');
     }
