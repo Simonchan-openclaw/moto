@@ -351,7 +351,7 @@ var CoachApp = {
                 '<div class="detail-row"><span>剩余余额</span><span>¥' + res.data.balance + '</span></div>' +
                 '<div class="detail-row"><span>有效期至</span><span>' + res.data.expire_at + '</span></div>' +
                 '</div>' +
-                '<button class="btn-primary" style="background:linear-gradient(135deg,#52c41a 0%,#389e0d 100%);margin-top:20px;" onclick="CoachApp.showPage(\'home\')">完成</button>' +
+                '<button class="btn-primary" style="background:linear-gradient(135deg,#52c41a 0%,#389e0d 100%);margin-top:20px;" onclick="CoachApp.finishActivation()">完成</button>' +
                 '</div>';
 
             self.showPage('activate-result');
@@ -693,6 +693,11 @@ var CoachApp = {
 
     hideLoading: function() {
         document.getElementById('loading').style.display = 'none';
+    },
+
+    finishActivation: function() {
+        this.loadBalance();
+        this.showPage('home');
     },
 
     showToast: function(text) {
