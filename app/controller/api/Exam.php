@@ -111,14 +111,26 @@ class Exam
             $qId = $question['id'];
             $userAnswer = $answers[$qId] ?? '';
             $correctAnswer = strtoupper($question['answer']);
-            $userAnswerUpper = strtoupper($userAnswer);
+            
+            // 处理用户答案
+            if (is_array($userAnswer)) {
+                // 多选题：排序后比较
+                $userAnswerUpper = implode('', array_map('strtoupper', $userAnswer));
+                sort($userAnswerUpper);
+                sort($correctAnswer);
+                $isCorrect = ($userAnswerUpper === $correctAnswer);
+            } else {
+                // 单选题/判断题
+                $userAnswerUpper = strtoupper($userAnswer);
+                $isCorrect = ($userAnswerUpper === $correctAnswer);
+            }
 
-            if ($userAnswerUpper === $correctAnswer) {
+            if ($isCorrect) {
                 $correctCount++;
             } else {
                 $wrongQuestions[] = [
                     'question_id'    => $qId,
-                    'user_answer'    => $userAnswer,
+                    'user_answer'    => is_array($userAnswer) ? implode('', $userAnswer) : $userAnswer,
                     'correct_answer' => $correctAnswer
                 ];
             }

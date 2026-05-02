@@ -1020,8 +1020,8 @@ var App = {
         var btnNext = document.getElementById('examBtnNext');
         var questionType = this.exam.currentQuestion ? this.exam.currentQuestion.question_type : 1;
 
-        // 多选题：切换选择状态
-        if (questionType == 2) {
+        // 多选题（question_type == 3）：切换选择状态
+        if (questionType == 3) {
             options.forEach(function(item) {
                 if (item.querySelector('.option-key').textContent === optionKey) {
                     item.classList.toggle('selected');

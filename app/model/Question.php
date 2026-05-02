@@ -120,6 +120,13 @@ class Question extends Model
             $questionIds
         );
 
+        // 格式化返回数据
+        foreach ($questions as &$question) {
+            $question['content'] = $question['title'];
+            $question['options'] = $this->formatOptions($question);
+            unset($question['title'], $question['option_a'], $question['option_b'], $question['option_c'], $question['option_d']);
+        }
+
         return $questions;
     }
 
