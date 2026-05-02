@@ -989,7 +989,7 @@ var App = {
             }
 
             // 保存当前题目信息
-            this.exam.currentQuestion = question;
+            self.exam.currentQuestion = question;
 
             // 生成选项
             var html = '';
