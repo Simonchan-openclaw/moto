@@ -818,7 +818,7 @@ class Coach
         }
 
         // 执行激活（从教练余额扣款）
-        $activationFee = 38.00;  // 激活费38元
+        $activationFee = 18.00;  // 激活费18元
 
         // 检查教练余额是否足够
         $coach = $this->coachModel->findById($coachId);
@@ -837,10 +837,6 @@ class Coach
         // 创建激活记录
         $this->activationModel->create($student['id'], $coachId, $activationFee);
 
-        // 给教练返佣18元
-        $commission = 18.00;
-        $this->coachModel->addBalance($coachId, $commission);
-
-        return jsonSuccess(['vip_expire' => $vipExpire], '激活成功，已返佣' . $commission . '元');
+        return jsonSuccess(['vip_expire' => $vipExpire], '激活成功，扣除' . $activationFee . '元');
     }
 }

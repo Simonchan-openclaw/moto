@@ -618,7 +618,7 @@ var CoachApp = {
      * 一键激活学员
      */
     doActivateStudent: function(studentPhone) {
-        if (!confirm('确定要激活该学员吗？将从您的余额中扣除38元')) return;
+        if (!confirm('确定要激活该学员吗？将从您的余额中扣除18元')) return;
 
         CoachApp.showLoading();
         CoachAPI.activateStudent(studentPhone).then(function(res) {
