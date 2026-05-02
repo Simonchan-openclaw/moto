@@ -4,6 +4,7 @@ namespace app\controller\api;
 use app\model\Question as QuestionModel;
 use app\model\Chapter as ChapterModel;
 use app\model\Collection as CollectionModel;
+use think\facade\Db;
 
 class Question
 {
