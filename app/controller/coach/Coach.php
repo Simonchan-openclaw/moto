@@ -236,27 +236,45 @@ class Coach
         $coachId = $this->getCurrentCoachId();
         $page = input('get.page/d', 1);
         $pageSize = input('get.page_size/d', 20);
+        $status = input('get.status/d', -1); // -1=全部, 0=待激活, 1=已激活
 
         $offset = ($page - 1) * $pageSize;
 
+        // 构建查询条件
+        $whereStatus = '';
+        $params = [$coachId];
+
+        if ($status == 0) {
+            // 待激活：VIP未开通或已过期
+            $whereStatus = " AND (vip_expire IS NULL OR vip_expire < NOW())";
+        } elseif ($status == 1) {
+            // 已激活：VIP有效
+            $whereStatus = " AND vip_expire >= NOW()";
+        }
+
         // 获取邀请的用户列表
         $list = \think\facade\Db::query(
-            "SELECT id, phone, nickname, create_time FROM user WHERE inv_coach_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
-            [$coachId, $pageSize, $offset]
+            "SELECT id, phone, nickname, vip_expire, create_time FROM user WHERE inv_coach_id = ?" . $whereStatus . " ORDER BY id DESC LIMIT ? OFFSET ?",
+            array_merge($params, [$pageSize, $offset])
         );
 
         // 获取总数
         $totalResult = \think\facade\Db::query(
-            "SELECT COUNT(*) as cnt FROM user WHERE inv_coach_id = ?",
-            [$coachId]
+            "SELECT COUNT(*) as cnt FROM user WHERE inv_coach_id = ?" . $whereStatus,
+            $params
         );
         $total = isset($totalResult[0]['cnt']) ? $totalResult[0]['cnt'] : 0;
 
-        // 脱敏手机号
+        // 处理数据
         foreach ($list as &$item) {
+            // 脱敏手机号
             if (!empty($item['phone'])) {
                 $item['phone_mask'] = substr($item['phone'], 0, 3) . '****' . substr($item['phone'], -4);
             }
+            // 判断激活状态
+            $item['is_activated'] = !empty($item['vip_expire']) && strtotime($item['vip_expire']) > time();
+            // 名字优先使用nickname，否则显示手机号
+            $item['display_name'] = !empty($item['nickname']) ? $item['nickname'] : $item['phone_mask'];
         }
 
         return jsonSuccess([
