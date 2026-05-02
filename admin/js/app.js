@@ -935,9 +935,10 @@ var Admin = {
             list.forEach(function(user) {
                 // 判断激活状态
                 var isActivated = user.is_activated == 1;
-                var activatedHtml = isActivated 
-                    ? '<span class="tag tag-success">已激活</span>' 
-                    : '<span class="tag tag-warning">未激活</span>';
+                var statusSelect = '<select onchange="Admin.setUserActivation(' + user.id + ', this.value)" style="padding:4px 8px;border-radius:4px;border:1px solid #d9d9d9;cursor:pointer;">' +
+                    '<option value="activate" ' + (isActivated ? '' : 'selected') + '>激活</option>' +
+                    '<option value="deactivate" ' + (isActivated ? 'selected' : '') + '>取消激活</option>' +
+                    '</select>';
                 
                 var phone = user.phone || '-';
                 var lastLogin = user.last_login_time || user.last_login || '-';
@@ -949,7 +950,7 @@ var Admin = {
                     '<td>' + user.id + '</td>' +
                     '<td>' + self.maskPhone(phone) + '</td>' +
                     '<td>' + (user.nickname || '用户' + user.id) + '</td>' +
-                    '<td>' + activatedHtml + '</td>' +
+                    '<td>' + statusSelect + '</td>' +
                     '<td>' + (user.create_time || user.created_at || '-').substr(0, 10) + '</td>' +
                     '<td>' + lastLogin + '</td></tr>';
             });
@@ -964,6 +965,21 @@ var Admin = {
         }).catch(function(err) {
             self.hideLoading();
             document.getElementById('usersBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:40px;">加载失败: ' + (err.message || '') + '</td></tr>';
+        });
+    },
+
+    // 设置用户激活状态
+    setUserActivation: function(userId, action) {
+        var self = this;
+        this.showLoading();
+        
+        API.setUserActivation(userId, action).then(function(res) {
+            self.hideLoading();
+            self.showToast(res.message || (action === 'activate' ? '激活成功' : '已取消激活'));
+            self.loadUsers();
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '操作失败');
         });
     },
 

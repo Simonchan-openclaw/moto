@@ -43,6 +43,7 @@ Route::group('api', function () {
         Route::post('question/delete', 'admin.Question/delete');
         Route::post('question/setStatus', 'admin.Question/setStatus');
         Route::get('user/list', 'admin.User/list');
+        Route::post('user/setActivation', 'admin.User/setActivation');
         Route::get('coach/list', 'admin.Coach/list');
         Route::post('coach/add', 'admin.Coach/add');
         Route::post('coach/recharge', 'admin.Coach/recharge');

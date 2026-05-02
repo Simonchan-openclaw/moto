@@ -156,6 +156,10 @@ var API = {
         return this.request('admin/user/list?' + query.join('&'), 'GET', {}, true);
     },
 
+    setUserActivation: function(userId, action) {
+        return this.request('admin/user/setActivation', 'POST', { user_id: userId, action: action }, true);
+    },
+
     // ==================== 教练管理 ====================
 
     getCoachList: function(page, pageSize) {
