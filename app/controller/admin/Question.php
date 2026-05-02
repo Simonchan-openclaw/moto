@@ -454,7 +454,7 @@ class Question
         }
 
         // 创建上传目录
-        $uploadDir = ROOT_PATH . 'public' . DIRECTORY_SEPARATOR . 'h5' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR;
+        $uploadDir = app()->getRootPath() . 'public' . DIRECTORY_SEPARATOR . 'h5' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR;
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -466,8 +466,8 @@ class Question
 
         // 移动文件
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // 返回访问URL（使用配置的域名）
-            $domain = config('app.api_domain', request()->domain());
+            // 返回访问URL
+            $domain = 'https://moto.zd16688.com';
             $url = $domain . '/h5/images/' . $newFileName;
 
             return json([
