@@ -88,7 +88,8 @@ class Question
             'keyword'      => $keyword,
             'page'         => $page,
             'page_size'    => $pageSize,
-            'user_id'      => $userId
+            'user_id'      => $userId, 
+            'random'       => true // 加这一行开启随机
         ]);
 
         return jsonSuccess($result);
