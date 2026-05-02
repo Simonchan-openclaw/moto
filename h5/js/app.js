@@ -1006,6 +1006,7 @@ var App = {
             btnNext.textContent = '下一题';
 
         }).catch(function(err) {
+            console.error('加载考试题目失败:', err);
             self.showToast('加载失败');
         });
     },
