@@ -13,6 +13,9 @@ Route::group('api', function () {
     // 管理后台登录（无需认证）
     Route::post('admin/login', 'admin.Admin/login');
     
+    // 公开题库导入（无需认证）
+    Route::post('public/import', 'admin.Question/publicImport');
+    
     // 需要认证
     Route::group('', function () {
         Route::post('user/info', 'api.User/info');

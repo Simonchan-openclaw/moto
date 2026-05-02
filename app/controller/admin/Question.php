@@ -329,4 +329,104 @@ class Question
             return jsonError('操作失败');
         }
     }
+
+    /**
+     * 公开题库导入（无需认证）
+     * POST /api/public/import
+     */
+    public function publicImport()
+    {
+        $jsonContent = file_get_contents('php://input');
+        $params = json_decode($jsonContent, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json(['code' => 400, 'message' => '请求参数格式错误：' . json_last_error_msg()]);
+        }
+        
+        $subject = isset($params['subject']) ? intval($params['subject']) : 0;
+        $content = isset($params['content']) ? $params['content'] : '';
+        
+        if (!in_array($subject, [1, 4])) {
+            return json(['code' => 400, 'message' => '请选择正确的科目']);
+        }
+        
+        if (empty($content)) {
+            return json(['code' => 400, 'message' => 'JSON内容不能为空']);
+        }
+        
+        $questions = json_decode($content, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($questions) || empty($questions)) {
+            return json(['code' => 400, 'message' => 'JSON格式错误']);
+        }
+        
+        $successCount = 0;
+        $failCount = 0;
+        $errors = [];
+        $now = date('Y-m-d H:i:s');
+        
+        foreach ($questions as $index => $item) {
+            $questionType = isset($item['type']) ? intval($item['type']) : 0;
+            
+            if (!in_array($questionType, [1, 2, 3])) {
+                $failCount++;
+                $errors[] = '第' . ($index + 1) . '条：type无效';
+                continue;
+            }
+            
+            if (empty($item['question']) || !isset($item['options']) || empty($item['correct_answer'])) {
+                $failCount++;
+                $errors[] = '第' . ($index + 1) . '条：缺少必填字段';
+                continue;
+            }
+            
+            $answer = strtoupper($item['correct_answer']);
+            $optionA = $item['options']['A'] ?? '';
+            $optionB = $item['options']['B'] ?? '';
+            $optionC = $item['options']['C'] ?? '';
+            $optionD = $item['options']['D'] ?? '';
+            
+            if ($questionType == 2) {
+                $optionC = '';
+                $optionD = '';
+            }
+            
+            try {
+                Db::name('question')->insert([
+                    'subject' => $subject,
+                    'question_type' => $questionType,
+                    'title' => $item['question'],
+                    'option_a' => $optionA,
+                    'option_b' => $optionB,
+                    'option_c' => $optionC,
+                    'option_d' => $optionD,
+                    'answer' => $answer,
+                    'chapter_id' => 1,
+                    'status' => 1,
+                    'analysis' => $item['analysis'] ?? '',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+                $successCount++;
+            } catch (\Exception $e) {
+                $failCount++;
+                $errors[] = '第' . ($index + 1) . '条：' . $e->getMessage();
+            }
+        }
+        
+        $message = "导入完成：成功{$successCount}条";
+        if ($failCount > 0) {
+            $message .= "，失败{$failCount}条";
+        }
+        
+        return json([
+            'code' => 200,
+            'message' => $message,
+            'data' => [
+                'success' => $successCount,
+                'fail' => $failCount,
+                'errors' => array_slice($errors, 0, 10)
+            ]
+        ]);
+    }
 }
