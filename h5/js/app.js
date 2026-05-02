@@ -1187,7 +1187,7 @@ var App = {
                     '<span class="subject">' + (item.question_title || '').substr(0, 30) + '</span>' +
                     '</div>' +
                     '<div class="record-detail">' +
-                    '<span>错误' + (item.error_count || 1) + '次</span> +
+                    '<span>错误' + (item.error_count || 1) + '次</span>' +
                     '<span>' + (item.answer || '') + '</span>' +
                     '</div></div>';
             });
@@ -1225,7 +1225,7 @@ var App = {
                     '</div>' +
                     '<div class="record-detail">' +
                     '<span>收藏</span>' +
-                    '<span>' + (item.created_at ? item.created_at.substr(0, 10) : '') + '</span> +
+                    '<span>' + (item.created_at ? item.created_at.substr(0, 10) : '') + '</span>' +
                     '</div></div>';
             });
 
