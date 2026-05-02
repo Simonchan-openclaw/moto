@@ -2,6 +2,7 @@
 namespace app\controller\api;
 
 use app\model\StudentActivation as StudentActivationModel;
+use think\facade\Db;
 
 class Vip
 {
@@ -61,6 +62,33 @@ class Vip
             'coach_phone' => $result['coach_phone'],
             'message'     => '激活成功'
         ], '激活成功');
+    }
+
+    /**
+     * 同步VIP状态（将student_activation表已激活记录的过期时间同步到user.vip_expire）
+     * GET /api/vip/sync
+     */
+    public function sync()
+    {
+        // 查找已激活但user.vip_expire为空的记录
+        $records = Db::query(
+            "SELECT sa.user_id, sa.expire_at FROM student_activation sa
+             INNER JOIN user u ON sa.user_id = u.id
+             WHERE sa.activate_status = 1 AND (u.vip_expire IS NULL OR u.vip_expire = '' OR u.vip_expire < NOW())"
+        );
+
+        $count = 0;
+        foreach ($records as $record) {
+            if (!empty($record['expire_at'])) {
+                Db::execute(
+                    "UPDATE user SET vip_expire = ? WHERE id = ?",
+                    [$record['expire_at'], $record['user_id']]
+                );
+                $count++;
+            }
+        }
+
+        return jsonSuccess(['synced' => $count], '已同步 ' . $count . ' 条记录');
     }
 
     /**

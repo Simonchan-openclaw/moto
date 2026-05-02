@@ -31,6 +31,7 @@ Route::group('api', function () {
         Route::post('exam/submit', 'api.Exam/submit');
         Route::get('exam/record_list', 'api.Exam/recordList');
         Route::post('vip/activate', 'api.Vip/activate');
+        Route::get('vip/sync', 'api.Vip/sync');
     })->middleware(\app\middleware\Auth::class);
     
     // 管理后台API（需要认证）
