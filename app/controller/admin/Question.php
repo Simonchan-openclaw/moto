@@ -431,28 +431,35 @@ class Question
     }
 
     /**
+    /**
      * 图片上传（免登录）
      * POST /api/public/uploadImage
      */
     public function uploadImage()
     {
-        // 获取上传文件
-        $file = request()->file('image');
-        if (!$file) {
+        // 检查是否有文件
+        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             return json(['code' => 400, 'message' => '请选择要上传的图片']);
         }
 
-        // 验证图片类型
+        $file = $_FILES['image'];
+
+        // 验证图片
+        $imageInfo = getimagesize($file['tmp_name']);
+        if (!$imageInfo) {
+            return json(['code' => 400, 'message' => '文件不是有效的图片']);
+        }
+
+        // 获取扩展名
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
-        $ext = strtolower($file->getExtension());
         if (!in_array($ext, $allowedExt)) {
             return json(['code' => 400, 'message' => '只支持上传图片文件（jpg、png、gif、webp、bmp）']);
         }
 
-        // 上传到public/h5/images目录
-        $rootPath = app()->getRootPath();
-        $uploadDir = 'h5/images/';
-        $savePath = $rootPath . 'public' . DIRECTORY_SEPARATOR . $uploadDir;
+        // 获取项目根目录
+        $rootPath = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR;
+        $savePath = $rootPath . 'public' . DIRECTORY_SEPARATOR . 'h5' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR;
 
         // 确保目录存在
         if (!is_dir($savePath)) {
@@ -461,25 +468,22 @@ class Question
 
         // 生成唯一文件名
         $newFileName = date('YmdHis') . '_' . uniqid() . '.' . $ext;
+        $targetFile = $savePath . $newFileName;
 
-        // 保存文件
-        try {
-            $file->move($savePath, $newFileName);
-            
-            // 返回访问URL
+        // 移动文件
+        if (copy($file['tmp_name'], $targetFile)) {
             $url = 'https://moto.zd16688.com/h5/images/' . $newFileName;
-
             return json([
                 'code' => 200,
                 'message' => '上传成功',
                 'data' => [
                     'url' => $url,
                     'filename' => $newFileName,
-                    'size' => filesize($savePath . $newFileName)
+                    'size' => filesize($targetFile)
                 ]
             ]);
-        } catch (\Exception $e) {
-            return json(['code' => 500, 'message' => '文件保存失败：' . $e->getMessage()]);
+        } else {
+            return json(['code' => 500, 'message' => '文件保存失败']);
         }
     }
 }
