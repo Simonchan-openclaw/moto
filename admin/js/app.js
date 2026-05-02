@@ -936,8 +936,8 @@ var Admin = {
                 // 判断激活状态
                 var isActivated = user.is_activated == 1;
                 var statusSelect = '<select onchange="Admin.setUserActivation(' + user.id + ', this.value)" style="padding:4px 8px;border-radius:4px;border:1px solid #d9d9d9;cursor:pointer;">' +
-                    '<option value="activate" ' + (isActivated ? '' : 'selected') + '>激活</option>' +
-                    '<option value="deactivate" ' + (isActivated ? 'selected' : '') + '>取消激活</option>' +
+                    '<option value="activate" ' + (isActivated ? 'selected' : '') + '>激活</option>' +
+                    '<option value="deactivate" ' + (isActivated ? '' : 'selected') + '>取消激活</option>' +
                     '</select>';
                 
                 var phone = user.phone || '-';
