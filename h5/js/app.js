@@ -684,8 +684,8 @@ var App = {
         // 显示题型
         var typeText = '';
         if (question.question_type == 1) typeText = '单选题';
-        else if (question.question_type == 2) typeText = '判断题';
-        else if (question.question_type == 3) typeText = '多选题';
+        else if (question.question_type == 2) typeText = '多选题';
+        else if (question.question_type == 3) typeText = '判断题';
         typeEl.textContent = typeText;
         
         // 显示题目内容
@@ -739,8 +739,8 @@ var App = {
         var options = container.querySelectorAll('.option-item');
         var btnNext = document.getElementById('btnNext');
 
-        // 多选题：切换选择状态（题型3为多选题）
-        if (question.question_type == 3) {
+        // 多选题：切换选择状态（题型2为多选题）
+        if (question.question_type == 2) {
             options.forEach(function(item) {
                 if (item.querySelector('.option-key').textContent === optionKey) {
                     item.classList.toggle('selected');
@@ -823,8 +823,8 @@ var App = {
             return;
         }
 
-        // 多选题且未确认答案（题型3为多选题）
-        if (question.question_type == 3 && btnNext.textContent === '确认答案') {
+        // 多选题且未确认答案（题型2为多选题）
+        if (question.question_type == 2 && btnNext.textContent === '确认答案') {
             // 计算答题用时
             this.practice.answerTime = Math.round((Date.now() - this.practice.startTime) / 1000);
 
@@ -972,8 +972,8 @@ var App = {
             // 显示题型
             var typeText = '';
             if (question.question_type == 1) typeText = '单选题';
-            else if (question.question_type == 2) typeText = '判断题';
-            else if (question.question_type == 3) typeText = '多选题';
+            else if (question.question_type == 2) typeText = '多选题';
+            else if (question.question_type == 3) typeText = '判断题';
             typeEl.textContent = typeText;
             
             // 显示题目内容
@@ -1020,8 +1020,8 @@ var App = {
         var btnNext = document.getElementById('examBtnNext');
         var questionType = this.exam.currentQuestion ? this.exam.currentQuestion.question_type : 1;
 
-        // 多选题（question_type == 3）：切换选择状态
-        if (questionType == 3) {
+        // 多选题（question_type == 2）：切换选择状态
+        if (questionType == 2) {
             options.forEach(function(item) {
                 if (item.querySelector('.option-key').textContent === optionKey) {
                     item.classList.toggle('selected');
@@ -1179,7 +1179,7 @@ var App = {
 
             var html = '';
             res.data.list.forEach(function(item) {
-                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题');
+                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '多选题' : '判断题');
                 html += '<div class="record-item" onclick="App.showQuestionDetail(' + item.question_id + ')">' +
                     '<div class="record-header">' +
                     '<span class="type-tag">' + typeName + '</span>' +
@@ -1216,7 +1216,7 @@ var App = {
 
             var html = '';
             res.data.list.forEach(function(item) {
-                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '判断题' : '多选题');
+                var typeName = item.question_type == 1 ? '单选题' : (item.question_type == 2 ? '多选题' : '判断题');
                 html += '<div class="record-item" onclick="App.showQuestionDetail(' + item.question_id + ')">' +
                     '<div class="record-header">' +
                     '<span class="type-tag">' + typeName + '</span>' +
