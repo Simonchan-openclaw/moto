@@ -78,10 +78,10 @@ class User
         }
 
         if ($action === 'activate') {
-            // 激活：设置VIP有效期30天
-            $expireTime = date('Y-m-d H:i:s', strtotime('+30 days'));
+            // 激活：设置VIP有效期90天
+            $expireTime = date('Y-m-d H:i:s', strtotime('+90 days'));
             Db::execute("UPDATE user SET vip_expire = ? WHERE id = ?", [$expireTime, $userId]);
-            return jsonSuccess(['vip_expire' => $expireTime], '激活成功，有效期30天');
+            return jsonSuccess(['vip_expire' => $expireTime], '激活成功，有效期90天');
         } elseif ($action === 'deactivate') {
             // 取消激活：清空VIP有效期
             Db::execute("UPDATE user SET vip_expire = NULL WHERE id = ?", [$userId]);

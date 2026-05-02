@@ -64,15 +64,20 @@ class StudentActivation
             return ['success' => false, 'message' => '激活码已过期'];
         }
 
-        // 更新激活状态
+        // 更新学生Activation状态
         Db::execute(
             "UPDATE {$this->table} SET activate_status = 1, user_id = ?, device_id = ?, activate_time = NOW() WHERE id = ?",
             [$userId, $deviceId, $record['id']]
         );
 
+        // 同时更新user表的vip_expire（统一使用vip_expire字段判断VIP状态）
+        $expireDays = 90;  // 统一90天
+        $vipExpire = date('Y-m-d H:i:s', strtotime("+{$expireDays} days"));
+        Db::execute("UPDATE user SET vip_expire = ? WHERE id = ?", [$vipExpire, $userId]);
+
         return [
             'success'     => true,
-            'expire_at'   => $record['expire_at'],
+            'expire_at'   => $vipExpire,
             'coach_phone' => $record['coach_phone']
         ];
     }
