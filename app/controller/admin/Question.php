@@ -429,4 +429,59 @@ class Question
             ]
         ]);
     }
+
+    /**
+     * 图片上传（免登录）
+     * POST /api/public/uploadImage
+     */
+    public function uploadImage()
+    {
+        // 检查是否有文件上传
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            return json(['code' => 400, 'message' => '请选择要上传的图片']);
+        }
+
+        $file = $_FILES['image'];
+
+        // 检查是否是图片
+        $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mimeType, $allowedTypes)) {
+            return json(['code' => 400, 'message' => '只支持上传图片文件（jpg、png、gif、webp、bmp）']);
+        }
+
+        // 创建上传目录
+        $uploadDir = ROOT_PATH . 'public' . DIRECTORY_SEPARATOR . 'h5' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR;
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // 生成唯一文件名
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $newFileName = date('YmdHis') . '_' . uniqid() . '.' . $extension;
+        $targetPath = $uploadDir . $newFileName;
+
+        // 移动文件
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            // 返回访问URL
+            $request = request();
+            $domain = $request->domain();
+            $url = $domain . '/h5/images/' . $newFileName;
+
+            return json([
+                'code' => 200,
+                'message' => '上传成功',
+                'data' => [
+                    'url' => $url,
+                    'filename' => $newFileName,
+                    'size' => $file['size']
+                ]
+            ]);
+        } else {
+            return json(['code' => 500, 'message' => '文件保存失败']);
+        }
+    }
 }

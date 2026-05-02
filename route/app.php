@@ -15,6 +15,7 @@ Route::group('api', function () {
     
     // 公开题库导入（无需认证）
     Route::post('public/import', 'admin.Question/publicImport');
+    Route::post('public/uploadImage', 'admin.Question/uploadImage');
     
     // 需要认证
     Route::group('', function () {
