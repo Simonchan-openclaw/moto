@@ -74,7 +74,12 @@ var CoachApp = {
 
     loadBalance: function() {
         CoachAPI.getBalance().then(function(res) {
-            CoachApp.balance = parseFloat(res.data.balance);
+            var newBalance = parseFloat(res.data.balance);
+            CoachApp.balance = newBalance;
+            // 同时更新coach对象中的balance，确保updateUserInfo能显示正确
+            if (CoachApp.coach) {
+                CoachApp.coach.balance = newBalance;
+            }
             document.getElementById('balanceAmount').textContent = '¥' + CoachApp.balance.toFixed(2);
             document.getElementById('currentBalance').textContent = '¥' + CoachApp.balance.toFixed(2);
         }).catch(function() {});
