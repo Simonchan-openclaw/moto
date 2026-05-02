@@ -466,9 +466,8 @@ class Question
 
         // 移动文件
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            // 返回访问URL
-            $request = request();
-            $domain = $request->domain();
+            // 返回访问URL（使用配置的域名）
+            $domain = config('app.api_domain', request()->domain());
             $url = $domain . '/h5/images/' . $newFileName;
 
             return json([
