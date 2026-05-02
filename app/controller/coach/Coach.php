@@ -288,6 +288,9 @@ class Coach
     }
 
     /**
+
+
+    /**
      * 教练充值
      * POST /api/coach/recharge
      * 实际支付金额 = 充值金额 ÷ 0.994
@@ -485,6 +488,8 @@ class Coach
         return 'success';
     }
 
+     * 获取充值记录列表
+     * GET /api/coach/recharge_list
      */
     public function rechargeList()
     {
