@@ -287,8 +287,6 @@ class Coach
         ]);
     }
 
-    /**
-
 
     /**
      * 教练充值
@@ -488,6 +486,7 @@ class Coach
         return 'success';
     }
 
+    /**
      * 获取充值记录列表
      * GET /api/coach/recharge_list
      */
