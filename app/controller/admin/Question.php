@@ -450,8 +450,9 @@ class Question
         }
 
         // 上传到public/h5/images目录
+        $rootPath = app()->getRootPath();
         $uploadDir = 'h5/images/';
-        $savePath = ROOT_PATH . 'public' . DIRECTORY_SEPARATOR . $uploadDir;
+        $savePath = $rootPath . 'public' . DIRECTORY_SEPARATOR . $uploadDir;
 
         // 确保目录存在
         if (!is_dir($savePath)) {
