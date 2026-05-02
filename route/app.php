@@ -70,6 +70,8 @@ Route::group('api', function () {
         Route::post('verify_student', 'coach.Coach/verifyStudent');
         Route::get('activation_list', 'coach.Coach/activationList');
         Route::post('refund', 'coach.Coach/refund');
+        Route::get('student_exam_records', 'coach.Coach/getStudentExamRecords');
+        Route::post('activate_student', 'coach.Coach/activateStudent');
     });
     
     // 学员端API

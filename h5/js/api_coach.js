@@ -119,7 +119,21 @@ var CoachAPI = {
     },
 
     // 获取邀请学员列表
-    getInviteList: function(page, pageSize) {
-        return this.request('coach/invite_list?page=' + (page || 1) + '&page_size=' + (pageSize || 20), 'GET', {}, true);
+    getInviteList: function(page, pageSize, status) {
+        var url = 'coach/invite_list?page=' + (page || 1) + '&page_size=' + (pageSize || 20);
+        if (status !== undefined && status >= 0) {
+            url += '&status=' + status;
+        }
+        return this.request(url, 'GET', {}, true);
+    },
+
+    // 获取学员考试记录
+    getStudentExamRecords: function(studentPhone) {
+        return this.request('coach/student_exam_records?student_phone=' + studentPhone, 'GET', {}, true);
+    },
+
+    // 一键激活学员
+    activateStudent: function(studentPhone) {
+        return this.request('coach/activate_student', 'POST', { student_phone: studentPhone }, true);
     }
 };

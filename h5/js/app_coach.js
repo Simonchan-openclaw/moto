@@ -554,24 +554,46 @@ var CoachApp = {
     /**
      * 加载邀请学员列表
      */
-    loadInviteList: function() {
+    loadInviteList: function(status) {
+        status = status !== undefined ? status : this.currentInviteStatus;
+        if (status === undefined) status = -1;
+        this.currentInviteStatus = status;
+
         var self = this;
         var container = document.getElementById('inviteListContainer');
         container.innerHTML = '<div class="invite-empty">加载中...</div>';
 
-        CoachAPI.getInviteList().then(function(res) {
+        CoachAPI.getInviteList(1, 50, status).then(function(res) {
             var list = res.data.list || [];
 
             if (list.length === 0) {
-                container.innerHTML = '<div class="invite-empty">暂无邀请记录<br><small>分享二维码给学员注册即可获得奖励</small></div>';
+                var emptyText = status === -1 ? '暂无邀请记录<br><small>分享二维码给学员注册即可获得奖励</small>' :
+                                status === 0 ? '暂无待激活学员' : '暂无已激活学员';
+                container.innerHTML = '<div class="invite-empty">' + emptyText + '</div>';
                 return;
             }
 
             var html = '';
             list.forEach(function(item) {
+                var statusClass = item.is_activated ? 'status-active' : 'status-pending';
+                var statusText = item.is_activated ? '已激活' : '待激活';
+                var actions = '';
+
+                if (!item.is_activated) {
+                    actions += '<button class="btn-activate" onclick="CoachApp.doActivateStudent(\'' + item.phone + '\')">一键激活</button>';
+                }
+                actions += '<button class="btn-records" onclick="CoachApp.showStudentExamRecords(\'' + item.phone + '\')">考试记录</button>';
+
                 html += '<div class="invite-item">' +
-                    '<div><div class="phone">' + (item.phone_mask || item.phone) + '</div>' +
-                    '<div class="time">' + item.create_time + '</div></div>' +
+                    '<div class="info">' +
+                    '<div class="name">' + (item.display_name || item.phone_mask) + '</div>' +
+                    '<div class="phone">' + item.phone + '</div>' +
+                    '<div class="time">' + item.create_time + '</div>' +
+                    '</div>' +
+                    '<div class="actions">' +
+                    '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+                    actions +
+                    '</div>' +
                     '</div>';
             });
 
@@ -579,6 +601,90 @@ var CoachApp = {
         }).catch(function() {
             container.innerHTML = '<div class="invite-empty">加载失败</div>';
         });
+    },
+
+    /**
+     * 筛选邀请列表
+     */
+    filterInviteList: function(status) {
+        document.querySelectorAll('#page-invite-list .tab-item').forEach(function(item) {
+            item.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        this.loadInviteList(status);
+    },
+
+    /**
+     * 一键激活学员
+     */
+    doActivateStudent: function(studentPhone) {
+        if (!confirm('确定要激活该学员吗？将从您的余额中扣除38元')) return;
+
+        CoachApp.showLoading();
+        CoachAPI.activateStudent(studentPhone).then(function(res) {
+            CoachApp.hideLoading();
+            CoachApp.showToast('激活成功');
+            CoachApp.loadInviteList(CoachApp.currentInviteStatus);
+            CoachApp.loadBalance();
+        }).catch(function(err) {
+            CoachApp.hideLoading();
+            CoachApp.showToast(err.message || '激活失败');
+        });
+    },
+
+    /**
+     * 显示学员考试记录
+     */
+    showStudentExamRecords: function(studentPhone) {
+        var modal = document.getElementById('exam-records-modal');
+        var container = document.getElementById('examRecordsContainer');
+        var title = document.getElementById('examModalTitle');
+
+        modal.style.display = 'flex';
+        container.innerHTML = '<div class="invite-empty">加载中...</div>';
+
+        CoachAPI.getStudentExamRecords(studentPhone).then(function(res) {
+            var student = res.data.student;
+            var records = res.data.records || [];
+
+            title.textContent = '考试记录';
+
+            var studentHtml = '<div class="student-info-bar">' +
+                '<div class="student-name">' + (student.nickname || '学员') + '</div>' +
+                '<div class="student-phone">' + student.phone + '</div>' +
+                '<div class="student-status ' + (student.is_activated ? 'status-active' : 'status-expired') + '">' +
+                (student.is_activated ? '已激活 VIP（至 ' + student.vip_expire + '）' : '未激活') +
+                '</div>' +
+                '</div>';
+
+            if (records.length === 0) {
+                container.innerHTML = studentHtml + '<div class="no-records">暂无考试记录</div>';
+                return;
+            }
+
+            var recordsHtml = '';
+            records.forEach(function(item) {
+                var isPass = item.score >= 90;
+                recordsHtml += '<div class="exam-record-item">' +
+                    '<div class="exam-header">' +
+                    '<span class="exam-subject">' + (item.subject == 1 ? '科目一' : '科目四') + '</span>' +
+                    '<span class="exam-score ' + (isPass ? 'pass' : 'fail') + '">' + item.score + '分</span>' +
+                    '</div>' +
+                    '<div class="exam-time">' + item.create_time + '</div>' +
+                    '</div>';
+            });
+
+            container.innerHTML = studentHtml + recordsHtml;
+        }).catch(function(err) {
+            container.innerHTML = '<div class="invite-empty">加载失败</div>';
+        });
+    },
+
+    /**
+     * 关闭考试记录弹窗
+     */
+    closeExamModal: function() {
+        document.getElementById('exam-records-modal').style.display = 'none';
     },
 
     showLoading: function() {
