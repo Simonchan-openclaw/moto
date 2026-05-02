@@ -287,6 +287,119 @@ class Coach
     }
 
     /**
+     * 获取学员的考试记录
+     * GET /api/coach/studentExamRecords?student_phone=xxx
+     */
+    public function studentExamRecords()
+    {
+        $coachId = $this->getCurrentCoachId();
+        $studentPhone = input('get.student_phone/s', '');
+
+        if (empty($studentPhone)) {
+            return jsonError('学员手机号不能为空');
+        }
+
+        // 验证该学员是否属于当前教练邀请的
+        $student = \think\facade\Db::name('user')
+            ->where('phone', $studentPhone)
+            ->where('inv_coach_id', $coachId)
+            ->find();
+
+        if (!$student) {
+            return jsonError('该学员不是您邀请的');
+        }
+
+        // 获取考试记录
+        $page = input('get.page/d', 1);
+        $pageSize = input('get.page_size/d', 20);
+        $offset = ($page - 1) * $pageSize;
+
+        $total = \think\facade\Db::name('exam_record')
+            ->where('user_id', $student['id'])
+            ->count();
+
+        $list = \think\facade\Db::name('exam_record')
+            ->where('user_id', $student['id'])
+            ->order('id DESC')
+            ->limit($pageSize)
+            ->page($page)
+            ->select();
+
+        // 判断激活状态
+        $isActivated = !empty($student['vip_expire']) && strtotime($student['vip_expire']) > time();
+
+        return jsonSuccess([
+            'list'       => $list,
+            'total'      => $total,
+            'page'       => $page,
+            'page_size'  => $pageSize,
+            'total_pages'=> ceil($total / $pageSize),
+            'student'    => [
+                'id'         => $student['id'],
+                'phone'      => $student['phone'],
+                'nickname'   => $student['nickname'] ?? '',
+                'is_activated' => $isActivated,
+                'vip_expire' => $student['vip_expire'] ?? null
+            ]
+        ]);
+    }
+
+    /**
+     * 教练直接激活学员（从邀请列表）
+     * POST /api/coach/activateStudent
+     */
+    public function activateStudent()
+    {
+        $coachId = $this->getCurrentCoachId();
+        $studentPhone = input('post.student_phone/s', '');
+
+        if (empty($studentPhone)) {
+            return jsonError('学员手机号不能为空');
+        }
+
+        // 验证该学员是否属于当前教练邀请的
+        $student = \think\facade\Db::name('user')
+            ->where('phone', $studentPhone)
+            ->where('inv_coach_id', $coachId)
+            ->find();
+
+        if (!$student) {
+            return jsonError('该学员不是您邀请的');
+        }
+
+        // 检查是否已激活
+        if (!empty($student['vip_expire']) && strtotime($student['vip_expire']) > time()) {
+            return jsonError('该学员已经激活过了');
+        }
+
+        // 执行激活（从教练余额扣款）
+        $activationFee = 38.00;  // 激活费38元
+
+        // 检查教练余额是否足够
+        $coach = $this->coachModel->findById($coachId);
+        if ($coach['balance'] < $activationFee) {
+            return jsonError('余额不足，请先充值');
+        }
+
+        // 扣除教练余额
+        $this->coachModel->addBalance($coachId, -$activationFee);
+
+        // 设置学员VIP有效期90天
+        $expireDays = 90;
+        $vipExpire = date('Y-m-d H:i:s', strtotime("+{$expireDays} days"));
+        \think\facade\Db::name('user')->where('id', $student['id'])->update(['vip_expire' => $vipExpire]);
+
+        // 创建激活记录
+        $this->activationModel->create($student['id'], $coachId, $activationFee);
+
+        // 给教练返佣18元
+        $commission = 18.00;
+        $this->coachModel->addBalance($coachId, $commission);
+
+        return jsonSuccess(['vip_expire' => $vipExpire], '激活成功，已返佣' . $commission . '元');
+    }
+
+    /**
      * 获取教练余额
      * GET /api/coach/balance
      */
