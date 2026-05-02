@@ -457,8 +457,8 @@ class Question
             return json(['code' => 400, 'message' => '只支持上传图片文件（jpg、png、gif、webp、bmp）']);
         }
 
-        // 获取项目根目录
-        $rootPath = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR;
+        // 使用ThinkPHP的根路径
+        $rootPath = app()->getRootPath();
         $savePath = $rootPath . 'public' . DIRECTORY_SEPARATOR . 'h5' . DIRECTORY_SEPARATOR . 'images' . DIRECTORY_SEPARATOR;
 
         // 确保目录存在
@@ -471,7 +471,7 @@ class Question
         $targetFile = $savePath . $newFileName;
 
         // 移动文件
-        if (copy($file['tmp_name'], $targetFile)) {
+        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
             $url = 'https://moto.zd16688.com/h5/images/' . $newFileName;
             return json([
                 'code' => 200,
@@ -479,11 +479,12 @@ class Question
                 'data' => [
                     'url' => $url,
                     'filename' => $newFileName,
+                    'path' => $targetFile,
                     'size' => filesize($targetFile)
                 ]
             ]);
         } else {
-            return json(['code' => 500, 'message' => '文件保存失败']);
+            return json(['code' => 500, 'message' => '文件保存失败，路径：' . $savePath]);
         }
     }
 }
