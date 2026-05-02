@@ -310,11 +310,11 @@ class Coach
         $actualPayAmount = round($amount / 0.994, 2);
 
         // 生成订单号
-        $tradeNo = 'C' . $coachId . date('YmdHis') . rand(100, 999);
+        $tradeNo = 'COACH' . $coachId . date('YmdHis') . rand(100, 999);
 
         // 支付方式映射（注意：易支付平台返回的type值是wxpays和alipay）
         $payTypeMap = [
-            1 => 'wxpay',  // 微信
+            1 => 'wxpay',  // 微信（平台返回wxpays）
             2 => 'alipay',  // 支付宝
         ];
         $payType = $payTypeMap[$payMethod] ?? 'wxpay';
@@ -353,7 +353,7 @@ class Coach
         $signStr .= $key;
         // MD5小写
         $sign = strtolower(md5($signStr));
-        
+
         // 日志记录
         Log::info('【易支付充值】教练ID:' . $coachId . ',充值金额:' . $amount . ',实付金额:' . $actualPayAmount . ',订单号:' . $tradeNo . ',签名字符串:' . $signStr . ',签名:' . $sign);
 
@@ -378,7 +378,7 @@ class Coach
         if ($payResult && isset($payResult['code']) && $payResult['code'] == 1) {
             // 创建充值记录（待支付状态）
             $this->rechargeModel->create($coachId, $amount, $payMethod, $tradeNo, 0);
-            
+
             Log::info('【易支付】发起支付成功,订单号:'.$tradeNo.',返回:'.json_encode($payResult));
 
             return jsonSuccess([
@@ -404,16 +404,20 @@ class Coach
         $key = config('payment.yipay.key', 'sMxhHZTTwHwssbWBLLbSGXmm9T2x2g94');
 
         // 接收回调参数
+        // 1. 安全获取参数，避免 null
+        $get_params = (array)request()->get();
         $trade_no = input('get.trade_no/s', '');
         $out_trade_no = input('get.out_trade_no/s', '');
         $pay_type = input('get.type/s', '');
+        $name = input('get.name/s', '');
         $pay_money = input('get.money/f', 0);
         $trade_status = input('get.trade_status/s', '');
         $param = input('get.param/s', '');
         $sign = input('get.sign/s', '');
-        
+
         // 调试日志
-        Log::info('【易支付回调】收到的参数: type=' . $pay_type . ', trade_no=' . $trade_no . ', out_trade_no=' . $out_trade_no);
+
+        Log::info('【易支付回调】收到的参数: ' . http_build_query($get_params));
 
         // 验证签名
         $params = [
@@ -421,9 +425,12 @@ class Coach
             'trade_no' => $trade_no,
             'out_trade_no' => $out_trade_no,
             'type' => $pay_type,
+            'name' => $name,
             'money' => $pay_money,
             'trade_status' => $trade_status,
+            'param' => $param,
         ];
+
         ksort($params);
         $signStr = '';
         foreach ($params as $k => $v) {
@@ -463,10 +470,11 @@ class Coach
                     \think\facade\Db::name('recharge_record')
                         ->where('id', $record['id'])
                         ->update(['status' => 1, 'pay_time' => date('Y-m-d H:i:s')]);
-                    
+
                     // 增加教练余额
-                    $this->coachModel->addBalance($coachId, $record['amount']);
-                    
+                    $ub = $this->coachModel->addBalance($record['coach_id'], $record['amount']);
+                    Log::info('【增加教练余额】处理结果'.$ub);
+
                     Log::info('【易支付回调】充值成功,教练ID:'.$coachId.',订单号:'.$out_trade_no.',充值余额:'.$record['amount']);
                 } else {
                     Log::error('【易支付回调】充值记录不存在或已处理,订单号:'.$out_trade_no);
@@ -477,9 +485,6 @@ class Coach
         return 'success';
     }
 
-    /**
-     * 获取充值记录列表
-     * GET /api/coach/recharge_list
      */
     public function rechargeList()
     {
