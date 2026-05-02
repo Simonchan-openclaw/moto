@@ -1353,17 +1353,31 @@ function nextExamQuestion() {
 }
 
 /**
- * 全局显示解析函数
- */
-function showAnalysis() {
-    App.showAnalysis();
-}
-
-/**
  * 全局切换收藏函数
  */
 function toggleFavorite() {
     App.toggleFavorite();
+}
+
+/**
+ * 全局开始考试函数
+ */
+function startExam(subject) {
+    App.startExam(subject);
+}
+
+/**
+ * 全局上一题函数
+ */
+function prevExamQuestion() {
+    App.prevExamQuestion();
+}
+
+/**
+ * 全局显示解析函数
+ */
+function showSubmitConfirm() {
+    App.showSubmitConfirm();
 }
 
 // 页面加载完成后初始化
