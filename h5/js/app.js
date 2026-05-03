@@ -1241,17 +1241,80 @@ var App = {
      */
     showQuestionDetail: function(questionId) {
         var self = this;
+        this.showLoading();
+
         API.getQuestionDetail(questionId).then(function(res) {
             var question = res.data;
             if (!question) {
+                self.hideLoading();
                 self.showToast('题目不存在');
                 return;
             }
-            // 使用题目详情弹窗或直接显示
-            self.showToast('题目ID: ' + questionId);
+
+            // 初始化练习状态（单题模式）
+            self.practice = {
+                subject: question.subject || 1,
+                questions: [question],
+                currentIndex: 0,
+                totalQuestions: 1,
+                answers: {},
+                selectedAnswer: null,
+                answerSubmitted: false,
+                sessionCorrect: 0,
+                sessionWrong: 0,
+                sessionAnswered: 0,
+                isSingleQuestion: true  // 标记为单题模式
+            };
+
+            // 切换到练习页面
+            self.showPage('practice');
+            self.hideLoading();
+
+            // 显示题目
+            self.showPracticeQuestion();
+
+            // 单题模式下直接显示答案和解析
+            setTimeout(function() {
+                self.showQuestionAnswer(question);
+            }, 100);
+
         }).catch(function(err) {
+            self.hideLoading();
             self.showToast('加载失败');
         });
+    },
+
+    /**
+     * 显示题目答案（用于单题查看模式）
+     */
+    showQuestionAnswer: function(question) {
+        var container = document.getElementById('questionContainer');
+        var options = container.querySelectorAll('.option-item');
+        var result = container.querySelector('.answer-result');
+        var btnNext = document.getElementById('btnNext');
+        var correctAnswer = question.answer ? question.answer.toUpperCase() : '';
+
+        // 高亮正确答案
+        options.forEach(function(item) {
+            var key = item.querySelector('.option-key').textContent;
+            if (key === correctAnswer) {
+                item.classList.add('correct');
+            }
+            item.style.pointerEvents = 'none';  // 禁用选项点击
+        });
+
+        // 显示解析
+        result.style.display = 'block';
+        result.querySelector('.result-icon').textContent = '📖';
+        result.querySelector('.result-text').textContent = '正确答案：' + correctAnswer;
+        result.querySelector('.analysis').textContent = question.analysis || '暂无解析';
+
+        // 修改按钮文字
+        btnNext.textContent = '返回';
+        var self = this;
+        btnNext.onclick = function() {
+            self.showPage('home');
+        };
     },
 
     // ==================== 成绩记录 ====================
