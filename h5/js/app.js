@@ -1123,7 +1123,7 @@ var App = {
             '<div class="item"><div class="num">' + data.total_questions + '</div><div class="label">总题</div></div>' +
             '</div>' +
             '<button class="btn-primary" onclick="App.showPage(\'home\')">返回首页</button>' +
-            '<button class="btn-secondary" onclick="App.startExam(' + App.exam.subject + ')">再次考试</button>' +
+            '<button class="btn-secondary" onclick="App.startExam(' + (App.exam ? App.exam.subject : 1) + ')">再次考试</button>' +
             '</div>';
     },
 
