@@ -28,7 +28,12 @@ class Activation
         }
 
         if ($status !== '') {
-            // status: 1=已激活, 其他=全部
+            // status: 0=全部, 1=自邀, 2=非自邀
+            if ($status == 1) {
+                $where[] = 'al.is_self_invited = 1';
+            } elseif ($status == 2) {
+                $where[] = 'al.is_self_invited = 0';
+            }
         }
 
         $whereStr = implode(' AND ', $where);

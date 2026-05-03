@@ -29,10 +29,15 @@ class Coach
 
         $whereStr = !empty($where) ? implode(' AND ', $where) : '1=1';
 
-        // 获取列表
+        // 获取列表（使用子查询优化，避免N+1问题）
         $list = Db::query(
-            "SELECT id, phone, real_name, balance, total_recharged, status, last_login_time, create_time 
-             FROM coach WHERE {$whereStr} ORDER BY id DESC LIMIT ? OFFSET ?",
+            "SELECT c.id, c.phone, c.real_name, c.balance, c.total_recharged, c.status, c.last_login_time, c.create_time,
+                    (SELECT COUNT(*) FROM activation_log WHERE coach_id = c.id) as activation_count,
+                    (SELECT COALESCE(SUM(commission), 0) FROM activation_log WHERE coach_id = c.id) as total_commission
+             FROM coach c 
+             WHERE {$whereStr} 
+             ORDER BY c.id DESC 
+             LIMIT ? OFFSET ?",
             array_merge($params, [$pageSize, $offset])
         );
 
@@ -42,22 +47,8 @@ class Coach
             $params
         )[0]['cnt'] ?? 0;
 
-        // 获取每个教练的激活次数（从activation_log表）
+        // 处理脱敏手机号
         foreach ($list as &$item) {
-            $activationCount = Db::query(
-                "SELECT COUNT(*) as cnt FROM activation_log WHERE coach_id = ?",
-                [$item['id']]
-            )[0]['cnt'] ?? 0;
-            $item['activation_count'] = $activationCount;
-            
-            // 获取累计佣金
-            $commission = Db::query(
-                "SELECT COALESCE(SUM(commission), 0) as total FROM activation_log WHERE coach_id = ?",
-                [$item['id']]
-            )[0]['total'] ?? 0;
-            $item['total_commission'] = $commission;
-            
-            // 脱敏手机号
             $item['phone_mask'] = substr($item['phone'], 0, 3) . '****' . substr($item['phone'], -4);
         }
 
@@ -98,8 +89,8 @@ class Coach
             return jsonError('该手机号已注册');
         }
 
-        // 创建教练
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        // 创建教练（使用MD5保持一致性）
+        $passwordHash = md5($password);
         Db::execute(
             "INSERT INTO coach (phone, password, real_name, balance, status, create_time) VALUES (?, ?, ?, 0.00, 1, NOW())",
             [$phone, $passwordHash, $realName]

@@ -1,16 +1,14 @@
 <?php
 namespace app\model;
 
-use think\Model;
 use think\facade\Db;
 
 /**
  * 系统配置模型
  */
-class SystemConfig extends Model
+class SystemConfig
 {
-    protected $table = 'system_config';
-    protected $pk = 'id';
+    protected static $table = 'system_config';
 
     /**
      * 获取配置值
@@ -18,7 +16,7 @@ class SystemConfig extends Model
     public static function getValue($key, $default = null)
     {
         $config = Db::query(
-            "SELECT config_value FROM {$this->table} WHERE config_key = ?",
+            "SELECT config_value FROM " . self::$table . " WHERE config_key = ?",
             [$key]
         );
         
@@ -35,18 +33,18 @@ class SystemConfig extends Model
     public static function setValue($key, $value)
     {
         $exists = Db::query(
-            "SELECT id FROM {$this->table} WHERE config_key = ?",
+            "SELECT id FROM " . self::$table . " WHERE config_key = ?",
             [$key]
         );
         
         if (empty($exists)) {
             return Db::execute(
-                "INSERT INTO {$this->table} (config_key, config_value, update_time) VALUES (?, ?, NOW())",
+                "INSERT INTO " . self::$table . " (config_key, config_value, create_time) VALUES (?, ?, NOW())",
                 [$key, $value]
             );
         } else {
             return Db::execute(
-                "UPDATE {$this->table} SET config_value = ?, update_time = NOW() WHERE config_key = ?",
+                "UPDATE " . self::$table . " SET config_value = ?, update_time = NOW() WHERE config_key = ?",
                 [$value, $key]
             );
         }
@@ -57,7 +55,7 @@ class SystemConfig extends Model
      */
     public static function getAll()
     {
-        $list = Db::query("SELECT * FROM {$this->table} ORDER BY id ASC");
+        $list = Db::query("SELECT * FROM " . self::$table . " ORDER BY id ASC");
         $result = [];
         foreach ($list as $item) {
             $result[$item['config_key']] = $item['config_value'];

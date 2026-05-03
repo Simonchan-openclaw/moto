@@ -258,12 +258,51 @@ class Question
         $data = input('post.');
         
         // 验证必填字段
-        if (empty($data['content']) || empty($data['answer'])) {
-            return jsonError('题目内容和答案不能为空');
+        if (empty($data['title']) && empty($data['content'])) {
+            return jsonError('题目内容不能为空');
         }
-
-        // TODO: 实现添加逻辑
-        return jsonSuccess(['id' => 0], '添加成功');
+        
+        if (empty($data['answer'])) {
+            return jsonError('正确答案不能为空');
+        }
+        
+        // 验证题型
+        $questionType = isset($data['question_type']) ? intval($data['question_type']) : 1;
+        if (!in_array($questionType, [1, 2, 3])) {
+            return jsonError('题型参数无效');
+        }
+        
+        // 验证科目
+        $subject = isset($data['subject']) ? intval($data['subject']) : 1;
+        if (!in_array($subject, [1, 4])) {
+            return jsonError('科目参数无效');
+        }
+        
+        // 组装数据
+        $insertData = [
+            'title'         => $data['title'] ?? $data['content'] ?? '',
+            'subject'       => $subject,
+            'question_type' => $questionType,
+            'option_a'     => $data['option_a'] ?? '',
+            'option_b'     => $data['option_b'] ?? '',
+            'option_c'     => $data['option_c'] ?? '',
+            'option_d'     => $data['option_d'] ?? '',
+            'answer'       => strtoupper($data['answer']),
+            'chapter_id'   => isset($data['chapter_id']) ? intval($data['chapter_id']) : 1,
+            'keywords'     => $data['keywords'] ?? '',
+            'analysis'     => $data['analysis'] ?? '',
+            'image'        => $data['image'] ?? '',
+            'status'       => isset($data['status']) ? intval($data['status']) : 1,
+            'created_at'   => date('Y-m-d H:i:s'),
+            'updated_at'   => date('Y-m-d H:i:s'),
+        ];
+        
+        try {
+            $id = Db::name('question')->insertGetId($insertData);
+            return jsonSuccess(['id' => $id], '添加成功');
+        } catch (\Exception $e) {
+            return jsonError('添加失败：' . $e->getMessage());
+        }
     }
 
     /**
@@ -277,9 +316,62 @@ class Question
         if (empty($data['id'])) {
             return jsonError('题目ID不能为空');
         }
-
-        // TODO: 实现编辑逻辑
-        return jsonSuccess(['success' => true], '编辑成功');
+        
+        $id = intval($data['id']);
+        
+        // 检查题目是否存在
+        $question = Db::name('question')->where('id', $id)->find();
+        if (!$question) {
+            return jsonError('题目不存在');
+        }
+        
+        // 组装更新数据
+        $updateData = [
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+        
+        if (isset($data['title']) || isset($data['content'])) {
+            $updateData['title'] = $data['title'] ?? $data['content'] ?? '';
+        }
+        
+        if (isset($data['subject'])) {
+            $subject = intval($data['subject']);
+            if (in_array($subject, [1, 4])) {
+                $updateData['subject'] = $subject;
+            }
+        }
+        
+        if (isset($data['question_type'])) {
+            $questionType = intval($data['question_type']);
+            if (in_array($questionType, [1, 2, 3])) {
+                $updateData['question_type'] = $questionType;
+            }
+        }
+        
+        if (isset($data['option_a'])) $updateData['option_a'] = $data['option_a'];
+        if (isset($data['option_b'])) $updateData['option_b'] = $data['option_b'];
+        if (isset($data['option_c'])) $updateData['option_c'] = $data['option_c'];
+        if (isset($data['option_d'])) $updateData['option_d'] = $data['option_d'];
+        
+        if (isset($data['answer'])) {
+            $updateData['answer'] = strtoupper($data['answer']);
+        }
+        
+        if (isset($data['chapter_id'])) {
+            $updateData['chapter_id'] = intval($data['chapter_id']);
+        }
+        
+        if (isset($data['keywords'])) $updateData['keywords'] = $data['keywords'];
+        if (isset($data['analysis'])) $updateData['analysis'] = $data['analysis'];
+        if (isset($data['image'])) $updateData['image'] = $data['image'];
+        if (isset($data['status'])) $updateData['status'] = intval($data['status']);
+        
+        try {
+            Db::name('question')->where('id', $id)->update($updateData);
+            return jsonSuccess(['id' => $id], '编辑成功');
+        } catch (\Exception $e) {
+            return jsonError('编辑失败：' . $e->getMessage());
+        }
     }
 
     /**

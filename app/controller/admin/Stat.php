@@ -106,16 +106,14 @@ class Stat
             'total_questions'      => $totalQuestions,
             'total_exams'          => $totalExams,
             'today_exams'          => $todayExams,
-            'avg_score_1'          => round($avgScore1, 2),
-            'avg_score_4'          => round($avgScore4, 2),
+            'avg_score_subject1'  => round($avgScore1, 2),
+            'avg_score_subject4'  => round($avgScore4, 2),
             'activation_count'     => $activationCount,
             'today_activation'     => $todayActivation,
             'week_activation'      => $weekActivation,
             'total_activation_amount' => $totalActivationAmount,
             'activation_trend'     => $trend,
-            'user_count'           => $totalUsers,
-            'coach_count'          => $coachCount,
-            'question_count'       => $totalQuestions,
+            'coach_count'         => $coachCount,
         ));
     }
 }
