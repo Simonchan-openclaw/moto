@@ -115,10 +115,9 @@ class Exam
             // 处理用户答案
             if (is_array($userAnswer)) {
                 // 多选题：排序后比较
-                $userAnswerUpper = implode('', array_map('strtoupper', $userAnswer));
-                sort($userAnswerUpper);
-                sort($correctAnswer);
-                $isCorrect = ($userAnswerUpper === $correctAnswer);
+                $userAnswerStr = implode('', array_map('strtoupper', $userAnswer));
+                $correctAnswerStr = implode('', array_map('strtoupper', str_split($correctAnswer)));
+                $isCorrect = ($userAnswerStr === $correctAnswerStr);
             } else {
                 // 单选题/判断题
                 $userAnswerUpper = strtoupper($userAnswer);
