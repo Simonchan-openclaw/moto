@@ -58,9 +58,13 @@ var Admin = {
         API.login(username, password).then(function(res) {
             self.hideLoading();
             // 保存返回的Token
-            localStorage.setItem('admin_token', res.data.token);
-            localStorage.setItem('admin_info', JSON.stringify(res.data.adminInfo || {}));
-            location.reload();
+            if (res.data && res.data.token) {
+                localStorage.setItem('admin_token', res.data.token);
+                localStorage.setItem('admin_info', JSON.stringify(res.data.adminInfo || {}));
+                location.reload();
+            } else {
+                self.showToast('登录异常：未获取到令牌');
+            }
         }).catch(function(err) {
             self.hideLoading();
             self.showToast(err.message || '登录失败');
@@ -584,9 +588,9 @@ var Admin = {
         // 获取表单数据
         var questionId = document.getElementById('qId').value;
         var data = {
-            subject: document.getElementById('qSubject').value,
-            question_type: document.getElementById('qType').value,
-            chapter_id: document.getElementById('qChapter').value,
+            subject: parseInt(document.getElementById('qSubject').value),
+            question_type: parseInt(document.getElementById('qType').value),
+            chapter_id: parseInt(document.getElementById('qChapter').value),
             title: document.getElementById('qContent').value,
             option_a: document.getElementById('qOptionA').value,
             option_b: document.getElementById('qOptionB').value,
@@ -600,10 +604,18 @@ var Admin = {
             data.id = questionId;
         }
 
-        console.log('保存题目:', data);
-        this.closeModal();
-        this.showToast('保存成功');
-        this.loadQuestions();
+        var self = this;
+        this.showLoading();
+
+        API.saveQuestion(data).then(function(res) {
+            self.hideLoading();
+            self.closeModal();
+            self.showToast('保存成功');
+            self.loadQuestions();
+        }).catch(function(err) {
+            self.hideLoading();
+            self.showToast(err.message || '保存失败');
+        });
     },
 
     /**

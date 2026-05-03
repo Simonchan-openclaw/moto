@@ -144,6 +144,14 @@ var API = {
         return this.request('admin/question/setStatus', 'POST', { id: questionId, status: status }, true);
     },
 
+    /**
+     * 保存题目（新增或更新）
+     * @param {object} data - 题目数据，包含id时为更新，否则为新增
+     */
+    saveQuestion: function(data) {
+        return this.request('admin/question/' + (data.id ? 'edit' : 'add'), 'POST', data, true);
+    },
+
     // ==================== 用户管理 ====================
 
     getUserList: function(params) {
