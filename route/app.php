@@ -58,6 +58,10 @@ Route::group('api', function () {
         Route::get('stat/summary', 'admin.Stat/summary');
         Route::get('activation/list', 'admin.Activation/list');
         Route::get('activation/statistics', 'admin.Activation/statistics');
+        Route::get('system_config/list', 'admin.SystemConfig/list');
+        Route::post('system_config/update', 'admin.SystemConfig/update');
+        Route::post('system_config/batchUpdate', 'admin.SystemConfig/batchUpdate');
+        Route::get('system_config/activation', 'admin.SystemConfig/activation');
     })->middleware(\app\middleware\Auth::class);
     
     // 教练端API（无需中间件，使用独立认证）

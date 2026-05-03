@@ -310,16 +310,31 @@ var CoachApp = {
 
         CoachAPI.verifyStudent(studentPhone, countryCode).then(function(res) {
             if (res.code === 200 && res.data) {
-                var invCoachId = res.data.inv_coach_id;
-                if (invCoachId && invCoachId > 0) {
-                    verifyResult.textContent = '该学员由教练' + (res.data.coach_name || '邀请') + '邀请';
+                var status = res.data.status;
+                var coachName = res.data.coach_name || '';
+                
+                if (status === 'self_invited') {
+                    // 自己邀请的学员：绿色
+                    verifyResult.textContent = '✓ 自己邀请的学员';
                     verifyResult.className = 'verify-result has-coach';
+                } else if (status === 'other_invited') {
+                    // 其他教练邀请的学员：橙色
+                    verifyResult.textContent = '⚠ ' + coachName + ' 邀请的学员（激活需28元）';
+                    verifyResult.className = 'verify-result other-coach';
+                } else if (status === 'no_invitation') {
+                    // 无邀请教练的学员：橙色
+                    verifyResult.textContent = '⚠ 无邀请教练的学员（激活需28元）';
+                    verifyResult.className = 'verify-result other-coach';
+                } else if (status === 'not_registered') {
+                    // 号码未注册：红色
+                    verifyResult.textContent = '✗ 该手机号未注册';
+                    verifyResult.className = 'verify-result no-coach';
                 } else {
-                    verifyResult.textContent = '该学员未被教练邀请';
+                    verifyResult.textContent = res.data.message || '未知状态';
                     verifyResult.className = 'verify-result no-coach';
                 }
             } else {
-                verifyResult.textContent = '该学员未注册';
+                verifyResult.textContent = '未找到该学员信息';
                 verifyResult.className = 'verify-result no-coach';
             }
         }).catch(function(err) {

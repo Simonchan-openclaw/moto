@@ -4,6 +4,7 @@ namespace app\controller\coach;
 use app\model\Coach as CoachModel;
 use app\model\RechargeRecord as RechargeRecordModel;
 use app\model\StudentActivation as StudentActivationModel;
+use app\model\SystemConfig as SystemConfigModel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use think\Env;
@@ -616,10 +617,12 @@ class Coach
             return jsonError('学员手机号格式不正确');
         }
 
-        // 激活配置
-        $activationFee = 36.00;    // 激活费36元
-        $commission = 18.00;        // 佣金18元
-        $expireDays = 90;          // VIP有效期90天
+        // 从数据库获取激活配置
+        $config = SystemConfigModel::getActivationConfig();
+        $selfInviteFee = $config['self_invite_fee'];
+        $otherInviteFee = $config['other_invite_fee'];
+        $transferAmount = $config['transfer_amount'];
+        $expireDays = $config['expire_days'];
 
         // 查找学员信息
         $userModel = new \app\model\User();
@@ -635,11 +638,12 @@ class Coach
 
         // 计算扣款金额
         if ($isSelfInvited) {
-            // 自己邀请的学员：扣18（36-18佣金）
-            $deductAmount = $activationFee - $commission;
+            // 自己邀请的学员：扣18元
+            $deductAmount = $selfInviteFee;
+            $transferAmount = 0;
         } else {
-            // 其他教练邀请的学员：扣36
-            $deductAmount = $activationFee;
+            // 其他教练邀请的学员：扣28元，其中10元转给邀请教练
+            $deductAmount = $otherInviteFee;
         }
 
         // 检查余额
@@ -651,9 +655,9 @@ class Coach
         // 扣除当前教练余额
         $this->coachModel->deductBalance($coachId, $deductAmount);
 
-        // 如果是其他教练邀请的，转18元给邀请教练
+        // 如果是其他教练邀请的，转10元给邀请教练
         if (!$isSelfInvited && $invCoachId > 0) {
-            $this->coachModel->addBalance($invCoachId, $commission);
+            $this->coachModel->addBalance($invCoachId, $transferAmount);
         }
 
         // 直接激活学员账号（设置VIP到期时间）
@@ -668,7 +672,7 @@ class Coach
             'amount'        => $deductAmount,
             'is_self_invited' => $isSelfInvited ? 1 : 0,
             'inv_coach_id'  => $invCoachId,
-            'commission'    => (!$isSelfInvited && $invCoachId > 0) ? $commission : 0,
+            'commission'    => (!$isSelfInvited && $invCoachId > 0) ? $transferAmount : 0,
             'expire_at'     => $expireAt,
             'create_time'   => date('Y-m-d H:i:s')
         ];
