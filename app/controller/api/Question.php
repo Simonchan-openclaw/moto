@@ -27,7 +27,7 @@ class Question
     {
         $subject = input('get.subject/d', 1);
 
-        if (!in_array($subject, [1, 4])) {
+        if (!in_array($subject, [1, 2, 3, 4, 5])) {
             return jsonError('科目参数不正确');
         }
 
@@ -130,7 +130,7 @@ class Question
     {
         $subject = input('get.subject/d', 1);
         
-        if (!in_array($subject, [1, 4])) {
+        if (!in_array($subject, [1, 2, 3, 4, 5])) {
             return jsonError('科目参数错误');
         }
 

@@ -539,7 +539,8 @@ var App = {
     loadChapters: function(subject) {
         var self = this;
         this.practice.subject = subject;
-        document.getElementById('chapterTitle').textContent = subject === 1 ? '科目一 练习' : '科目四 练习';
+        var subjectNames = {1: '科目一', 2: '科目二', 3: '科目三', 4: '科目四', 5: '精选高频题'};
+        document.getElementById('chapterTitle').textContent = (subjectNames[subject] || '科目一') + ' 练习';
 
         // 显示加载中
         var list = document.getElementById('chapterList');
@@ -602,7 +603,8 @@ var App = {
         
         // 更新标题
         var subject = this.practice.subject || 1;
-        document.getElementById('practiceTitle').textContent = '科目' + (subject == 1 ? '一' : '四') + '练习';
+        var subjectNames = {1: '一', 2: '二', 3: '三', 4: '四', 5: '高频题'};
+        document.getElementById('practiceTitle').textContent = '科目' + (subjectNames[subject] || '一') + '练习';
         
         // 获取科目总题数
         var self = this;
