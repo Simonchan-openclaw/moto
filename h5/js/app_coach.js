@@ -656,7 +656,7 @@ var CoachApp = {
 
         CoachAPI.getStudentExamRecords(studentPhone).then(function(res) {
             var student = res.data.student;
-            var records = res.data.records || [];
+            var records = res.data.list || [];
 
             title.textContent = '考试记录';
 
@@ -676,12 +676,16 @@ var CoachApp = {
             var recordsHtml = '';
             records.forEach(function(item) {
                 var isPass = item.score >= 90;
+                var submitTime = item.submit_time || item.create_time || '';
                 recordsHtml += '<div class="exam-record-item">' +
                     '<div class="exam-header">' +
                     '<span class="exam-subject">' + (item.subject == 1 ? '科目一' : '科目四') + '</span>' +
                     '<span class="exam-score ' + (isPass ? 'pass' : 'fail') + '">' + item.score + '分</span>' +
                     '</div>' +
-                    '<div class="exam-time">' + item.create_time + '</div>' +
+                    '<div class="exam-stats">' +
+                    '<span>正确 ' + item.correct_count + '/' + item.total_questions + '</span>' +
+                    '<span class="exam-time">' + submitTime + '</span>' +
+                    '</div>' +
                     '</div>';
             });
 
